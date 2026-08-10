@@ -1,5 +1,5 @@
 import { RpcStub } from "capnweb";
-import { GadgetMetadataWithTimestamps, AiChatAuthorInfo, AiModelConfig, SUGGESTED_MODELS, CollaboratorRole, ConnectedAccountsSubscriber, ConnectedAccountsFilter, GatekeeperVendorFilter, GadgetMetadata, BlueprintMetadata, BlueprintLibrarySummary, BlueprintSource, BlueprintUserSummary, BLUEPRINT_SCREENSHOT_R2_PREFIX, GatekeeperVendorInfo, BlueprintOutput, OutputSummary, WorkpieceId, ListOutputsResult, AUTH_ERROR_CODES, createAuthError } from '@gadgets/workshop-shared/api';
+import { GadgetMetadataWithTimestamps, AiChatAuthorInfo, AiModelConfig, AiModelConfiguration, AiModelManagementEntry, SUGGESTED_MODELS, CollaboratorRole, ConnectedAccountsSubscriber, ConnectedAccountsFilter, GatekeeperVendorFilter, GadgetMetadata, BlueprintMetadata, BlueprintLibrarySummary, BlueprintSource, BlueprintUserSummary, BLUEPRINT_SCREENSHOT_R2_PREFIX, GatekeeperVendorInfo, BlueprintOutput, OutputSummary, WorkpieceId, ListOutputsResult, AUTH_ERROR_CODES, createAuthError } from '@gadgets/workshop-shared/api';
 import { Gatekeeper, GatekeeperUser, GatekeeperUserVerifier, GatekeeperVendor, AccountDescription, VendorDescription, GatekeeperConnectCallback, SupportedResource, ResourceConfiguratorFrame, AppUiContext, GatekeeperUiFrame } from "@gadgets/workshop-shared/gatekeeper";
 import { shouldAutoProvisionAccount, ambientGatekeeperMode } from "./provisioning-policy.js";
 import { CloudflareGatekeeperUser } from "@gadgets/workshop-shared/cloudflare-gatekeeper";
@@ -12,6 +12,7 @@ import type { AdminSettings } from "./admin-settings.js";
 import { isReservedBlueprintKey, readBlueprintKvRecord } from "./blueprint-archive.js";
 import { filterEnabledResources, isResourceDisabled, readAdminConfig } from "./admin-config.js";
 import { buildGatekeeperVendorMap } from "./auth/auth-vendors.js";
+import { getSharedModelAdmin } from "./admin-users.js";
 
 const logger = createWorkshopLogger("workshop.user");
 
@@ -277,6 +278,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   private storage: UserStorage;
   private vendors: Map<string, Service<GatekeeperVendor>>;
   private adminSettings: DurableObjectNamespace<AdminSettings>;
+  private users: DurableObjectNamespace<UserDurableObject>;
 
   constructor(ctx: DurableObjectState, env: Cloudflare.Env) {
     super(ctx, env);
@@ -291,6 +293,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
     this.storage = makeUserStorage(ctx.storage);
     this.adminSettings = this.ctx.exports.AdminSettings;
+    this.users = this.ctx.exports.UserDurableObject;
 
     this.vendors = buildGatekeeperVendorMap(env);
   }
@@ -502,26 +505,114 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
     this.storage.profile.put(profile);
   }
 
-  async listModels(): Promise<AiChatAuthorInfo[]> {
-    let result: AiChatAuthorInfo[] = [];
+  #sharedModelAdmin(): string | undefined {
+    return getSharedModelAdmin(this.env);
+  }
 
-    // When AI Gateway mode is active, include all suggested models for enabled providers.
+  #isSharedModelAdmin(): boolean {
+    let sharedAdmin = this.#sharedModelAdmin();
+    return sharedAdmin !== undefined && sharedAdmin === this.ctx.id.name;
+  }
+
+  #sharedModelUser(): DurableObjectStub<UserDurableObject> | undefined {
+    let sharedAdmin = this.#sharedModelAdmin();
+    if (!sharedAdmin || sharedAdmin === this.ctx.id.name) return undefined;
+    return this.users.getByName(sharedAdmin);
+  }
+
+  // Internal Worker RPC used only to project the shared administrator's model identities. It
+  // deliberately returns no configuration or credential fields.
+  async listOwnModelProfilesForSharing(): Promise<AiChatAuthorInfo[]> {
+    if (!this.storage.created.get()) return [];
+    return Array.from(this.storage.aiModels.list(), model => model.profile);
+  }
+
+  // Internal Worker RPC used by model execution paths. AuthenticatedApi never forwards this
+  // method, so another user cannot retrieve the shared administrator's credentials.
+  async getOwnModelForSharing(id: string): Promise<UserAiModelRecord | null> {
+    if (!this.storage.created.get()) return null;
+    return this.storage.aiModels.get(id) ?? null;
+  }
+
+  // Internal compatibility lookup for bindings written before they stored a stable profile ID.
+  // It searches only this user's own records and returns a result only when the legacy provider
+  // identity identifies one record unambiguously; it must never fall through to shared models.
+  async findOwnModelForLegacyBinding(
+      provider: AiModelConfig["provider"], providerModelId: string,
+      displayName: string): Promise<UserAiModelRecord | null> {
+    if (!this.storage.created.get()) return null;
+
+    let idMatch = this.storage.aiModels.get(providerModelId);
+    if (idMatch?.config.provider === provider && idMatch.config.model === providerModelId) {
+      return idMatch;
+    }
+
+    let candidates = Array.from(this.storage.aiModels.list()).filter(model =>
+      model.config.provider === provider && model.config.model === providerModelId);
+    let nameMatches = candidates.filter(model => model.profile.name === displayName);
+    if (nameMatches.length === 1) return nameMatches[0];
+    return candidates.length === 1 ? candidates[0] : null;
+  }
+
+  async #listSharedModelProfiles(): Promise<AiChatAuthorInfo[]> {
+    let sharedUser = this.#sharedModelUser();
+    return sharedUser ? await sharedUser.listOwnModelProfilesForSharing() : [];
+  }
+
+  async #resolveModel(id: string): Promise<UserAiModelRecord | undefined> {
+    // Deployment-managed gateway models remain authoritative on ID conflicts.
+    let gatewayModel = getAiGatewayConfig(this.env)?.resolveModel(id);
+    if (gatewayModel) return gatewayModel;
+
+    // A user's own record intentionally overrides an administrator-shared record with the same ID.
+    let ownModel = this.storage.aiModels.get(id);
+    if (ownModel) return ownModel;
+
+    let sharedUser = this.#sharedModelUser();
+    return (await sharedUser?.getOwnModelForSharing(id)) ?? undefined;
+  }
+
+  async listModelManagement(): Promise<AiModelManagementEntry[]> {
+    let result: AiModelManagementEntry[] = [];
     let gwConfig = getAiGatewayConfig(this.env);
-    let gwModelIds = new Set<string>();
+    let reservedIds = new Set<string>();
     if (gwConfig) {
-      for (let entry of gwConfig.getModelList()) {
-        result.push(entry);
-        gwModelIds.add(entry.id);
+      for (let profile of gwConfig.getModelList()) {
+        result.push({profile, scope: "builtin", canManage: false});
+        reservedIds.add(profile.id);
       }
     }
 
-    // Also include user-configured models, skipping any that duplicate a gateway model.
-    for (let model of this.storage.aiModels.list()) {
-      if (!gwModelIds.has(model.profile.id)) {
-        result.push(model.profile);
+    let ownModels = Array.from(this.storage.aiModels.list());
+    let ownById = new Map(ownModels.map(model => [model.profile.id, model]));
+    let emittedOwnIds = new Set<string>();
+    if (!this.#isSharedModelAdmin()) {
+      for (let profile of await this.#listSharedModelProfiles()) {
+        if (reservedIds.has(profile.id)) continue;
+        let ownModel = ownById.get(profile.id);
+        result.push(ownModel
+          ? {profile: ownModel.profile, scope: "personal", canManage: true}
+          : {profile, scope: "shared", canManage: false});
+        if (ownModel) emittedOwnIds.add(profile.id);
+        reservedIds.add(profile.id);
+      }
+    }
+
+    let ownScope = this.#isSharedModelAdmin() ? "shared" as const : "personal" as const;
+    for (let model of ownModels) {
+      if (!reservedIds.has(model.profile.id) && !emittedOwnIds.has(model.profile.id)) {
+        result.push({profile: model.profile, scope: ownScope, canManage: true});
       }
     }
     return result;
+  }
+
+  async listModels(): Promise<AiChatAuthorInfo[]> {
+    return (await this.listModelManagement()).map(model => model.profile);
+  }
+
+  async getOwnModel(id: string): Promise<AiModelConfiguration | null> {
+    return this.storage.aiModels.get(id) ?? null;
   }
 
   async addModel(profile: AiChatAuthorInfo, config: AiModelConfig): Promise<void> {
@@ -532,6 +623,21 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
     profile.type = "agent";
     this.storage.aiModels.put({profile, config});
+  }
+
+  async updateModel(
+      id: string, profile: AiChatAuthorInfo, config: AiModelConfig): Promise<void> {
+    if (!this.storage.aiModels.get(id)) {
+      throw new Error(`未找到你自己的模型：${id}`);
+    }
+    if (profile.id !== id) {
+      throw new Error("编辑模型时不能更改模型 ID。");
+    }
+    let gwConfig = getAiGatewayConfig(this.env);
+    if (gwConfig && !gwConfig.providers.has(config.provider)) {
+      throw new Error(`AI Gateway 模式下无法使用提供商“${config.provider}”。`);
+    }
+    this.storage.aiModels.put({profile: {...profile, type: "agent"}, config});
   }
 
   async deleteModel(id: string): Promise<void> {
@@ -545,34 +651,35 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       }
     }
 
+    if (!this.storage.aiModels.get(id)) {
+      if ((await this.#listSharedModelProfiles()).some(profile => profile.id === id)) {
+        throw new Error("管理员共享模型不能由普通用户删除。");
+      }
+      throw new Error(`未找到你自己的模型：${id}`);
+    }
     this.storage.aiModels.delete(id);
   }
 
   async setQuickModel(id: string | null): Promise<void> {
+    if (id !== null && !(await this.#resolveModel(id))) {
+      throw new Error(`未找到模型：${id}`);
+    }
     this.storage.quickModel.put(id);
   }
 
   async getQuickModel(): Promise<null | string> {
     let result = this.storage.quickModel.get();
-    if (result && this.storage.aiModels.get(result)) {
-      return result;
-    } else {
-      return null;
-    }
+    return result && await this.#resolveModel(result) ? result : null;
   }
 
   async getPreferredModel(): Promise<string | null> {
-    return this.storage.preferredModel.get();
+    let result = this.storage.preferredModel.get();
+    return result && await this.#resolveModel(result) ? result : null;
   }
 
   async setPreferredModel(id: string | null): Promise<void> {
-    if (id !== null) {
-      // Validate that the model exists in the user's configured models or as a gateway model.
-      let gwConfig = getAiGatewayConfig(this.env);
-      let exists = !!this.storage.aiModels.get(id) || !!gwConfig?.resolveModel(id);
-      if (!exists) {
-        throw new Error(`未找到模型：${id}`);
-      }
+    if (id !== null && !(await this.#resolveModel(id))) {
+      throw new Error(`未找到模型：${id}`);
     }
     this.storage.preferredModel.put(id);
   }
@@ -670,13 +777,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       profile: this.storage.profile.get()
     };
     if (modelId) {
-      // In AI Gateway mode, resolve gateway models first.
-      if (gwConfig) {
-        result.aiModel = gwConfig.resolveModel(modelId);
-      }
-      if (!result.aiModel) {
-        result.aiModel = this.storage.aiModels.get(modelId);
-      }
+      result.aiModel = await this.#resolveModel(modelId);
       if (!result.aiModel) throw new Error(`未找到模型：${modelId}`);
     }
 
@@ -687,7 +788,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
     } else {
       let quickModelId = this.storage.quickModel.get();
       if (quickModelId) {
-        let quickModel = this.storage.aiModels.get(quickModelId);
+        let quickModel = await this.#resolveModel(quickModelId);
         if (quickModel) {
           result.quickModel = quickModel.config;
         }

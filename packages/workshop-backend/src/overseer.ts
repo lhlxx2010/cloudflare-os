@@ -7467,8 +7467,8 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async newAiModelGatekeeper(modelId: string): Promise<GatekeeperClient<any>> {
     let chatMeta = await this.clientUser.getChatContext(modelId);
     let props: LanguageModelGatekeeperProps = {
-      displayName: chatMeta.aiModel!.profile.name,
-      config: chatMeta.aiModel!.config,
+      userId: chatMeta.profile.id,
+      modelId,
       initiator: {
         type: "gadget",
         id: chatMeta.profile.id,

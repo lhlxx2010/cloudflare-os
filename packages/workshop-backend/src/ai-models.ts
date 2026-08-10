@@ -20,6 +20,7 @@ import { AiChatAuthorInfo, AiModelConfig, SUGGESTED_MODELS, WORKERS_AI_OUTPUT_LI
 import { AiGatewayConfig, getAiGatewayConfig, type AiGatewayLogRoute } from "./ai-gateway.js";
 import { completeText } from "./ai-invoke.js";
 import { bridgePdfAttachments } from "./chat-attachment-pdf.js";
+import type { UserAiModelRecord, UserDurableObject } from "./user.js";
 
  // Routing to bill a user's own Cloudflare account for inference (BYOK path once the free tier is
  // exhausted). Defined here to avoid a backend->ai-gateway-billing type import cycle at runtime.
@@ -595,7 +596,17 @@ function getModelDirect(config: AiModelConfig, sessionAffinity?: string): ModelH
 
 // =======================================================================================
 
+/** Durable props for a Gadget-bound language model capability. */
 export type LanguageModelGatekeeperProps = {
+  // Resolve the model through this user on every session so shared administrator configuration
+  // and key changes take effect without rewriting every existing Gadget binding.
+  userId: string,
+  modelId: string,
+  initiator: AiChatAuthorInfo,
+  metadata?: GatewayMetadataContext,
+} | {
+  // Legacy props written before model bindings became reference-based. Retained so existing local
+  // Durable Objects can still start; newly-created bindings never persist model credentials.
   displayName: string,
   config: AiModelConfig,
   initiator: AiChatAuthorInfo,
@@ -605,15 +616,54 @@ export type LanguageModelGatekeeperProps = {
 export class LanguageModelGatekeeper
     extends DurableObject<Cloudflare.Env, LanguageModelGatekeeperProps>
     implements Gatekeeper<LanguageModelBinding> {
+  async #resolveModel(): Promise<UserAiModelRecord> {
+    if ("config" in this.ctx.props) {
+      // A legacy binding has no stable profile ID. Migrate it only when the creating user's own
+      // records contain one unambiguous provider-model match, then remember that stable ID. Never
+      // resolve through the user's merged catalog: doing so could silently switch an old personal
+      // binding to an administrator-shared model with the same ID.
+      if (this.env.SHARED_MODEL_ADMIN) {
+        let user: DurableObjectStub<UserDurableObject> =
+            this.ctx.exports.UserDurableObject.getByName(this.ctx.props.initiator.id);
+        let stableId = this.ctx.storage.kv.get<string>("legacyModelProfileId");
+        let current = stableId ? await user.getOwnModelForSharing(stableId) : null;
+        if (!current && !stableId) {
+          current = await user.findOwnModelForLegacyBinding(
+            this.ctx.props.config.provider,
+            this.ctx.props.config.model,
+            this.ctx.props.displayName,
+          );
+          if (current) {
+            this.ctx.storage.kv.put("legacyModelProfileId", current.profile.id);
+          }
+        }
+        if (current) return current;
+      }
+      return {
+        profile: {
+          type: "agent",
+          id: this.ctx.props.config.model,
+          name: this.ctx.props.displayName,
+        },
+        config: this.ctx.props.config,
+      };
+    }
+
+    let user: DurableObjectStub<UserDurableObject> =
+        this.ctx.exports.UserDurableObject.getByName(this.ctx.props.userId);
+    let context = await user.getChatContext(this.ctx.props.modelId);
+    if (!context.aiModel) throw new Error(`未找到模型：${this.ctx.props.modelId}`);
+    return context.aiModel;
+  }
+
   async describe(): Promise<ResourceDescription> {
-    let modelConfig = this.ctx.props.config;
-    let displayName = this.ctx.props.displayName;
+    let model = await this.#resolveModel();
 
     return {
       // TODO: Decide if we need real URLs or if `url` should stop being part of the description.
-      url: `http://models.local/${modelConfig.provider}/${modelConfig.model}`,
+      url: `http://models.local/${model.config.provider}/${model.config.model}`,
 
-      title: displayName,
+      title: model.profile.name,
       snippet: "An AI large language model.",
 
       suggestedBindingName: "LLM",
@@ -632,7 +682,8 @@ export class LanguageModelGatekeeper
 
   async startSession(approvalQueue: RpcStub<ApprovalQueue>)
       : Promise<LanguageModelBinding> {
-    let model = getModel(this.env, this.ctx.props.config, this.ctx.props.initiator, {
+    let record = await this.#resolveModel();
+    let model = getModel(this.env, record.config, this.ctx.props.initiator, {
       metadata: this.ctx.props.metadata,
     });
     return new LanguageModelBindingImpl(model);

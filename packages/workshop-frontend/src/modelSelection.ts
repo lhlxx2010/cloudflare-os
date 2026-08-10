@@ -29,6 +29,13 @@ export function persistSelectedModel(modelId: string | null): void {
   );
 }
 
+// Model selection is browser-local rather than account-scoped. Clear it after a new account's
+// onboarding so an earlier account's explicit "No agent" or model choice cannot leak across the
+// login boundary; the normal picker initialization will then choose the first available model.
+export function clearStoredSelectedModel(): void {
+  localStorage.removeItem(LAST_SELECTED_MODEL_KEY);
+}
+
 export function toModelSelectValue(modelId: string | null): string {
   return modelId ?? NO_AGENT_OPTION_VALUE;
 }

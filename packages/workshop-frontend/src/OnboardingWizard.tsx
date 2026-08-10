@@ -1,19 +1,13 @@
 import { logRpcFailure } from './rpcErrors'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { useAuthenticatedApi } from './AuthContext'
-import {
-  AiChatAuthorInfo,
-  AiGatewayInfo,
-} from '@gadgets/workshop-shared/api'
 import {
   VendorDescription,
 } from '@gadgets/workshop-shared/gatekeeper'
 import {
   Camera,
   ArrowRight,
-  Check,
-  Plus,
   PlugsConnected,
   Sparkle,
   UsersThree,
@@ -21,8 +15,6 @@ import {
   Plugs,
   Hexagon,
 } from '@phosphor-icons/react'
-import AddModelModal from './AddModelModal'
-import { persistSelectedModel } from './modelSelection'
 import { logoComponents } from './components/ConnectionLogos'
 import { getVendorIconBackground } from './components/vendorColors'
 import { compressAvatar, avatarBlobUrl } from './avatarUtils'
@@ -32,10 +24,11 @@ import { useSiteName } from './ServerConfigContext'
 import SiteLogo from './components/SiteLogo'
 import { useDocumentTitle } from './useDocumentTitle'
 import { AccountsSubscriberAdapter } from './accountsSubscriber'
+import { clearStoredSelectedModel } from './modelSelection'
 
 // ─── constants ──────────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS_WITH_CONNECTIONS = 4
+const TOTAL_STEPS_WITH_CONNECTIONS = 3
 
 // Maps RPC vendor IDs to logo keys in our logoComponents map
 const VENDOR_LOGO_MAP: Record<string, string> = {
@@ -69,7 +62,7 @@ export default function OnboardingWizard({
   useDocumentTitle('设置')
 
   // Wizard state
-  const [step, setStep] = useState(0) // 0 = avatar, 1 = model, 2 = connections
+  const [step, setStep] = useState(0) // 0 = profile, 1 = connections, 2 = showcase
   const [mounted, setMounted] = useState(false)
   const [finishing, setFinishing] = useState(false)
 
@@ -80,13 +73,6 @@ export default function OnboardingWizard({
   const [avatarData, setAvatarData] = useState<Uint8Array | null>(null)
   const [avatarProcessing, setAvatarProcessing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Model state
-  const [models, setModels] = useState<AiChatAuthorInfo[]>([])
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null)
-  const [aiConfig, setAiConfig] = useState<AiGatewayInfo | null>(null)
-  const [addModelOpen, setAddModelOpen] = useState(false)
-  const [modelsLoading, setModelsLoading] = useState(true)
 
   // Connections state
   const [vendors, setVendors] = useState<VendorEntry[]>([])
@@ -113,30 +99,6 @@ export default function OnboardingWizard({
       setOriginalDisplayName(currentUser.name)
     }
   }, [currentUser])
-
-  // Load models + AI config
-  const fetchModels = useCallback(async () => {
-    try {
-      const [modelList, cfg] = await Promise.all([
-        authenticatedApi.listModels(),
-        authenticatedApi.getAiConfig(),
-      ])
-      setModels(modelList)
-      setAiConfig(cfg)
-      // Default to the first model in the list
-      if (modelList.length > 0) {
-        setSelectedModelId((prev) => prev ?? modelList[0].id)
-      }
-    } catch (err) {
-      console.error('Failed to load models:', err)
-    } finally {
-      setModelsLoading(false)
-    }
-  }, [authenticatedApi])
-
-  useEffect(() => {
-    fetchModels()
-  }, [fetchModels])
 
   // Load vendors and subscribe to connected accounts.
   // We use a url→vendorId lookup map (built from listGatekeeperVendors) so the
@@ -296,10 +258,8 @@ export default function OnboardingWizard({
         await authenticatedApi.setAvatar(avatarData)
         if (currentUser?.id) invalidateAvatarCache(currentUser.id)
       }
-      // selectedModelId is null when the user chose "No agent" or didn't pick one
-      await authenticatedApi.setPreferredModel(selectedModelId)
-      persistSelectedModel(selectedModelId)
       await authenticatedApi.completeOnboarding()
+      clearStoredSelectedModel()
       onComplete()
     } catch (err) {
       console.error('Failed to complete onboarding:', err)
@@ -479,92 +439,9 @@ export default function OnboardingWizard({
               </div>
             </div>
 
-            {/* ── Step 1: Model selection ───────────────────────────────────── */}
+            {/* ── Step 1: Connections ───────────────────────────────────────── */}
+            {showConnectionsStep && (
             <div className="w-full flex-shrink-0 p-8 min-h-[420px]">
-              <div>
-                <h2 className="text-lg font-medium text-kumo-default mb-1">
-                  选择模型
-                </h2>
-                <p className="text-sm text-kumo-subtle mb-6">
-                  选择你默认使用的 AI 模型
-                </p>
-
-                {modelsLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="w-6 h-6 border-2 border-kumo-brand border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                      {models.map((model) => (
-                        <button
-                          key={model.id}
-                          onClick={() => setSelectedModelId(model.id)}
-                          className={`
-                            w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left
-                            transition-all duration-150
-                            ${selectedModelId === model.id
-                              ? 'border-kumo-brand bg-kumo-brand/5 ring-1 ring-kumo-brand/20'
-                              : 'border-kumo-line hover:border-kumo-fill hover:bg-kumo-tint'
-                            }
-                          `}
-                        >
-                          <div
-                            className={`
-                              w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold
-                              transition-colors duration-150
-                              ${selectedModelId === model.id
-                                ? 'bg-kumo-brand text-kumo-inverse'
-                                : 'bg-kumo-tint text-kumo-subtle'
-                              }
-                            `}
-                          >
-                            {model.name[0]?.toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-kumo-default truncate">
-                              {model.name}
-                            </p>
-                            <p className="text-xs text-kumo-subtle truncate">
-                              {model.id}
-                            </p>
-                          </div>
-                          {selectedModelId === model.id && (
-                            <Check
-                              size={18}
-                              weight="bold"
-                              className="text-kumo-brand flex-shrink-0"
-                            />
-                          )}
-                        </button>
-                      ))}
-
-                      {models.length === 0 && (
-                        <div className="text-center py-8">
-                          <p className="text-sm text-kumo-subtle mb-1">
-                            尚未配置模型
-                          </p>
-                          <p className="text-xs text-kumo-inactive">
-                            添加一个模型即可开始使用
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => setAddModelOpen(true)}
-                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kumo-subtle border border-dashed border-kumo-line rounded-xl hover:border-kumo-fill hover:text-kumo-default hover:bg-kumo-tint transition-colors"
-                    >
-                      <Plus size={14} weight="bold" />
-                      添加新模型…
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* ── Step 2: Connections ───────────────────────────────────────── */}
-            <div className={`w-full flex-shrink-0 p-8 min-h-[420px] ${showConnectionsStep ? '' : 'hidden'}`}>
               <div>
                 <h2 className="text-lg font-medium text-kumo-default mb-1">
                   连接你的服务
@@ -646,6 +523,7 @@ export default function OnboardingWizard({
                 </p>
               </div>
             </div>
+            )}
 
             {/* ── Final step: What you can do ────────────────────────────────── */}
             <div className="w-full flex-shrink-0 p-8 min-h-[420px]">
@@ -709,19 +587,6 @@ export default function OnboardingWizard({
       </div>
 
     </div>
-
-    {/* Add Model Modal — outside the wizard's inner content so it's not
-        clipped by overflow-hidden on the sliding panel */}
-    <AddModelModal
-      visible={addModelOpen}
-      onCancel={() => setAddModelOpen(false)}
-      onSuccess={() => {
-        setAddModelOpen(false)
-        fetchModels()
-      }}
-      authenticatedApi={authenticatedApi}
-      aiConfig={aiConfig}
-    />
     </>
   )
 }

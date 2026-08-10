@@ -9,6 +9,10 @@ declare global {
       // Deployment-wide admin usernames.
       ADMINS?: string[];
 
+      // Administrator account whose own AI model configurations are shared with all users. The
+      // username must also appear in ADMINS. Credentials remain in that user's Durable Object.
+      SHARED_MODEL_ADMIN?: string;
+
       // Workers AI binding (injected by generate-wrangler-prod / run-dev-server; not in base wrangler.jsonc).
       WORKERS_AI: Ai;
 

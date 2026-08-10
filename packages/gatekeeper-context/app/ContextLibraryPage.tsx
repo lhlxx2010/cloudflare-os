@@ -1,4 +1,4 @@
-import { Button, Dialog, DropdownMenu, Input, InputArea, useKumoToastManager } from "@cloudflare/kumo";
+import { Button, Dialog, DropdownMenu, Input, InputArea, Meter, useKumoToastManager } from "@cloudflare/kumo";
 import {
   BookOpen,
   Buildings,
@@ -71,6 +71,14 @@ import { yaml } from "@codemirror/lang-yaml";
 import { tags as t } from "@lezer/highlight";
 import type { Extension } from "@codemirror/state";
 import { useContextApi, usePresentWhileOpen, useResolvedThemeMode } from "./bridge";
+import {
+  createUploadBatch,
+  safeUploadPath,
+  transitionUploadFile,
+  uploadBatchTone,
+  type UploadBatch,
+  type UploadFileStatus,
+} from "./upload-progress";
 import { extractDescription } from "../src/description-extractors";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -2178,6 +2186,9 @@ function CollectionEditor({
   const [canWrite, setCanWrite] = useState(false);
   const [supportsGitCollections, setSupportsGitCollections] = useState(false);
   const [refreshingSource, setRefreshingSource] = useState(false);
+  const [uploadBatch, setUploadBatch] = useState<UploadBatch | null>(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const uploadBusyRef = useRef(false);
 
   // Tree ⋮ deletes route through the same in-app confirmation dialog the document toolbar uses,
   // rather than a native confirm() that breaks out of the app chrome.
@@ -2445,33 +2456,60 @@ function CollectionEditor({
   };
 
   const uploadFiles = async (files: FileList) => {
+    if (uploadBusyRef.current || files.length === 0) return;
+    uploadBusyRef.current = true;
+    setUploadBusy(true);
+    const selectedFiles = Array.from(files);
+    const selectedUploads = selectedFiles.map((file, id) => ({
+      file,
+      id,
+      path: (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name,
+    }));
+    setUploadBatch(createUploadBatch(selectedUploads.map(({ path }) => path)));
+
     let ok = 0,
       failed = 0;
-    await runWithConcurrency(Array.from(files), 6, async (file) => {
-      const rel = (file as any).webkitRelativePath || file.name;
-      // Derive the type from the path (its extension), not the browser-reported file.type, so the
-      // stored encoding matches how the editor and the agent read-path interpret it (both go by
-      // extension). Trusting file.type caused e.g. .js to be stored base64 but shown as text.
-      const ct = contentTypeFromPath(rel);
-      try {
-        const isText = isTextContentType(ct);
-        const body = isText ? await file.text() : await fileToBase64(file);
-        await context.putContextDocument(collectionId, rel, {
-          // Self-describing files supply their own description; others start blank.
-          description: extractDescription(ct, body) ?? "",
-          body,
-          contentType: ct,
-        });
-        ok++;
-      } catch {
-        failed++;
-      }
-    });
-    toasts.add({
-      title: `已上传${pluralize(ok, "文件")}${failed ? `，${failed} 个失败` : ""}`,
-      variant: failed ? "error" : "success",
-    });
-    await loadDocs();
+    try {
+      await runWithConcurrency(selectedUploads, 6, async ({ file, id, path }) => {
+        // Mark the worker active before it starts reading the local file or sending the RPC.
+        setUploadBatch((current) =>
+          current ? transitionUploadFile(current, id, "uploading") : current,
+        );
+        try {
+          // Derive the type from the path (its extension), not the browser-reported file.type, so the
+          // stored encoding matches how the editor and the agent read-path interpret it (both go by
+          // extension). Trusting file.type caused e.g. .js to be stored base64 but shown as text.
+          const ct = contentTypeFromPath(path);
+          const isText = isTextContentType(ct);
+          const body = isText ? await file.text() : await fileToBase64(file);
+          await context.putContextDocument(collectionId, path, {
+            // Self-describing files supply their own description; others start blank.
+            description: extractDescription(ct, body) ?? "",
+            body,
+            contentType: ct,
+          });
+          ok++;
+          setUploadBatch((current) =>
+            current ? transitionUploadFile(current, id, "success") : current,
+          );
+        } catch {
+          failed++;
+          setUploadBatch((current) =>
+            current ? transitionUploadFile(current, id, "failure") : current,
+          );
+        }
+      });
+      await loadDocs();
+      toasts.add({
+        title: failed
+          ? `上传完成：成功 ${ok} 个，失败 ${failed} 个`
+          : `上传完成：成功 ${pluralize(ok, "文件")}`,
+        variant: failed ? "error" : "success",
+      });
+    } finally {
+      uploadBusyRef.current = false;
+      setUploadBusy(false);
+    }
   };
 
   const extraFolders = useMemo(() => [...pendingFolders], [pendingFolders]);
@@ -2659,6 +2697,7 @@ function CollectionEditor({
                 <WorkshopIconButton
                   aria-label="添加"
                   title="添加文件或文件夹"
+                  disabled={uploadBusy}
                   className="!h-6 !w-6 text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default data-[popup-open]:bg-kumo-tint data-[popup-open]:text-kumo-default"
                 >
                   <Plus size={14} weight="bold" />
@@ -2683,6 +2722,7 @@ function CollectionEditor({
               <DropdownMenu.Item
                 icon={<UploadSimple size={13} className="mr-2" />}
                 onClick={() => fileInputRef.current?.click()}
+                disabled={uploadBusy}
                 className={MENU_ITEM}
               >
                 上传文件
@@ -2690,6 +2730,7 @@ function CollectionEditor({
               <DropdownMenu.Item
                 icon={<Folder size={13} className="mr-2" />}
                 onClick={() => dirInputRef.current?.click()}
+                disabled={uploadBusy}
                 className={MENU_ITEM}
               >
                 上传文件夹
@@ -2699,6 +2740,7 @@ function CollectionEditor({
               ref={fileInputRef}
               type="file"
               multiple
+              disabled={uploadBusy}
               className="hidden"
               onChange={(e) => {
                 if (e.target.files?.length) uploadFiles(e.target.files);
@@ -2709,6 +2751,7 @@ function CollectionEditor({
               ref={dirInputRef}
               type="file"
               multiple
+              disabled={uploadBusy}
               // @ts-expect-error non-standard directory upload attribute
               webkitdirectory=""
               className="hidden"
@@ -2720,6 +2763,128 @@ function CollectionEditor({
               </>
             )}
           </div>
+          {uploadBatch && (() => {
+            const tone = uploadBatchTone(uploadBatch);
+            const failed = uploadBatch.failed;
+            const title = tone === "uploading"
+              ? "正在上传"
+              : tone === "success"
+                ? "上传完成"
+                : uploadBatch.succeeded > 0
+                  ? "上传完成，部分文件失败"
+                  : "上传失败";
+            const indicatorClassName = tone === "success"
+              ? "from-kumo-success via-kumo-success to-kumo-success"
+              : tone === "error"
+                ? "from-kumo-danger via-kumo-danger to-kumo-danger"
+                : undefined;
+            const statusPresentation: Record<UploadFileStatus, {
+              label: string;
+              className: string;
+              icon: ReactElement;
+            }> = {
+              queued: {
+                label: "等待中",
+                className: "text-kumo-inactive",
+                icon: <Clock size={12} />,
+              },
+              uploading: {
+                label: "上传中",
+                className: "text-kumo-info",
+                icon: <UploadSimple size={12} />,
+              },
+              success: {
+                label: "成功",
+                className: "text-kumo-success",
+                icon: <Check size={12} weight="bold" />,
+              },
+              failure: {
+                label: "失败",
+                className: "text-kumo-danger",
+                icon: <X size={12} weight="bold" />,
+              },
+            };
+            return (
+              <div
+                className="mx-3.5 mb-2 rounded-lg border border-kumo-line bg-kumo-elevated px-3 py-2.5"
+                aria-live="polite"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                      tone === "success"
+                        ? "bg-kumo-success-tint text-kumo-success"
+                        : tone === "error"
+                          ? "bg-kumo-danger-tint text-kumo-danger"
+                          : "bg-kumo-info-tint text-kumo-info"
+                    }`}
+                  >
+                    {tone === "success" ? (
+                      <Check size={12} weight="bold" />
+                    ) : tone === "error" ? (
+                      <X size={12} weight="bold" />
+                    ) : (
+                      <UploadSimple size={12} weight="bold" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1 text-[13px] font-medium leading-[18px] tracking-[-0.25px] text-kumo-default">
+                    {title}
+                  </span>
+                  {tone !== "uploading" && (
+                    <WorkshopIconButton
+                      aria-label="关闭上传状态"
+                      title="关闭"
+                      onClick={() => setUploadBatch(null)}
+                      className="!-mr-1 !h-6 !w-6"
+                    >
+                      <X size={13} />
+                    </WorkshopIconButton>
+                  )}
+                </div>
+                <Meter
+                  label="已处理"
+                  value={uploadBatch.completed}
+                  max={uploadBatch.total}
+                  customValue={`${uploadBatch.completed} / ${uploadBatch.total} 个文件`}
+                  indicatorClassName={indicatorClassName}
+                />
+                <p
+                  className={`mb-0 mt-2 truncate text-[12px] leading-4 ${
+                    failed > 0 ? "text-kumo-danger" : "text-kumo-subtle"
+                  }`}
+                >
+                  {failed > 0
+                    ? `成功 ${uploadBatch.succeeded} 个，失败 ${failed} 个`
+                    : tone === "uploading"
+                      ? `已成功上传 ${uploadBatch.succeeded} 个文件`
+                      : `已成功上传 ${pluralize(uploadBatch.succeeded, "文件")}`}
+                </p>
+                <div className="ctx-scroll mt-2 max-h-28 overflow-y-auto rounded-md border border-kumo-line bg-kumo-base">
+                  {uploadBatch.files.map((file) => {
+                    const status = statusPresentation[file.status];
+                    const displayPath = safeUploadPath(file.path);
+                    return (
+                      <div
+                        key={file.id}
+                        className="flex h-7 items-center gap-2 border-b border-kumo-line px-2 last:border-b-0"
+                      >
+                        <span className={`shrink-0 ${status.className}`}>{status.icon}</span>
+                        <span
+                          className="min-w-0 flex-1 truncate text-[12px] leading-4 text-kumo-default"
+                          title={displayPath}
+                        >
+                          {displayPath}
+                        </span>
+                        <span className={`shrink-0 text-[11px] leading-4 ${status.className}`}>
+                          {status.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
           <div className="ctx-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3.5 pb-6 pt-0.5">
             {loading ? (
               <p className="px-2 py-2 text-[13px] text-kumo-subtle">正在加载…</p>

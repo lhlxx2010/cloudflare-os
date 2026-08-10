@@ -5,8 +5,7 @@ import { useAuthenticatedApi } from '../AuthContext'
 import {
   AiChatAuthorInfo,
   AiGatewayInfo,
-  AiModelProvider,
-  SUGGESTED_MODELS,
+  AiModelManagementEntry,
 } from '@gadgets/workshop-shared/api'
 import {
   Plus,
@@ -14,6 +13,7 @@ import {
   Lightning,
   MagnifyingGlass,
   DotsThreeVertical,
+  PencilSimple,
 } from '@phosphor-icons/react'
 import AddModelModal from '../AddModelModal'
 import { useDocumentTitle } from '../useDocumentTitle'
@@ -23,8 +23,6 @@ export const Route = createFileRoute('/providers')({ component: ProvidersPage })
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const PROVIDER_ORDER = Object.keys(SUGGESTED_MODELS) as AiModelProvider[]
-
 const PRIMARY_BTN =
   'press inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-kumo-brand px-3.5 text-[13px] font-medium tracking-[-0.25px] text-white transition-colors hover:bg-kumo-brand-hover'
 
@@ -33,18 +31,23 @@ const PRIMARY_BTN =
 // Rows mirror the Blueprints list: a clickable row (here, clicking sets/clears the quick model)
 // plus a kebab for the rest. The whole row is the primary affordance, so it shows a pointer.
 function ModelRow({
-  model,
+  entry,
   isQuick,
-  isBuiltIn,
+  onEdit,
   onDelete,
   onSetQuick,
 }: {
-  model: AiChatAuthorInfo
+  entry: AiModelManagementEntry
   isQuick: boolean
-  isBuiltIn: boolean
+  onEdit: () => void
   onDelete: () => void
   onSetQuick: () => void
 }) {
+  const { profile: model, scope, canManage } = entry
+  const scopeLabel = scope === 'builtin'
+    ? '内置'
+    : scope === 'shared' ? '全局共享' : '我的'
+
   return (
     <div
       role="button"
@@ -70,11 +73,9 @@ function ModelRow({
           <span className="truncate text-sm font-medium tracking-[-0.25px] text-kumo-default">
             {model.name}
           </span>
-          {isBuiltIn && (
-            <span className="shrink-0 rounded-full bg-kumo-tint px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.4px] text-kumo-subtle">
-              内置
-            </span>
-          )}
+          <span className="shrink-0 rounded-full bg-kumo-tint px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.4px] text-kumo-subtle">
+            {scopeLabel}
+          </span>
           {isQuick && (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[rgba(29,78,216,0.10)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.4px] text-kumo-brand">
               <Lightning size={9} weight="fill" />
@@ -105,7 +106,13 @@ function ModelRow({
               <Lightning size={13} className="mr-2" weight={isQuick ? 'fill' : 'regular'} />
               {isQuick ? '清除快捷模型' : '设为快捷模型'}
             </DropdownMenu.Item>
-            {!isBuiltIn && (
+            {canManage && (
+              <DropdownMenu.Item onClick={onEdit} className={MENU_ITEM}>
+                <PencilSimple size={13} className="mr-2" />
+                编辑配置
+              </DropdownMenu.Item>
+            )}
+            {canManage && (
               <DropdownMenu.Item variant="danger" onClick={onDelete} className={MENU_ITEM_DANGER}>
                 <Trash size={13} className="mr-2" />
                 删除提供商
@@ -135,20 +142,21 @@ function ProvidersPage() {
 
   const { authenticatedApi } = useAuthenticatedApi()
   const toasts = useKumoToastManager()
-  const [models, setModels] = useState<AiChatAuthorInfo[]>([])
+  const [models, setModels] = useState<AiModelManagementEntry[]>([])
   const [quickModel, setQuickModel] = useState<string | null>(null)
   const [aiConfig, setAiConfig] = useState<AiGatewayInfo | null>(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [editingModelId, setEditingModelId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchAll = async () => {
     setLoadError(false)
     try {
       const [modelList, qm, cfg] = await Promise.all([
-        authenticatedApi.listModels(),
+        authenticatedApi.listModelManagement(),
         authenticatedApi.getQuickModel(),
         authenticatedApi.getAiConfig(),
       ])
@@ -166,12 +174,6 @@ function ProvidersPage() {
   useEffect(() => { fetchAll() }, [authenticatedApi])
 
   const gatewayMode = aiConfig?.enabled === true
-
-  const isBuiltIn = (modelId: string): boolean => {
-    if (!aiConfig?.enabled) return false
-    const enabled = new Set((aiConfig as Extract<AiGatewayInfo, { enabled: true }>).enabledProviders)
-    return PROVIDER_ORDER.some((p) => enabled.has(p) && modelId in SUGGESTED_MODELS[p])
-  }
 
   const handleDelete = async (model: AiChatAuthorInfo) => {
     if (!confirm(`要删除“${model.name}”吗？此操作无法撤销。`)) return
@@ -202,7 +204,7 @@ function ProvidersPage() {
   const filtered = models.filter((m) => {
     if (!search) return true
     const q = search.toLowerCase()
-    return m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q)
+    return m.profile.name.toLowerCase().includes(q) || m.profile.id.toLowerCase().includes(q)
   })
 
   return (
@@ -256,7 +258,7 @@ function ProvidersPage() {
                 <span>
                   <strong className="font-medium text-kumo-default">快捷模型：</strong>{' '}
                   {quickModel
-                    ? `${models.find((m) => m.id === quickModel)?.name ?? quickModel}.`
+                    ? `${models.find((m) => m.profile.id === quickModel)?.profile.name ?? quickModel}.`
                     : '尚未设置。'}{' '}
                   用于生成聊天标题等快速任务。点击模型即可设置。
                 </span>
@@ -298,17 +300,17 @@ function ProvidersPage() {
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-sm text-kumo-inactive">未找到提供商</div>
         ) : (
-          filtered.map((model) => (
+          filtered.map((entry) => (
             <div
-              key={model.id}
-              className={deletingId === model.id ? 'pointer-events-none opacity-50' : ''}
+              key={entry.profile.id}
+              className={deletingId === entry.profile.id ? 'pointer-events-none opacity-50' : ''}
             >
               <ModelRow
-                model={model}
-                isQuick={quickModel === model.id}
-                isBuiltIn={isBuiltIn(model.id)}
-                onDelete={() => handleDelete(model)}
-                onSetQuick={() => handleSetQuick(model.id)}
+                entry={entry}
+                isQuick={quickModel === entry.profile.id}
+                onEdit={() => setEditingModelId(entry.profile.id)}
+                onDelete={() => handleDelete(entry.profile)}
+                onSetQuick={() => handleSetQuick(entry.profile.id)}
               />
             </div>
           ))
@@ -321,6 +323,18 @@ function ProvidersPage() {
         onCancel={() => setSheetOpen(false)}
         onSuccess={() => {
           setSheetOpen(false)
+          fetchAll()
+        }}
+        authenticatedApi={authenticatedApi}
+        aiConfig={aiConfig}
+      />
+
+      <AddModelModal
+        visible={editingModelId !== null}
+        editingModelId={editingModelId}
+        onCancel={() => setEditingModelId(null)}
+        onSuccess={() => {
+          setEditingModelId(null)
           fetchAll()
         }}
         authenticatedApi={authenticatedApi}

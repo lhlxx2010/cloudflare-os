@@ -230,9 +230,10 @@ for (const gk of gatekeepers) {
 
   config.services = config.services || [];
 
-  // For local testing, create an account named "admin" to test admin features.
+  // Default to the conventional local admin account, while allowing a gitignored `.dev.vars`
+  // override to grant admin access to whichever account a developer actually uses.
   config.vars = config.vars || {};
-  config.vars.ADMINS = ["admin"];
+  config.vars.ADMINS = process.env.ADMINS ?? ["admin"];
 
   // Pass through the optional OAuth sign-in / AI Gateway billing env vars from the shell
   // environment, so you can run e.g.
@@ -240,7 +241,7 @@ for (const gk of gatekeepers) {
   // without editing any config files.
   const OPTIONAL_FEATURE_VARS = [
     "DISABLE_PASSWORD_AUTH", "AUTH_GATEKEEPERS", "ENABLE_CLOUDFLARE_LIMITS", "PUBLIC_BASE_URL",
-    "DAILY_LLM_CALL_LIMIT", "MINIMUM_CLOUDFLARE_BALANCE",
+    "DAILY_LLM_CALL_LIMIT", "MINIMUM_CLOUDFLARE_BALANCE", "SHARED_MODEL_ADMIN",
     // Platform AI Gateway — makes the cross-provider model catalog available. The
     // ACCOUNT_ID/API_TOKEN pair is required whenever CF_AI_GATEWAY is set (all inference goes
     // over HTTPS with tokens).

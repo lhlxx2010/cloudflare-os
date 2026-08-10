@@ -1,5 +1,16 @@
 This project is building a platform for "vibe coded" personal applications and AI agents that run inside a strong sandbox.
 
+## Local-only deployment invariant for this fork
+
+This checkout is operated as a local deployment. Work on it must use only `pnpm run-local`,
+`pnpm dev-server`, Wrangler's local development mode, and the local `workerd` runtime. Do not run
+`wrangler deploy`, release upload/promotion scripts, or any other cloud deployment flow. Do not
+enable `--use-workers-ai-binding`, Cloudflare AI Gateway, Cloudflare OAuth, remote Browser bindings,
+or other Cloudflare authorization or paid services; do not request or configure Cloudflare
+credentials. KV, R2, Durable Objects, service bindings, and Browser behavior must use their local
+emulation. Machine-specific values and secrets belong only in the gitignored root `.dev.vars`; the
+local shared-model owner is configured there with `SHARED_MODEL_ADMIN=lhlxx2010`.
+
 The following files are commonly important to reference:
 
 * packages/workshop-shared/node_modules/capnweb/README.md: Explains how to use Cap'n Web RPC, which is used extensively for client-server communications.

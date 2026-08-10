@@ -335,9 +335,25 @@ export interface AuthenticatedApi extends RpcTarget {
   // especially if the gadget is owned by someone else.
   listModels(): Promise<AiChatAuthorInfo[]>;
 
+  /**
+   * List the models shown on the management page, including whether each model is built in,
+   * shared by the deployment administrator, or owned by the current user. This never includes
+   * credentials.
+   */
+  listModelManagement(): Promise<AiModelManagementEntry[]>;
+
+  /** Return one model configuration owned by the current user, including its API token. Shared
+   * administrator models are deliberately never resolved through this method. */
+  getOwnModel(id: string): Promise<AiModelConfiguration | null>;
+
   // Adds a new model to the user's configured set. The ID must be unique among the user's
   // configured models.
   addModel(profile: AiChatAuthorInfo, config: AiModelConfig): Promise<void>;
+
+  /** Update an existing model owned by the current user. `id` and `profile.id` must remain equal
+   * so existing chats and bindings keep referring to the same model; `config.model` is the
+   * independently editable provider model identifier. */
+  updateModel(id: string, profile: AiChatAuthorInfo, config: AiModelConfig): Promise<void>;
 
   // Deletes a configured model.
   deleteModel(id: string): Promise<void>;
@@ -952,6 +968,27 @@ export type AiGatewayInfo = {
   enabledProviders: AiModelProvider[];
 } | {
   enabled: false;
+};
+
+/** A model row returned for the authenticated user's provider-management page. */
+export type AiModelManagementEntry = {
+  /** Public model identity displayed in pickers and settings. */
+  profile: AiChatAuthorInfo;
+
+  /** Whether the model is deployment-managed, administrator-shared, or owned by this user. */
+  scope: "builtin" | "shared" | "personal";
+
+  /** Whether the current user may edit or delete this model. */
+  canManage: boolean;
+};
+
+/** A model and its secret-bearing configuration, returned only for a model the caller owns. */
+export type AiModelConfiguration = {
+  /** Public model identity displayed in pickers and settings. */
+  profile: AiChatAuthorInfo;
+
+  /** Provider configuration, including the caller's own API token. */
+  config: AiModelConfig;
 };
 
 // Configuration specifying how to connect to an AI model provider.
