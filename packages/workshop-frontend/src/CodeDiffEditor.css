@@ -1,16 +1,16 @@
 :where(.gadgets-diff-surface) {
-  --gd-bg: #fffdfb;
-  --gd-fg: #1f1d1a;
-  --gd-fg-num: #c9beb1;
+  --gd-bg: #f8fafc;
+  --gd-fg: #1e293b;
+  --gd-fg-num: #94a3b8;
   --gd-add-bg: #f1f8eb;
   --gd-add-bar: #5fa940;
   --gd-add-num: #4e8a3a;
-  --gd-mod-bar: #d6a400;
+  --gd-mod-bar: #1d4ed8;
   --gd-del-bg: #fcebe6;
   --gd-del-bar: #d6433a;
   --gd-del-num: #b3554d;
-  --gd-margin-line: #f3eadf;
-  --gd-blank-bg: #faf4ee;
+  --gd-margin-line: #e2e8f0;
+  --gd-blank-bg: #f8fafc;
   --gd-omitted-bg: color-mix(in srgb, var(--gd-del-bg) 88%, white);
   --gd-omitted-hover-bg: color-mix(in srgb, var(--gd-del-bg) 78%, white);
 }
@@ -22,7 +22,7 @@
   --gd-add-bg: #163222;
   --gd-add-bar: #4ade80;
   --gd-add-num: #86efac;
-  --gd-mod-bar: #fbbf24;
+  --gd-mod-bar: #60a5fa;
   --gd-del-bg: #3a1e27;
   --gd-del-bar: #f87171;
   --gd-del-num: #fca5a5;

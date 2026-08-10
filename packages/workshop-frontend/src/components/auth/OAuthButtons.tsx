@@ -58,7 +58,7 @@ export default function OAuthButtons({ rpcStub, vendors, onSuccess }: OAuthButto
       if (!popup) {
         try { (attempt as unknown as Disposable)[Symbol.dispose]() } catch { /* already disposed */ }
         loginRpcRef.current = null
-        throw new Error('Pop-up blocked. Please allow pop-ups and try again.')
+        throw new Error('弹出窗口被拦截，请允许弹出窗口后重试。')
       }
       // Resolve when the gatekeeper finishes, or reject if the user closes the pop-up first.
       const token = await new Promise<string>((resolve, reject) => {
@@ -74,11 +74,11 @@ export default function OAuthButtons({ rpcStub, vendors, onSuccess }: OAuthButto
           fn()
         }
         pollRef.current = window.setInterval(() => {
-          if (popup.closed) finish(() => reject(new Error('Sign-in was cancelled.')))
+          if (popup.closed) finish(() => reject(new Error('登录已取消。')))
         }, 500)
         attempt.wait()
           .then(t => finish(() => resolve(t)))
-          .catch(e => finish(() => reject(e instanceof Error ? e : new Error('Could not sign in'))))
+          .catch(e => finish(() => reject(e instanceof Error ? e : new Error('无法登录'))))
       })
       if (!mountedRef.current) return  // user navigated away mid-flow; drop the result
       localStorage.setItem('authToken', token)
@@ -86,7 +86,7 @@ export default function OAuthButtons({ rpcStub, vendors, onSuccess }: OAuthButto
       else window.location.reload()
     } catch (err) {
       if (!mountedRef.current) return
-      setError(err instanceof Error ? err.message : 'Could not sign in')
+      setError(err instanceof Error ? err.message : '无法登录')
       setPending(null)
     }
   }
@@ -111,7 +111,7 @@ export default function OAuthButtons({ rpcStub, vendors, onSuccess }: OAuthButto
               style={{ height: 18, width: 'auto' }}
             />
           )}
-          Continue with {vendor.displayName}
+          使用 {vendor.displayName} 继续
         </Button>
       ))}
     </div>

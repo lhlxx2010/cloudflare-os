@@ -248,7 +248,7 @@ describe("observer re-verification", () => {
       // the same still-failing account spends the re-prompt budget, so the open then rejects.
       const second =
           new ObserverConfigRecorder().alwaysChoose(shared.bobAccount.id, MAX_OBSERVER_PROMPTS);
-      await expect(bobOpens(shared, second)).rejects.toThrow(/could not confirm/i);
+      await expect(bobOpens(shared, second)).rejects.toThrow(/无法确认/);
 
       expect(second.callCount).toBe(1);
       const need = second.needAt(0);
@@ -327,7 +327,7 @@ describe("observer re-verification", () => {
         () => null, (err: unknown) => err as Error);
 
       expect(error).not.toBeNull();
-      expect(error!.message).toMatch(/could not confirm/i);
+      expect(error!.message).toMatch(/无法确认/);
       expect(error!.message).toContain(DENIED_REASON);
     });
   });

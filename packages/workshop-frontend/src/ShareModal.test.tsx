@@ -150,13 +150,13 @@ function verificationSection(rendered: HTMLElement, headingId: string): HTMLElem
 }
 
 async function invite(rendered: HTMLElement, username: string) {
-  const input = rendered.querySelector<HTMLInputElement>('input[aria-label="Username or email"]')!
+  const input = rendered.querySelector<HTMLInputElement>('input[aria-label="用户名或电子邮箱"]')!
   const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
   await act(async () => {
     setValue.call(input, username)
     input.dispatchEvent(new Event('input', { bubbles: true }))
   })
-  await click(button(rendered, 'Invite'))
+  await click(button(rendered, '邀请'))
 }
 
 describe('ShareModal', () => {
@@ -201,7 +201,7 @@ describe('ShareModal', () => {
 
     await invite(rendered, 'ada')
 
-    expect(rendered.textContent).toContain('Added Ada')
+    expect(rendered.textContent).toContain('已添加 Ada')
     expect(rendered.textContent).toContain(WORKSPACE_URL)
   })
 
@@ -209,10 +209,10 @@ describe('ShareModal', () => {
     const rendered = await render(fakeOverseer())
     await invite(rendered, 'ada')
 
-    await click(button(rendered, 'Copy link'))
+    await click(button(rendered, '复制链接'))
 
     expect(copyToClipboard).toHaveBeenCalledWith(WORKSPACE_URL)
-    expect(rendered.textContent).toContain('Link copied')
+    expect(rendered.textContent).toContain('链接已复制')
   })
 
   it('names the connections a recipient must verify for the selected role', async () => {
@@ -220,11 +220,11 @@ describe('ShareModal', () => {
       requirements: { use: [DOC_REQUIREMENT], build: [DOC_REQUIREMENT, CRM_REQUIREMENT] },
     }))
 
-    // The invite composer defaults to "App only".
+    // 邀请编辑器默认仅授予应用使用权限。
     expect(rendered.textContent).toContain('Q3 planning')
     expect(rendered.textContent).not.toContain('Pipeline dashboard')
 
-    await click(roleOption(rendered, 'Workspace'))
+    await click(roleOption(rendered, '工作区'))
 
     expect(rendered.textContent).toContain('Pipeline dashboard')
   })
@@ -234,13 +234,13 @@ describe('ShareModal', () => {
       requirements: { use: [DOC_REQUIREMENT], build: [DOC_REQUIREMENT, CRM_REQUIREMENT] },
     }))
 
-    await click(button(rendered, 'Create a share link'))
+    await click(button(rendered, '创建共享链接'))
     expect(rendered.querySelector('#recipient-verification-heading')).not.toBeNull()
     expect(rendered.querySelector('#invite-verification-heading')).toBeNull()
     expect(rendered.querySelector('#link-verification-heading')).toBeNull()
 
     const buildOptions = [...rendered.querySelectorAll<HTMLButtonElement>('[data-testid="role-option"]')]
-      .filter(option => option.textContent?.startsWith('Workspace'))
+      .filter(option => option.textContent?.startsWith('工作区'))
     expect(buildOptions).toHaveLength(2)
     await click(buildOptions[1])
 
@@ -249,7 +249,7 @@ describe('ShareModal', () => {
     expect(verificationSection(rendered, 'link-verification-heading').textContent)
       .toContain('Pipeline dashboard')
 
-    await click(button(rendered, 'Create link'))
+    await click(button(rendered, '创建链接'))
     expect(verificationSection(rendered, 'link-verification-heading').textContent)
       .toContain('Pipeline dashboard')
   })
@@ -258,7 +258,7 @@ describe('ShareModal', () => {
     const rendered = await render(fakeOverseer())
 
     expect(rendered.querySelector('#recipient-verification-heading')).toBeNull()
-    expect(rendered.textContent).not.toContain('verify any connections')
+    expect(rendered.textContent).not.toContain('验证任何连接')
   })
 
   it('degrades quietly when the requirements lookup fails', async () => {
@@ -266,9 +266,9 @@ describe('ShareModal', () => {
       listObserverRequirements: async () => { throw new Error('offline') },
     }))
 
-    expect(rendered.textContent).toContain('Couldn’t check')
+    expect(rendered.textContent).toContain('无法检查')
     // The rest of the modal still works.
-    expect(rendered.textContent).toContain('People with access')
+    expect(rendered.textContent).toContain('有访问权限的用户')
   })
 
   it('refreshes requirements when the modal regains focus', async () => {
@@ -290,12 +290,12 @@ describe('ShareModal', () => {
     const updateShareLink = vi.fn<(linkId: string, note?: string) => Promise<void>>(async () => {})
     const rendered = await render(fakeOverseer({ shareLinks: [SHARE_LINK], updateShareLink }))
 
-    await click(button(rendered, 'Rename Team link'))
-    expect(rendered.querySelector<HTMLInputElement>('input[aria-label="Share link name"]')?.value)
+    await click(button(rendered, '重命名Team link'))
+    expect(rendered.querySelector<HTMLInputElement>('input[aria-label="共享链接名称"]')?.value)
       .toBe('Team link')
-    await click(button(rendered, 'Save'))
+    await click(button(rendered, '保存'))
 
     expect(updateShareLink).not.toHaveBeenCalled()
-    expect(rendered.querySelector('input[aria-label="Share link name"]')).toBeNull()
+    expect(rendered.querySelector('input[aria-label="共享链接名称"]')).toBeNull()
   })
 })

@@ -310,7 +310,7 @@ describe("getModel direct routing (no gateway)", () => {
     // Pre-BYOK configs (saved when Workers AI needed no credentials) fail with a clear message.
     expect(() => getModel(env({ CF_AI_GATEWAY: undefined }),
         { ...WORKERS_AI_CONFIG, ...overrides }, INITIATOR))
-        .toThrow("This Workers AI model has no Cloudflare credentials.");
+        .toThrow("此 Workers AI 模型没有 Cloudflare 凭据。");
   });
 
   it("appends /v1 to an Ollama server base URL", () => {

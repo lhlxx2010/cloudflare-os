@@ -152,45 +152,45 @@ const NOTION_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(NOTION_LOGO_SVG
 
 const WORKSPACE_RESOURCE: SupportedResource = {
   urlPattern: "https://*",
-  title: "Notion Workspace",
-  description: "Search, read, and edit any page or database shared with this connection.",
+  title: "Notion 工作区",
+  description: "搜索、读取和编辑与此连接共享的任何页面或数据库。",
 };
 
 const ITEM_RESOURCE: SupportedResource = {
   urlPattern: "https://www.notion.so/:path+",
-  title: "Notion Page or Database",
-  description: "Read and edit a specific Notion page or database (and its rows).",
+  title: "Notion 页面或数据库",
+  description: "读取和编辑指定的 Notion 页面或数据库（及其行）。",
 };
 
 const SUPPORTED_RESOURCES: SupportedResource[] = [WORKSPACE_RESOURCE, ITEM_RESOURCE];
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #d97706; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1d4ed8; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem;">Notion Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6;">Please configure a Notion OAuth client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">Notion Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6;">请为此 Gatekeeper 配置 Notion OAuth 客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -221,7 +221,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     const relPath = url.pathname.slice(basePath.length);
     const path = relPath.slice(1).split("/");
@@ -254,19 +254,19 @@ export default {
       // Completion redirect from Notion.
       const error = url.searchParams.get("error");
       if (error) {
-        return new Response(`Authorization failed: ${error}`, {
+        return new Response(`授权失败：${error}`, {
           headers: { "Content-Type": "text/plain; charset=utf-8" },
         });
       }
       const state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       const colonIdx = state.indexOf(":");
-      if (colonIdx < 0) return new Response("Error: malformed state");
+      if (colonIdx < 0) return new Response("错误：“state”格式不正确");
       const doId = state.slice(0, colonIdx);
       const oauthNonce = state.slice(colonIdx + 1);
 
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       const stub = ctx.exports.UserAccount.get(ctx.exports.UserAccount.idFromString(doId));
       if (!await stub.acceptAuthCode(code, oauthNonce)) {
@@ -278,7 +278,7 @@ export default {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     } else {
-      return new Response("Not Found", { status: 404 });
+      return new Response("未找到", { status: 404 });
     }
   },
 };
@@ -294,11 +294,10 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://www.notion.so",
       logo: { url: NOTION_LOGO_URL },
       color: "#f7f6f3",
-      tagline: "Read and write your Notion pages and databases",
+      tagline: "读取和编辑你的 Notion 页面与数据库",
       description:
-          "Connect your Notion workspace to let Cloudflare OS search, read, and edit the pages and " +
-          "databases you share. Build agents that draft documents, organize notes, or manage " +
-          "database records.",
+          "连接你的 Notion 工作区，让 NINT os 搜索、读取和编辑你共享的页面与数据库。" +
+          "你可以构建用于起草文档、整理笔记或管理数据库记录的智能体。",
     };
   }
 
@@ -371,12 +370,12 @@ export class UserAccount extends DurableObject<Env> {
     this.ctx.storage.kv.delete("nonce");
 
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("The Notion Gatekeeper is not configured.");
+      throw new Error("Notion Gatekeeper 尚未配置。");
     }
 
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete the authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const grant = await exchangeAuthCode(
@@ -418,7 +417,7 @@ export class UserAccount extends DurableObject<Env> {
   // caller should invoke refreshCredentials().
   async getAccessToken(): Promise<string> {
     const token = this.ctx.storage.kv.get<string>("accessToken");
-    if (!token) throw new Error("No Notion credentials set.");
+    if (!token) throw new Error("尚未配置 Notion 凭据。");
     return token;
   }
 
@@ -427,7 +426,7 @@ export class UserAccount extends DurableObject<Env> {
   // reconnect. Always throws when it can't produce a fresh token.
   async refreshCredentials(): Promise<string> {
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("The Notion Gatekeeper is not configured.");
+      throw new Error("Notion Gatekeeper 尚未配置。");
     }
     const refreshToken = this.ctx.storage.kv.get<string>("refreshToken");
     if (!refreshToken) {
@@ -546,7 +545,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
         ui: new RpcStub(new NotionWorkspaceConfiguratorUI(this.#getToken)),
       };
     }
-    throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -714,8 +713,8 @@ export class NotionItemGatekeeperImpl extends DurableObject<Env, NotionItemGatek
       const summary = itemResponseToSummary(db);
       return {
         url: summary.url,
-        title: summary.title || "Untitled database",
-        snippet: "Notion database",
+        title: summary.title || "未命名数据库",
+        snippet: "Notion 数据库",
         suggestedBindingName: "NOTION_DATABASE",
         tsType: "NotionDatabase",
       };
@@ -724,8 +723,8 @@ export class NotionItemGatekeeperImpl extends DurableObject<Env, NotionItemGatek
     const meta = pageToMetadata(page);
     return {
       url: meta.url,
-      title: meta.title || "Untitled page",
-      snippet: "Notion page",
+      title: meta.title || "未命名页面",
+      snippet: "Notion 页面",
       suggestedBindingName: "NOTION_PAGE",
       tsType: "NotionPage",
     };
@@ -759,8 +758,7 @@ export class NotionItemGatekeeperImpl extends DurableObject<Env, NotionItemGatek
     const verifier = user as unknown as Fetcher<NotionVerifierApi>;
     if (!(await verifier.hasItemAccess(this.ctx.props.itemId))) {
       throw new Error(
-        "This collaborator does not have access to the bound Notion page/database, so they cannot " +
-        "be allowed to observe data this workspace read from it.");
+        "此协作者无权访问已绑定的 Notion 页面/数据库，因此不能查看此工作区从中读取的数据。");
     }
   }
 
@@ -807,8 +805,8 @@ export class NotionWorkspaceGatekeeperImpl
         .getAccountInfo();
     return {
       url: "https://www.notion.so/",
-      title: info.workspaceName ? `${info.workspaceName} (Notion)` : "Notion workspace",
-      snippet: "Every page and database shared with this connection.",
+      title: info.workspaceName ? `${info.workspaceName}（Notion）` : "Notion 工作区",
+      snippet: "与此连接共享的每个页面和数据库。",
       suggestedBindingName: "NOTION_WORKSPACE",
       tsType: "NotionWorkspace",
     };
@@ -899,13 +897,11 @@ export class NotionWorkspaceGatekeeperImpl
         .getAccountInfo()).workspaceId;
     if (!workspaceId) {
       throw new Error(
-        "This Notion connection predates workspace-id tracking; please disconnect and reconnect " +
-        "the owning Notion account before sharing this workspace.");
+        "此 Notion 连接建立于工作区 ID 跟踪功能之前；共享此工作区前，请断开并重新连接所属的 Notion 账户。" );
     }
     if (!(await verifier.hasWorkspaceAccess(workspaceId))) {
       throw new Error(
-        "This collaborator is not a member of this Notion workspace, so they cannot be allowed to " +
-        "observe it.");
+        "此协作者不是此 Notion 工作区的成员，因此不能查看该工作区。" );
     }
     const checked = new Set<string>();
     while (true) {
@@ -917,8 +913,7 @@ export class NotionWorkspaceGatekeeperImpl
       const itemAccess = await Promise.all(itemIds.map(itemId => verifier.hasItemAccess(itemId)));
       if (itemAccess.some(hasAccess => !hasAccess)) {
         throw new Error(
-          "This collaborator does not have access to a Notion page/database whose data this workspace " +
-          "has read, so they cannot be allowed to observe it.");
+          "此协作者无权访问此工作区已读取数据的某个 Notion 页面/数据库，因此不能查看这些数据。" );
       }
       for (const itemId of itemIds) checked.add(itemId);
     }

@@ -120,47 +120,47 @@ const SUPABASE_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(SUPABASE_LOGO
 
 const PROJECT_RESOURCE: SupportedResource = {
   urlPattern: "https://supabase.com/dashboard/project/:ref",
-  title: "Supabase Project",
+  title: "Supabase 项目",
   description:
-      "Query and manage a project's Postgres database, and inspect its edge functions and storage.",
+      "查询和管理项目的 Postgres 数据库，并检查其边缘函数和存储。",
   icon: { url: SUPABASE_LOGO_URL },
 };
 
 const ORGANIZATION_RESOURCE: SupportedResource = {
   urlPattern: "https://supabase.com/dashboard/org/:slug",
-  title: "Supabase Organization",
-  description: "Discover and manage every project in a Supabase organization.",
+  title: "Supabase 组织",
+  description: "发现和管理 Supabase 组织中的每个项目。",
   icon: { url: SUPABASE_LOGO_URL },
 };
 
 const SUPPORTED_RESOURCES: SupportedResource[] = [PROJECT_RESOURCE, ORGANIZATION_RESOURCE];
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #b45309; font-size: 1.5rem;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #b45309; font-size: 1.5rem;">Supabase Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6;">Please configure a Supabase OAuth app client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">Supabase Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6;">请为此 Gatekeeper 配置 Supabase OAuth 应用客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -228,8 +228,8 @@ function assertReadOnlyQuerySafe(sql: string): void {
   for (const { pattern, name } of SIDE_EFFECT_PATTERNS) {
     if (pattern.test(sql)) {
       throw new Error(
-        `query() is read-only and rejected a reference to ${name}, which can cause side effects. ` +
-        `Use execute() for any statement with external effects.`,
+        `query() 只允许读取，因此拒绝了可能产生副作用的 ${name} 引用。` +
+        `任何会产生外部影响的语句都请使用 execute()。`,
       );
     }
   }
@@ -269,7 +269,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
 
     const relPath = url.pathname.slice(basePath.length);
@@ -299,7 +299,7 @@ export default {
     if (relPath === "/oauth") {
       const error = url.searchParams.get("error");
       if (error) {
-        return new Response("Supabase authorization failed. Please restart the connection flow from Cloudflare OS.", {
+        return new Response("Supabase 授权失败。请从 NINT os 重新开始连接流程。", {
           status: 400,
           headers: { "Content-Type": "text/plain; charset=utf-8" },
         });
@@ -309,14 +309,14 @@ export default {
         new Response(message, { status: 400, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 
       const state = url.searchParams.get("state");
-      if (!state) return badRequest("Error: no 'state' provided");
+      if (!state) return badRequest("错误：未提供“state”");
       const colonIndex = state.indexOf(":");
-      if (colonIndex < 0) return badRequest("Error: malformed state");
+      if (colonIndex < 0) return badRequest("错误：“state”格式不正确");
 
       const doId = state.slice(0, colonIndex);
       const oauthNonce = state.slice(colonIndex + 1);
       const code = url.searchParams.get("code");
-      if (!code) return badRequest("Error: no 'code' provided");
+      if (!code) return badRequest("错误：未提供“code”");
 
       const stub: DurableObjectStub<UserAccount> = ctx.exports.UserAccount.get(
         ctx.exports.UserAccount.idFromString(doId),
@@ -329,7 +329,7 @@ export default {
       return new Response(SELF_CLOSING_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -344,10 +344,10 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://supabase.com",
       logo: { url: SUPABASE_LOGO_URL },
       color: "#f0fdf4",
-      tagline: "Query Postgres, inspect schema, and manage projects",
+      tagline: "查询 Postgres、检查架构并管理项目",
       description:
-          "Connect your Supabase account so Cloudflare OS can run SQL against your project databases, " +
-          "explore schema, and inspect edge functions and storage for the projects you choose.",
+          "连接你的 Supabase 账户，让 NINT os 在所选项目数据库中运行 SQL、探索架构，" +
+          "并检查边缘函数和存储。",
     };
   }
 
@@ -427,12 +427,12 @@ export class UserAccount extends DurableObject<Env> {
     const clientId = this.env.CLIENT_ID;
     const clientSecret = this.env.CLIENT_SECRET;
     if (!clientId || !clientSecret) {
-      throw new Error("Supabase OAuth is not configured.");
+      throw new Error("Supabase OAuth 尚未配置。");
     }
 
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const grant = await exchangeAuthCode(code, clientId, clientSecret, `${getBaseUrl(this.env)}/oauth`);
@@ -471,7 +471,7 @@ export class UserAccount extends DurableObject<Env> {
     const refreshToken = this.ctx.storage.kv.get<string>("refreshToken");
     const expiresAt = this.ctx.storage.kv.get<number>("accessTokenExpiresAt") ?? 0;
     if (!accessToken || !refreshToken) {
-      throw new Error("Supabase credentials have not been configured for this account.");
+      throw new Error("尚未为此账户配置 Supabase 凭据。");
     }
 
     if (Date.now() < expiresAt - TOKEN_REFRESH_SKEW_MS) {
@@ -495,7 +495,7 @@ export class UserAccount extends DurableObject<Env> {
     const clientId = this.env.CLIENT_ID;
     const clientSecret = this.env.CLIENT_SECRET;
     if (!clientId || !clientSecret) {
-      throw new Error("Supabase OAuth is not configured.");
+      throw new Error("Supabase OAuth 尚未配置。");
     }
 
     try {
@@ -565,7 +565,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       if (error instanceof SupabaseApiError) {
         if (error.isAuthError) {
           await this.#userAccount().noteCredentialsExpired();
-          throw new Error("Supabase credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+          throw new Error("Supabase 凭据已过期或被撤销，请重新连接账户。", { cause: error });
         }
         throw new Error(error.message, { cause: error });
       }
@@ -578,7 +578,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       const organizations = await api.listOrganizations();
       const primary = organizations[0];
       return {
-        displayName: primary ? primary.name : "Supabase account",
+        displayName: primary ? primary.name : "Supabase 账户",
         uniqueName: primary?.slug,
         avatar: { url: SUPABASE_LOGO_URL },
       };
@@ -603,12 +603,12 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
   }> {
     const parsed = new URL(url);
     if (parsed.hostname !== "supabase.com") {
-      throw new Error(`Unsupported Supabase URL: ${url}`);
+      throw new Error(`不支持的 Supabase URL：${url}`);
     }
 
     const segments = parsed.pathname.split("/").filter(Boolean);
     if (segments[0] !== "dashboard" || segments.length < 3) {
-      throw new Error(`Unsupported Supabase URL: ${url}`);
+      throw new Error(`不支持的 Supabase URL：${url}`);
     }
 
     if (segments[1] === "project") {
@@ -629,7 +629,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       return { class: this.ctx.exports.SupabaseGatekeeperImpl({ props }), resource: ORGANIZATION_RESOURCE };
     }
 
-    throw new Error(`Unsupported Supabase URL: ${url}`);
+    throw new Error(`不支持的 Supabase URL：${url}`);
   }
 
   async startResourceConfigurator(resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
@@ -645,7 +645,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
         ui: new RpcStub(new SupabaseOrganizationConfiguratorUI(this.#getToken)),
       };
     }
-    throw new Error(`Unsupported Supabase resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的 Supabase 资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -863,7 +863,7 @@ class SupabaseSessionContext {
       if (error instanceof SupabaseApiError) {
         if (error.isAuthError) {
           await this.#noteExpired();
-          throw new Error("Supabase credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+          throw new Error("Supabase 凭据已过期或被撤销，请重新连接账户。", { cause: error });
         }
         // Re-throw as a plain Error so the gadget sees a clean message without the internal
         // "SupabaseApiError:" class-name prefix. The message (including any Postgres detail) is kept.
@@ -890,11 +890,11 @@ class SupabaseSessionContext {
     const actionId = this.#pending.submit(action);
     try {
       await this.approvalQueue.submitAction(actionId, {
-        title: "Run SQL on Supabase",
+        title: "在 Supabase 上运行 SQL",
         description:
-            `Execute a mutating SQL statement against Supabase project \`${ref}\`.\n\n` +
+            `对 Supabase 项目 \`${ref}\` 执行会修改数据的 SQL 语句。\n\n` +
             "```sql\n" + sql + "\n```" +
-            (params && params.length > 0 ? `\n\nParameters: \`${JSON.stringify(params)}\`` : ""),
+            (params && params.length > 0 ? `\n\n参数：\`${JSON.stringify(params)}\`` : ""),
         // Arbitrary SQL cannot be automatically reverted.
         implementsRevert: false,
         // This gatekeeper doesn't simulate writes, so the agent shouldn't continue (and read back
@@ -1028,13 +1028,13 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
   // asserting non-null so a malformed/legacy binding fails with a clear message.
   #requireRef(): string {
     const ref = this.ctx.props.ref;
-    if (!ref) throw new Error("This Supabase project gatekeeper is missing its project ref.");
+    if (!ref) throw new Error("此 Supabase 项目 Gatekeeper 缺少项目 ref。");
     return ref;
   }
 
   #requireSlug(): string {
     const slug = this.ctx.props.slug;
-    if (!slug) throw new Error("This Supabase organization gatekeeper is missing its org slug.");
+    if (!slug) throw new Error("此 Supabase 组织 Gatekeeper 缺少组织 slug。");
     return slug;
   }
 
@@ -1057,7 +1057,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
     return {
       url: organizationUrl(slug),
       title: org ? org.name : slug,
-      snippet: "Supabase organization",
+      snippet: "Supabase 组织",
       suggestedBindingName: "SUPABASE_ORGANIZATION",
       tsType: "SupabaseOrganization",
     };
@@ -1085,7 +1085,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
     const pending = new PendingActionStore(this.ctx.storage.kv);
     const action = pending.get(actionId);
     if (!action) {
-      throw new Error(`Unknown pending Supabase action: ${actionId}`);
+      throw new Error(`未知的待处理 Supabase 操作：${actionId}`);
     }
     try {
       await this.#makeApi().runQuery(action.ref, action.sql, action.params);
@@ -1094,7 +1094,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
       // The action stays queued (we don't remove it) so it can be retried after reconnecting.
       if (error instanceof SupabaseApiError && error.isAuthError) {
         await this.#userAccount().noteCredentialsExpired();
-        throw new Error("Supabase credentials have expired or been revoked. Reconnect the account, then retry.", { cause: error });
+        throw new Error("Supabase 凭据已过期或被撤销。请重新连接账户后重试。", { cause: error });
       }
       throw error;
     }
@@ -1112,8 +1112,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
   async revertAction(_action: number): Promise<void | { message?: string; canRetry?: boolean }> {
     return {
       message:
-          "This SQL change can't be reverted automatically. To undo it, run a compensating " +
-          "statement (e.g. a corresponding `DELETE`, `UPDATE`, or `DROP`).",
+          "此 SQL 更改无法自动撤销。要撤销它，请执行补偿语句（例如对应的 `DELETE`、`UPDATE` 或 `DROP`）。",
     };
   }
 
@@ -1141,8 +1140,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
       const [hasAccess] = await verifier.hasProjectAccess([ref]);
       if (!hasAccess) {
         throw new Error(
-          `This collaborator does not have access to the Supabase project ${ref}, so they cannot ` +
-          `be allowed to observe data this workspace read from it.`);
+          `此协作者无权访问 Supabase 项目 ${ref}，因此不能查看此工作区从该项目读取的数据。`);
       }
       return;
     }
@@ -1150,8 +1148,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
     const slug = this.#requireSlug();
     if (!(await verifier.hasOrgAccess(slug))) {
       throw new Error(
-        `This collaborator is not a member of the Supabase organization ${slug}, so they cannot ` +
-        `be allowed to observe it.`);
+        `此协作者不是 Supabase 组织 ${slug} 的成员，因此不能查看该组织。`);
     }
     const checked = new Set<string>();
     while (true) {
@@ -1164,8 +1161,7 @@ export class SupabaseGatekeeperImpl extends DurableObject<Env, SupabaseGatekeepe
       for (const [index, ref] of refs.entries()) {
         if (!projectAccess[index]) {
           throw new Error(
-            `This collaborator does not have access to the Supabase project ${ref}, whose data the ` +
-            `workspace has read, so they cannot be allowed to observe it.`);
+            `此协作者无权访问 Supabase 项目 ${ref}，而工作区已读取该项目的数据，因此不能允许其查看。`);
         }
         checked.add(ref);
       }
@@ -1211,14 +1207,14 @@ class SupabaseOrganizationImpl extends RpcTarget implements SupabaseOrganization
       const organizations = await api.listOrganizations();
       const org = organizations.find(o => o.slug === this.#slug);
       if (!org) {
-        throw new Error(`Organization ${this.#slug} is not accessible with the connected account.`);
+        throw new Error(`已连接的账户无法访问组织 ${this.#slug}。`);
       }
       return { slug: org.slug, name: org.name, url: organizationUrl(org.slug) };
     });
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read Supabase organization",
-      description: `Read metadata for the Supabase organization \`${this.#slug}\`.`,
+      title: "读取 Supabase 组织",
+      description: `读取 Supabase 组织 \`${this.#slug}\` 的元数据。`,
     });
     return info;
   }
@@ -1230,9 +1226,9 @@ class SupabaseOrganizationImpl extends RpcTarget implements SupabaseOrganization
     });
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Supabase projects",
+      title: "列出 Supabase 项目",
       description:
-          `List the ${projects.length} project(s) in the Supabase organization \`${this.#slug}\`.`,
+          `列出 Supabase 组织 \`${this.#slug}\` 中的 ${projects.length} 个项目。`,
     });
     return projects;
   }
@@ -1241,14 +1237,14 @@ class SupabaseOrganizationImpl extends RpcTarget implements SupabaseOrganization
     // Authorize first: this performs an external read and would otherwise be an unlogged
     // existence/membership oracle for arbitrary project refs.
     await this.#ctx.authorizeProjectObservation(ref, {
-      title: "Open Supabase project",
-      description: `Look up Supabase project \`${ref}\` within organization \`${this.#slug}\`.`,
+      title: "打开 Supabase 项目",
+      description: `在组织 \`${this.#slug}\` 中查找 Supabase 项目 \`${ref}\`。`,
     });
 
     // Verify the project belongs to this organization before handing out a capability for it.
     const project = await fetchProjectInfo(this.#ctx, ref);
     if (project.organizationSlug !== this.#slug) {
-      throw new Error(`Project ${ref} is not part of organization ${this.#slug}.`);
+      throw new Error(`项目 ${ref} 不属于组织 ${this.#slug}。`);
     }
     return new SupabaseProjectImpl(this.#ctx, ref);
   }
@@ -1269,8 +1265,8 @@ class SupabaseProjectImpl extends RpcTarget implements SupabaseProject {
     const info = await fetchProjectInfo(this.#ctx, this.#ref);
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "Read Supabase project",
-      description: `Read metadata for the Supabase project \`${this.#ref}\`.`,
+      title: "读取 Supabase 项目",
+      description: `读取 Supabase 项目 \`${this.#ref}\` 的元数据。`,
     });
     return info;
   }
@@ -1287,8 +1283,8 @@ class SupabaseProjectImpl extends RpcTarget implements SupabaseProject {
     const result = health.map(item => ({ service: item.name, status: item.status, error: item.error }));
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "Check Supabase project health",
-      description: `Check the health of services for the Supabase project \`${this.#ref}\`.`,
+      title: "检查 Supabase 项目运行状况",
+      description: `检查 Supabase 项目 \`${this.#ref}\` 各项服务的运行状况。`,
     });
     return result;
   }
@@ -1308,8 +1304,8 @@ class SupabaseProjectImpl extends RpcTarget implements SupabaseProject {
     });
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "List Supabase edge functions",
-      description: `List the ${functions.length} edge function(s) deployed to project \`${this.#ref}\`.`,
+      title: "列出 Supabase 边缘函数",
+      description: `列出部署到项目 \`${this.#ref}\` 的 ${functions.length} 个边缘函数。`,
     });
     return functions;
   }
@@ -1322,8 +1318,8 @@ class SupabaseProjectImpl extends RpcTarget implements SupabaseProject {
     );
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "Read Supabase edge function source",
-      description: `Read the deployed source of edge function \`${slug}\` in project \`${this.#ref}\`.`,
+      title: "读取 Supabase 边缘函数源代码",
+      description: `读取项目 \`${this.#ref}\` 中已部署边缘函数 \`${slug}\` 的源代码。`,
     });
     return source;
   }
@@ -1341,8 +1337,8 @@ class SupabaseProjectImpl extends RpcTarget implements SupabaseProject {
     });
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "List Supabase storage buckets",
-      description: `List the ${buckets.length} storage bucket(s) in project \`${this.#ref}\`.`,
+      title: "列出 Supabase 存储桶",
+      description: `列出项目 \`${this.#ref}\` 中的 ${buckets.length} 个存储桶。`,
     });
     return buckets;
   }
@@ -1366,9 +1362,9 @@ class SupabaseDatabaseImpl extends RpcTarget implements SupabaseDatabase {
     const rows = await this.#ctx.run(api => api.runReadOnlyQuery(this.#ref, sql, params));
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "Run read-only SQL on Supabase",
+      title: "在 Supabase 上运行只读 SQL",
       description:
-          `Run a read-only query against Supabase project \`${this.#ref}\`.\n\n` +
+          `对 Supabase 项目 \`${this.#ref}\` 运行只读查询。\n\n` +
           "```sql\n" + sql + "\n```",
     });
     return { rows: rows as SupabaseQueryResult["rows"], rowCount: rows.length };
@@ -1380,7 +1376,7 @@ class SupabaseDatabaseImpl extends RpcTarget implements SupabaseDatabase {
     // SQL we actually store and run.
     const withoutComments = sql.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/--[^\n]*/g, " ");
     if (withoutComments.trim().length === 0) {
-      throw new Error("execute() requires a non-empty SQL statement.");
+      throw new Error("execute() 需要一条非空 SQL 语句。");
     }
     return await this.#ctx.submitExecute(this.#ref, sql, params);
   }
@@ -1393,8 +1389,8 @@ class SupabaseDatabaseImpl extends RpcTarget implements SupabaseDatabase {
     );
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "List Supabase schemas",
-      description: `List the ${schemas.length} schema(s) in the database of project \`${this.#ref}\`.`,
+      title: "列出 Supabase schema",
+      description: `列出项目 \`${this.#ref}\` 数据库中的 ${schemas.length} 个 schema。`,
     });
     return schemas;
   }
@@ -1411,9 +1407,9 @@ class SupabaseDatabaseImpl extends RpcTarget implements SupabaseDatabase {
     );
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "List Supabase tables",
+      title: "列出 Supabase 数据表",
       description:
-          `List the ${tables.length} table(s)/view(s) in schema \`${schema}\` of project \`${this.#ref}\`.`,
+          `列出项目 \`${this.#ref}\` 的 schema \`${schema}\` 中 ${tables.length} 个数据表或视图。`,
     });
     return tables;
   }
@@ -1426,8 +1422,8 @@ class SupabaseDatabaseImpl extends RpcTarget implements SupabaseDatabase {
     );
 
     await this.#ctx.authorizeProjectObservation(this.#ref, {
-      title: "Describe Supabase table",
-      description: `Read the structure of table \`${schema}.${name}\` in project \`${this.#ref}\`.`,
+      title: "描述 Supabase 数据表",
+      description: `读取项目 \`${this.#ref}\` 中数据表 \`${schema}.${name}\` 的结构。`,
     });
     return details;
   }

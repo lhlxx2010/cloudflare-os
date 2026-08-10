@@ -21,11 +21,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Confluence site" description="Choose the Confluence site to connect.">
+      <Field label="Confluence 站点" description="选择要连接的 Confluence 站点。">
         <Autocomplete
           name="siteUrl"
           value={values.siteUrl}
-          placeholder="Search sites..."
+          placeholder="搜索站点…"
           loadOptions={query => ui.listSites(query)}
           onChange={siteUrl => setValues({ siteUrl })}
         />

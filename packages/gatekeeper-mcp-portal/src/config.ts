@@ -85,8 +85,8 @@ export function readPortalConfig(env: Env): PortalConfig | null {
 export function requirePortalServerScope(scope: ToolScope): void {
   if (scope.serverId !== undefined) return;
   throw new Error(
-    "A portal grant has to name one of the servers behind the portal. Granting the portal itself " +
-    "would cover every system connected to it, including ones added later.");
+    "Portal 授权必须指定 Portal 后的某个服务器。直接授权 Portal 本身会覆盖与其连接的每个系统，" +
+    "包括以后新增的系统。");
 }
 
 // The single resource type this connector offers, scoped to the configured portal's origin.
@@ -96,7 +96,7 @@ export function portalResource(config: PortalConfig): SupportedResource {
     urlPattern: `${new URL(config.endpoint).origin}/*`,
     title: config.name,
     description:
-      "Tools from the servers behind this portal. Writes need approval.",
+      "使用此 Portal 后各服务器提供的工具。写入操作需要批准。",
   };
 }
 

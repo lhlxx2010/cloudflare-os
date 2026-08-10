@@ -65,7 +65,7 @@ describe('site logo dimensions', () => {
   })
 
   it('rejects empty image dimensions', () => {
-    expect(() => siteLogoDimensions(0, 100)).toThrow('dimensions')
+    expect(() => siteLogoDimensions(0, 100)).toThrow('尺寸')
   })
 })
 
@@ -98,7 +98,7 @@ describe('site logo preparation', () => {
       type: 'image/png',
     })
 
-    await expect(prepareSiteLogo(file)).rejects.toThrow('max 5 MB')
+    await expect(prepareSiteLogo(file)).rejects.toThrow('最大 5 MB')
     expect(decode).not.toHaveBeenCalled()
   })
 
@@ -112,7 +112,7 @@ describe('site logo preparation', () => {
       ['WebP', 'image/webp', webpHeader(100_000, 1)],
     ] as const) {
       await expect(prepareSiteLogo(new File([data], `logo.${name}`, { type })))
-        .rejects.toThrow('dimensions')
+        .rejects.toThrow('尺寸')
     }
     expect(decode).not.toHaveBeenCalled()
   })
@@ -126,7 +126,7 @@ describe('site logo preparation', () => {
 
     await expect(prepareSiteLogo(new File([pngHeader(100, 100)], 'logo.png', {
       type: 'image/png',
-    }))).rejects.toThrow('upload limit')
+    }))).rejects.toThrow('上传大小限制')
     expect(close).toHaveBeenCalledOnce()
   })
 
@@ -161,7 +161,7 @@ describe('site logo preparation', () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/2000/svg"><x:image href="d&#97;ta:image/png;base64,AA=="/></svg>'
 
     await expect(prepareSiteLogo(new File([svg], 'logo.svg', { type: 'image/svg+xml' })))
-      .rejects.toThrow('embedded images')
+      .rejects.toThrow('嵌入图片')
     expect(createUrl).not.toHaveBeenCalled()
   })
 })

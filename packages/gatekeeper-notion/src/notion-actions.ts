@@ -662,59 +662,59 @@ export function describeAction(action: NotionAction): ActionDescription {
   switch (action.type) {
     case "appendContent":
       return {
-        title: "Append content to Notion page",
-        description: `Append the following Markdown to the page body:\n\n${truncate(action.markdown)}`,
+        title: "向 Notion 页面追加内容",
+        description: `向页面正文追加以下 Markdown：\n\n${truncate(action.markdown)}`,
         implementsRevert: true,
       };
     case "setTitle":
       return {
-        title: "Rename Notion page",
-        description: `Change the page title to **${action.title}** (was “${action.previousTitle}”).`,
+        title: "重命名 Notion 页面",
+        description: `将页面标题从“${action.previousTitle}”更改为 **${action.title}**。`,
         implementsRevert: true,
       };
     case "setProperties":
       return {
-        title: "Update Notion page properties",
-        description: `Update properties: ${Object.keys(action.properties).join(", ") || "(none)"}.`,
+        title: "更新 Notion 页面属性",
+        description: `更新属性：${Object.keys(action.properties).join("、") || "（无）"}。`,
         implementsRevert: true,
       };
     case "setIcon":
       return {
-        title: "Change Notion page icon",
+        title: "更改 Notion 页面图标",
         description: action.icon
-          ? `Set the page icon to ${iconInputDisplay(action.icon)}.`
-          : "Remove the page icon.",
+          ? `将页面图标设置为 ${iconInputDisplay(action.icon)}。`
+          : "移除页面图标。",
         implementsRevert: true,
       };
     case "archive":
       return {
-        title: "Move Notion page to trash",
-        description: "Move the page to the Notion trash (reversible).",
+        title: "将 Notion 页面移至回收站",
+        description: "将页面移至 Notion 回收站（可撤销）。",
         implementsRevert: true,
       };
     case "restore":
       return {
-        title: "Restore Notion page from trash",
-        description: "Restore the page from the Notion trash.",
+        title: "从回收站恢复 Notion 页面",
+        description: "从 Notion 回收站恢复页面。",
         implementsRevert: true,
       };
     case "addComment":
       return {
-        title: "Comment on Notion page",
-        description: `Post a comment:\n\n${truncate(action.text)}`,
+        title: "评论 Notion 页面",
+        description: `发表评论：\n\n${truncate(action.text)}`,
         // The Notion public API can't delete comments, so this can't be reverted automatically.
         implementsRevert: false,
       };
     case "createPage": {
       const where =
-        action.parent.kind === "page" ? "as a sub-page"
-        : action.parent.kind === "database" ? "as a database row"
+        action.parent.kind === "page" ? "作为子页面"
+        : action.parent.kind === "database" ? "作为数据库行"
         // Workspace-level: the API needs a concrete parent, so the page lands under the most
         // recently edited shared page (chosen when this action is approved).
-        : "under the most recently edited shared page (Notion has no true top-level page)";
+        : "置于最近编辑的共享页面下（Notion 没有真正的顶层页面）";
       return {
-        title: "Create Notion page",
-        description: `Create a new page ${where} titled **${action.title ?? "Untitled"}**.`,
+        title: "创建 Notion 页面",
+        description: `创建标题为 **${action.title ?? "无标题"}** 的新页面，${where}。`,
         implementsRevert: true,
       };
     }
@@ -813,8 +813,8 @@ export async function revertNotionAction(
   if (laterConflictingApplied(store, record)) {
     return {
       message:
-        "A newer change was applied to this page after this action. Revert the newer change(s) " +
-        "first, then retry — reverting now would overwrite them.",
+        "此操作之后又有更新的更改应用到了该页面。请先撤销较新的更改，然后重试；" +
+        "现在撤销会覆盖这些更改。",
       canRetry: true,
     };
   }
@@ -866,7 +866,7 @@ export async function revertNotionAction(
     }
     case "addComment":
       // Can't be undone via the API; leave the record applied so it isn't treated as reverted.
-      return { message: "Notion comments can't be deleted through the API; please remove the comment manually." };
+      return { message: "无法通过 Notion API 删除评论，请手动移除该评论。" };
   }
 
   // Mark the action reverted so it no longer blocks reverting earlier actions on the same page.

@@ -27,11 +27,11 @@ export default {
 
   render({ values, setValues, clearFields, ui }) {
     return <Section>
-      <Field label="Project" description="Start with the Google Cloud project this connection can query.">
+      <Field label="项目" description="首先选择此连接可查询的 Google Cloud 项目。">
         <Autocomplete
           name="projectId"
           value={values.projectId}
-          placeholder="Search projects..."
+          placeholder="搜索项目…"
           loadOptions={query => ui.listProjects(query)}
           onChange={projectId => {
             clearFields("datasetId", "tableId");
@@ -40,11 +40,11 @@ export default {
         />
       </Field>
 
-      <Field label="Dataset" description="Leave blank to allow all datasets in the project." optional>
+      <Field label="数据集" description="留空即可允许访问项目中的所有数据集。" optional>
         <Autocomplete
           name="datasetId"
           value={values.datasetId}
-          placeholder={values.projectId ? "Search datasets..." : "Choose a project first"}
+          placeholder={values.projectId ? "搜索数据集…" : "请先选择项目"}
           disabled={!values.projectId}
           loadOptions={query => values.projectId ? ui.listDatasets(values.projectId, query) : Promise.resolve([])}
           onChange={datasetId => {
@@ -59,11 +59,11 @@ export default {
         />
       </Field>
 
-      <Field label="Table" description="Leave blank to allow all tables in dataset." optional>
+      <Field label="表" description="留空即可允许访问数据集中的所有表。" optional>
         <Autocomplete
           name="tableId"
           value={values.tableId}
-          placeholder={values.datasetId ? "Search tables..." : "Choose a dataset first"}
+          placeholder={values.datasetId ? "搜索表…" : "请先选择数据集"}
           disabled={!values.projectId || !values.datasetId}
           loadOptions={query => values.projectId && values.datasetId
             ? ui.listTables(values.projectId, values.datasetId, query)

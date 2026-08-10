@@ -16,7 +16,7 @@ const urlKeyCache = new WeakMap<object, Promise<string>>();
 
 function api(target: object): LinearApi {
   const getToken = tokenGetters.get(target);
-  if (!getToken) throw new Error("Linear configurator is not initialized.");
+  if (!getToken) throw new Error("Linear 配置器尚未初始化。");
   return new LinearApi(getToken);
 }
 
@@ -93,7 +93,7 @@ export class LinearIssueConfiguratorUI extends LinearWorkspaceConfiguratorUI imp
     const options = conn.nodes.map(issue => ({
       value: issue.identifier,
       title: `${issue.identifier} ${issue.title}`,
-      subtitle: issue.assignee ? `Assigned to ${issue.assignee.displayName ?? issue.assignee.name}` : undefined,
+      subtitle: issue.assignee ? `已分配给 ${issue.assignee.displayName ?? issue.assignee.name}` : undefined,
       meta: issue.state?.name,
     }));
 
@@ -106,7 +106,7 @@ export class LinearIssueConfiguratorUI extends LinearWorkspaceConfiguratorUI imp
           options.unshift({
             value: issue.identifier,
             title: `${issue.identifier} ${issue.title}`,
-            subtitle: issue.assignee ? `Assigned to ${issue.assignee.displayName ?? issue.assignee.name}` : undefined,
+            subtitle: issue.assignee ? `已分配给 ${issue.assignee.displayName ?? issue.assignee.name}` : undefined,
             meta: issue.state?.name,
           });
         }

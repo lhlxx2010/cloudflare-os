@@ -24,7 +24,7 @@ interface HostCapability extends RpcTarget {
 
 function main() {
   const element = document.getElementById("root");
-  if (!element) throw new Error("Missing Scheduler app root.");
+  if (!element) throw new Error("缺少定时任务应用根元素。");
 
   const { port1, port2 } = new MessageChannel();
   window.parent.postMessage({ type: "handshake" }, "*", [port2]);

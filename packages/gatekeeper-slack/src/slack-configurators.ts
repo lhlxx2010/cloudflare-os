@@ -19,7 +19,7 @@ const teamIdByTarget = new WeakMap<object, string>();
 
 function apiFor(target: object): SlackApi {
   let api = apiByTarget.get(target);
-  if (!api) throw new Error("Slack configurator is not initialized.");
+  if (!api) throw new Error("Slack 配置器尚未初始化。");
   return api;
 }
 
@@ -81,14 +81,14 @@ export class ConversationConfiguratorUI extends RpcTarget implements Conversatio
   #toOption(info: SlackConversationInfo): ConfiguratorOption {
     switch (info.kind) {
       case "public_channel":
-        return { value: info.id, title: `#${info.name ?? info.id}`, subtitle: "Public channel" };
+        return { value: info.id, title: `#${info.name ?? info.id}`, subtitle: "公开频道" };
       case "private_channel":
-        return { value: info.id, title: `#${info.name ?? info.id}`, subtitle: "Private channel" };
+        return { value: info.id, title: `#${info.name ?? info.id}`, subtitle: "私有频道" };
       case "mpim":
-        return { value: info.id, title: info.name ?? "Group DM", subtitle: "Group direct message" };
+        return { value: info.id, title: info.name ?? "群聊", subtitle: "群组私信" };
       case "im": {
         let name = info.peer ? (info.peer.displayName || info.peer.username) : info.id;
-        return { value: info.id, title: `@${name}`, subtitle: "Direct message" };
+        return { value: info.id, title: `@${name}`, subtitle: "私信" };
       }
     }
   }

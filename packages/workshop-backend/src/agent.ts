@@ -2307,7 +2307,7 @@ export async function runAgent(
   let tools: Record<string, AgentTool> = {
     readFile: defineTool({
       name: "readFile",
-      label: "Read file",
+      label: "读取文件",
       description: READ_FILE_TOOL_DESCRIPTION,
       parameters: Type.Object({
         workpiece: workpieceParam,
@@ -2340,7 +2340,7 @@ export async function runAgent(
 
     writeFile: defineTool({
       name: "writeFile",
-      label: "Write file",
+      label: "写入文件",
       description: WRITE_FILE_TOOL_DESCRIPTION,
       parameters: Type.Object({
         workpiece: workpieceParam,
@@ -2377,7 +2377,7 @@ export async function runAgent(
 
     editFile: defineTool({
       name: "editFile",
-      label: "Edit file",
+      label: "编辑文件",
       description: EDIT_FILE_TOOL_DESCRIPTION,
       parameters: Type.Object({
         workpiece: workpieceParam,
@@ -2419,7 +2419,7 @@ export async function runAgent(
 
     webFetch: defineTool({
       name: "webFetch",
-      label: "Fetch web page",
+      label: "抓取网页",
       description: WEBFETCH_TOOL_DESCRIPTION,
       parameters: Type.Object({
         url: Type.String({description: "The HTTPS URL to fetch."}),
@@ -2437,16 +2437,16 @@ export async function runAgent(
           let host = new URL(result.finalUrl).host;
           await hooks.recordAgentObservation(
               chatId,
-              `Web fetch: ${host}`,
+              `网页抓取：${host}`,
               result.finalUrl,
               {
-                title: `Fetched ${host}`,
+                title: `已抓取 ${host}`,
                 description:
                     `GET \`${result.finalUrl}\`\n\n` +
-                    `Status: ${result.status}\n` +
-                    `Content-Type: \`${result.contentType || "(unspecified)"}\`\n` +
-                    `Body: ${result.body.length} chars` +
-                    (result.truncated ? ", truncated" : ""),
+                    `状态：${result.status}\n` +
+                    `Content-Type：\`${result.contentType || "（未指定）"}\`\n` +
+                    `正文：${result.body.length} 个字符` +
+                    (result.truncated ? "，已截断" : ""),
               });
 
           let formatted = formatWebFetchResult(result);
@@ -2463,7 +2463,7 @@ export async function runAgent(
 
     observeUserChanges: defineTool({
       name: "observeUserChanges",
-      label: "Observe user changes",
+      label: "查看用户更改",
       description: OBSERVE_USER_CHANGES_TOOL_DESCRIPTION,
       parameters: Type.Object({}),
       execute: async () => {
@@ -2474,7 +2474,7 @@ export async function runAgent(
 
     describeBinding: defineTool({
       name: "describeBinding",
-      label: "Describe binding",
+      label: "查看绑定信息",
       description: DESCRIBE_BINDING_TOOL_DESCRIPTION,
       parameters: Type.Object({
         name: Type.String({description: "Name of the binding (a property of `env`)."}),
@@ -2493,7 +2493,7 @@ export async function runAgent(
 
     setGadgetBinding: defineTool({
       name: "setGadgetBinding",
-      label: "Bind resource to gadget",
+      label: "将资源绑定到应用",
       description: SET_GADGET_BINDING_TOOL_DESCRIPTION,
       parameters: Type.Object({
         gadget: Type.String({
@@ -2552,7 +2552,7 @@ export async function runAgent(
 
     createGadget: defineTool({
       name: "createGadget",
-      label: "Create gadget",
+      label: "创建应用",
       description: CREATE_GADGET_TOOL_DESCRIPTION,
       parameters: Type.Object({
         title: Type.String({
@@ -2662,7 +2662,7 @@ export async function runAgent(
 
     listBlueprints: defineTool({
       name: "listBlueprints",
-      label: "List blueprints",
+      label: "列出蓝图",
       description: LIST_BLUEPRINTS_TOOL_DESCRIPTION,
       parameters: Type.Object({}),
       execute: async (toolCallId) => {
@@ -2678,7 +2678,7 @@ export async function runAgent(
 
     executeCode: defineTool({
       name: "executeCode",
-      label: "Execute code",
+      label: "执行代码",
       description: EXECUTE_CODE_TOOL_DESCRIPTION,
       parameters: Type.Object({
         code: Type.String({
@@ -2731,7 +2731,7 @@ export async function runAgent(
 
     listConnectableResources: defineTool({
       name: "listConnectableResources",
-      label: "List connectable resources",
+      label: "列出可连接资源",
       description: LIST_CONNECTABLE_RESOURCES_TOOL_DESCRIPTION,
       parameters: Type.Object({
         vendorId: Type.String({
@@ -2751,7 +2751,7 @@ export async function runAgent(
 
     requestConnection: defineTool({
       name: "requestConnection",
-      label: "Request connection",
+      label: "请求连接",
       description: REQUEST_CONNECTION_TOOL_DESCRIPTION,
       parameters: Type.Object({
         vendorId: Type.String({
@@ -2785,11 +2785,10 @@ export async function runAgent(
             nameProblem = `${err instanceof Error ? err.message : err}`;
           }
           if (nameProblem === undefined && isNameInScope(input.bindingName)) {
-            nameProblem = `There is already a binding named "${input.bindingName}" in your ` +
-                `env. Choose a different name.`;
+            nameProblem = `环境中已存在名为“${input.bindingName}”的绑定，请选择其他名称。`;
           }
           if (nameProblem !== undefined) {
-            let message = `Cannot request a connection: ${nameProblem}`;
+            let message = `无法请求连接：${nameProblem}`;
             return toolResult(message, { output: message });
           }
 
@@ -2816,7 +2815,7 @@ export async function runAgent(
   if (callbackInitiated) {
     tools.giveUp = defineTool({
       name: "giveUp",
-      label: "Give up",
+      label: "放弃",
       description: GIVE_UP_TOOL_DESCRIPTION,
       parameters: Type.Object({
         error: Type.String({
@@ -2915,7 +2914,7 @@ export async function runAgent(
         if (message.stopReason === "error" || message.stopReason === "aborted") {
           // Persist nothing from a failed or cancelled model request; rethrown after the loop
           // returns.
-          turnFailure = {message: message.errorMessage ?? "The model request failed."};
+          turnFailure = {message: message.errorMessage ?? "模型请求失败。"};
           break;
         }
         // Note: a turn the model completed is persisted even if the user cancelled while its

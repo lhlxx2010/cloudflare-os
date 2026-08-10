@@ -14,7 +14,7 @@ function AssistantAvatar() {
 function UserAvatar() {
   return (
     <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-kumo-tint">
-      <span className="text-[10px] font-semibold text-kumo-strong">U</span>
+      <span className="text-[10px] font-semibold text-kumo-strong">我</span>
     </div>
   )
 }
@@ -67,7 +67,7 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
         {/* Role + time */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-kumo-default">
-            {isUser ? 'You' : 'Workshop'}
+            {isUser ? '你' : 'NINT os'}
           </span>
           <span className="font-mono text-xs text-kumo-subtle">{message.timestamp}</span>
         </div>

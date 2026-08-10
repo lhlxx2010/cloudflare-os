@@ -53,6 +53,7 @@ import {
   isTextContentType,
 } from "../src/context-types";
 import emojiData from "@emoji-mart/data";
+import emojiI18n from "@emoji-mart/data/i18n/zh.json";
 import { Picker as EmojiMartPicker } from "emoji-mart";
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, keymap, drawSelection, lineNumbers } from "@codemirror/view";
@@ -111,7 +112,7 @@ function stripFrontmatter(source: string): string {
 }
 
 function pluralize(count: number, noun: string): string {
-  return `${count} ${noun}${count !== 1 ? "s" : ""}`;
+  return `${count} 个${noun}`;
 }
 
 // Bounded-concurrency helper for bulk RPC operations.
@@ -234,6 +235,7 @@ function IconPickerButton({
     const host = pickerHostRef.current;
     const picker = new (EmojiMartPicker as any)({
       data: emojiData,
+      i18n: emojiI18n,
       theme: themeMode,
       previewPosition: "none",
       skinTonePosition: "none",
@@ -257,7 +259,7 @@ function IconPickerButton({
         ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        title="Choose an icon"
+        title="选择图标"
         className={
           inline
             ? "grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-kumo-tint text-[18px] leading-none text-kumo-subtle transition-colors hover:bg-kumo-fill"
@@ -310,12 +312,12 @@ function CollectionProvenance({ source }: { source: EnabledCollectionInfo["sourc
       className="flex w-52 items-center gap-1 whitespace-nowrap"
       title={
         isPublic
-          ? "Provided by your organization for everyone"
-          : "A collection you created"
+          ? "由你的组织提供给所有人"
+          : "你创建的集合"
       }
     >
       {isPublic ? <Buildings size={11} /> : <User size={11} />}
-      {isPublic ? "Required by your organization" : "Created by you"}
+      {isPublic ? "组织要求使用" : "由你创建"}
     </span>
   );
 }
@@ -347,12 +349,12 @@ function CollectionIconTile({
 function formatRelativeTime(date: Date): string {
   const diff = Date.now() - date.getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return "刚刚";
+  if (minutes < 60) return `${minutes} 分钟前`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours} 小时前`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `${days} 天前`;
 }
 
 function handleCardKeyDown(e: React.KeyboardEvent, onClick: () => void) {
@@ -389,7 +391,7 @@ function CollectionRow({
             hasDescription ? "text-kumo-subtle" : "italic text-kumo-inactive"
           }`}
         >
-          {hasDescription ? collection.description : "No description"}
+          {hasDescription ? collection.description : "暂无描述"}
         </p>
       </div>
       {/* Fixed-width meta columns so rows line up like a table. */}
@@ -509,14 +511,14 @@ function FieldLabel({
   return (
     <label className="mb-1.5 flex items-center gap-1.5 text-[12px] leading-4 font-medium tracking-[-0.2px] text-kumo-subtle">
       <span>{children}</span>
-      {optional ? <span className="font-normal text-kumo-inactive">Optional</span> : null}
+      {optional ? <span className="font-normal text-kumo-inactive">可选</span> : null}
     </label>
   );
 }
 
 // Shared styling for the `…` overflow menus (file rows, folder rows, the tree's Add button).
 const MENU_CONTENT =
-  "z-[1100]! min-w-[168px]! rounded-lg border border-kumo-line bg-kumo-base p-1 shadow-[0_10px_24px_rgba(20,17,16,0.10)]";
+  "z-[1100]! min-w-[168px]! rounded-lg border border-kumo-line bg-kumo-base p-1 shadow-[0_10px_24px_rgba(15,23,42,0.10)]";
 const MENU_ITEM =
   "h-auto! rounded-md px-2.5! py-1.5! text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-default data-highlighted:bg-kumo-tint";
 const MENU_ITEM_DANGER =
@@ -570,7 +572,7 @@ function CollectionNameField({
 }) {
   return (
     <>
-      <FieldLabel>Name</FieldLabel>
+      <FieldLabel>名称</FieldLabel>
       {/* Icon tile + name share one focus-within pill so the emoji reads as part of the input. */}
       <div className="flex items-center gap-2 rounded-xl border-2 border-kumo-line bg-kumo-base p-1.5 transition-[border-color,box-shadow] duration-150 ease-out focus-within:border-kumo-ring focus-within:ring-1 focus-within:ring-kumo-ring/15">
         <IconPickerButton value={icon} onChange={onIconChange} variant="inline" />
@@ -580,7 +582,7 @@ function CollectionNameField({
           onKeyDown={(e) => {
             if (e.key === "Enter") onEnter?.();
           }}
-          placeholder="A short name, e.g., Brand guidelines"
+          placeholder="输入简短名称，例如：品牌规范"
           autoFocus={autoFocus}
           className="h-9 min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 pr-2 text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-default outline-none placeholder:text-kumo-inactive"
         />
@@ -598,12 +600,12 @@ function CollectionDescriptionField({
 }) {
   return (
     <>
-      <FieldLabel optional>Description</FieldLabel>
+      <FieldLabel optional>描述</FieldLabel>
       {/* `ring-0` drops Kumo InputArea's base ring so it matches the name pill's single border. */}
       <WorkshopInputArea
         value={value}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
-        placeholder="What it contains and when to use it, e.g., voice and tone rules for customer-facing writing"
+        placeholder="说明其中包含的内容和使用场景，例如：面向客户文案的措辞与语气规范"
         rows={4}
         className="w-full border-2 ring-0 !rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
       />
@@ -632,7 +634,7 @@ function ModalHeader({
       </div>
       <Dialog.Close
         render={(props) => (
-          <WorkshopIconButton {...props} aria-label="Close">
+          <WorkshopIconButton {...props} aria-label="关闭">
             <X size={18} />
           </WorkshopIconButton>
         )}
@@ -652,16 +654,15 @@ function DeletePermanentlyDescription({
 }) {
   return (
     <>
-      This permanently deletes{" "}
+      这将永久删除
       <span className="font-medium text-kumo-default">{name}</span>
       {documents !== undefined ? (
         <>
-          {" "}and all{" "}
-          <span className="font-medium text-kumo-danger">{pluralize(documents, "document")}</span>{" "}
-          inside it
+          及其中的全部
+          <span className="font-medium text-kumo-danger">{pluralize(documents, "文档")}</span>
         </>
       ) : null}
-      . This cannot be undone.
+      。此操作无法撤销。
     </>
   );
 }
@@ -671,14 +672,14 @@ const VISIBILITY_OPTIONS = [
   {
     value: "private" as const,
     Icon: Lock,
-    title: "Only me",
-    description: "Private to your account. Only you can view and edit it.",
+    title: "仅自己",
+    description: "仅你的账户可访问，只有你可以查看和编辑。",
   },
   {
     value: "public" as const,
     Icon: Buildings,
-    title: "Everyone",
-    description: "Shared across your organization and turned on for all users.",
+    title: "所有人",
+    description: "在组织内共享，并为所有用户启用。",
   },
 ];
 
@@ -686,14 +687,14 @@ const CONTENT_SOURCE_OPTIONS = [
   {
     value: "web" as const,
     Icon: PencilSimple,
-    title: "Editable documents",
-    description: "Create, edit, and delete files through the Cloudflare OS UI.",
+    title: "可编辑文档",
+    description: "通过 NINT os 界面创建、编辑和删除文件。",
   },
   {
     value: "git" as const,
     Icon: GitBranch,
-    title: "Git mirror",
-    description: "Push content from git using repository mirroring. All changes must be made through git.",
+    title: "Git 镜像",
+    description: "通过仓库镜像从 Git 推送内容。所有更改都必须通过 Git 完成。",
   },
 ];
 
@@ -750,10 +751,10 @@ function CreateCollectionView({
         icon,
         source,
       );
-      toasts.add({ title: "Collection created", variant: "success" });
+      toasts.add({ title: "集合已创建", variant: "success" });
       onCreated(metadata.id);
     } catch {
-      toasts.add({ title: "Failed to create collection", variant: "error" });
+      toasts.add({ title: "创建集合失败", variant: "error" });
       setCreating(false);
     }
   };
@@ -767,13 +768,13 @@ function CreateCollectionView({
           className="press mb-3 -ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[13px] font-medium tracking-[-0.25px] text-kumo-subtle transition-colors hover:text-kumo-default"
         >
           <CaretLeft size={14} />
-          Context &amp; Skills
+          上下文与技能
         </button>
         <h1 className="text-2xl font-semibold tracking-tight text-kumo-default">
-          New collection
+          新建集合
         </h1>
         <p className="mt-1 max-w-2xl text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-subtle">
-          A collection of documents, skills, and other files your agents can use.
+          创建一个可供智能体使用的文档、技能和其他文件集合。
         </p>
       </header>
 
@@ -795,8 +796,8 @@ function CreateCollectionView({
             </div>
             {supportsGitCollections && (
               <div className="ctx-rise" style={{ animationDelay: "160ms" }}>
-                <FieldLabel>Type</FieldLabel>
-                <div role="radiogroup" aria-label="Collection type" className="grid gap-2">
+                <FieldLabel>类型</FieldLabel>
+                <div role="radiogroup" aria-label="集合类型" className="grid gap-2">
                   {CONTENT_SOURCE_OPTIONS.map(({
                     value,
                     Icon,
@@ -843,8 +844,8 @@ function CreateCollectionView({
             )}
             {isAdmin && (
               <div className="ctx-rise" style={{ animationDelay: "200ms" }}>
-                <FieldLabel>Visibility</FieldLabel>
-                <div role="radiogroup" aria-label="Visibility" className="grid gap-2">
+                <FieldLabel>可见范围</FieldLabel>
+                <div role="radiogroup" aria-label="可见范围" className="grid gap-2">
                   {VISIBILITY_OPTIONS.map(({
                     value,
                     Icon,
@@ -902,10 +903,10 @@ function CreateCollectionView({
               disabled={creating}
               className="!h-9"
             >
-              Cancel
+              取消
             </WorkshopButton>
-            {/* Orange brand "create" button (page CTA, not a modal primary). The disabled overrides
-                keep the inactive state grey rather than faded orange. */}
+            {/* Blue brand "create" button (page CTA, not a modal primary). The disabled overrides
+                keep the inactive state grey rather than faded blue. */}
             <WorkshopButton
               tone="primary"
               onClick={handleCreate}
@@ -913,7 +914,7 @@ function CreateCollectionView({
               disabled={!title.trim()}
               className="press !bg-kumo-brand text-white enabled:hover:!bg-kumo-brand-hover disabled:!bg-kumo-fill disabled:!text-kumo-inactive disabled:!opacity-100"
             >
-              Create collection
+              创建集合
             </WorkshopButton>
           </div>
         </div>
@@ -1016,10 +1017,10 @@ export default function ContextLibraryPage() {
       <header className="flex items-end justify-between gap-4 px-3 pb-3 pt-10">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-kumo-default">
-            Context &amp; Skills
+            上下文与技能
           </h1>
           <p className="mt-1 max-w-2xl text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-subtle">
-            Collections of documents, skills, and other files your agents can use.
+            管理可供智能体使用的文档、技能和其他文件集合。
           </p>
         </div>
         {enabled.length > 0 && (
@@ -1029,7 +1030,7 @@ export default function ContextLibraryPage() {
             className="press inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-kumo-brand px-3.5 text-[13px] font-medium tracking-[-0.25px] text-white transition-colors hover:bg-kumo-brand-hover"
           >
             <Plus size={14} weight="bold" />
-            New collection
+            新建集合
           </button>
         )}
       </header>
@@ -1045,7 +1046,7 @@ export default function ContextLibraryPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search collections…"
+              placeholder="搜索集合…"
               className="h-9 w-full rounded-lg border border-kumo-line bg-kumo-base pl-9 pr-4 text-[13px] tracking-[-0.25px] text-kumo-default placeholder:text-kumo-inactive transition-[border-color,box-shadow] duration-150 ease-out focus:border-kumo-ring focus:outline-none focus:ring-[3px] focus:ring-kumo-ring/15"
             />
           </div>
@@ -1062,12 +1063,12 @@ export default function ContextLibraryPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-kumo-default">
-                {search ? "No collections match" : "No collections yet"}
+                {search ? "没有匹配的集合" : "还没有集合"}
               </p>
               <p className="mx-auto mt-1 max-w-sm text-[13px] leading-[18px] text-kumo-subtle">
                 {search
-                  ? "Try a different search term."
-                  : "Create a collection to give your agents context to work with."}
+                  ? "请尝试其他搜索词。"
+                  : "创建集合，为智能体提供工作所需的上下文。"}
               </p>
             </div>
             {!search && (
@@ -1077,7 +1078,7 @@ export default function ContextLibraryPage() {
                 className="press mt-1 inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-kumo-brand px-3.5 text-[13px] font-medium tracking-[-0.25px] text-white transition-colors hover:bg-kumo-brand-hover"
               >
                 <Plus size={14} weight="bold" />
-                New collection
+                新建集合
               </button>
             )}
           </div>
@@ -1157,7 +1158,7 @@ function CollectionOverview({
                   {metadata.title}
                 </h1>
                 <p className="mt-1 text-[13px] leading-[18px] tracking-[-0.2px] text-kumo-subtle">
-                  Context collection
+                  上下文集合
                 </p>
               </div>
             </div>
@@ -1170,14 +1171,14 @@ function CollectionOverview({
                     onClick={onRefreshSource}
                     loading={refreshingSource}
                   >
-                    Refresh
+                    刷新
                   </WorkshopButton>
                 )}
                 <KebabMenu
                   trigger={
                     <WorkshopIconButton
-                      aria-label="Collection options"
-                      title="Options"
+                      aria-label="集合选项"
+                      title="选项"
                       className="!h-9 !w-9 data-[popup-open]:bg-kumo-tint data-[popup-open]:text-kumo-default"
                     >
                       <DotsThree size={18} weight="bold" />
@@ -1189,7 +1190,7 @@ function CollectionOverview({
                     onClick={onEditDetails}
                     className={MENU_ITEM}
                   >
-                    Edit details
+                    编辑详情
                   </DropdownMenu.Item>
                   {isSynced && supportsGitCollections && (
                     <DropdownMenu.Item
@@ -1197,7 +1198,7 @@ function CollectionOverview({
                       onClick={onManageGitTokens}
                       className={MENU_ITEM}
                     >
-                      Manage git tokens
+                      管理 Git 令牌
                     </DropdownMenu.Item>
                   )}
                   <DropdownMenu.Separator />
@@ -1206,7 +1207,7 @@ function CollectionOverview({
                     onClick={onDelete}
                     className={`${MENU_ITEM_DANGER} text-kumo-danger`}
                   >
-                    Delete collection
+                    删除集合
                   </DropdownMenu.Item>
                 </KebabMenu>
               </div>
@@ -1214,17 +1215,17 @@ function CollectionOverview({
           </div>
 
           <div className="mt-9 grid grid-cols-2 gap-x-8 gap-y-5 @xl:grid-cols-4">
-            <MetaField label="Source">
+            <MetaField label="来源">
               <span className="inline-flex items-center gap-1.5">
                 {isPublic ? <Buildings size={12} className="shrink-0" /> : <User size={12} className="shrink-0" />}
-                {isPublic ? "Your organization" : "You"}
+                {isPublic ? "你的组织" : "你"}
               </span>
             </MetaField>
-            <MetaField label="Access">
-              {isPublic ? "Everyone (required)" : "Private to you"}
+            <MetaField label="访问权限">
+              {isPublic ? "所有人（必需）" : "仅自己"}
             </MetaField>
-            <MetaField label="Documents">{metadata.documentCount}</MetaField>
-            <MetaField label={isSynced ? "Refreshed" : "Updated"} align="right">
+            <MetaField label="文档数">{metadata.documentCount}</MetaField>
+            <MetaField label={isSynced ? "刷新时间" : "更新时间"} align="right">
               {metadata.content.source === "git"
                 ? formatRelativeTime(metadata.content.lastRefreshedAt)
                 : formatRelativeTime(metadata.lastUpdated)}
@@ -1235,17 +1236,17 @@ function CollectionOverview({
         {isSynced && !supportsGitCollections && (
           <section className="mt-8 rounded-xl border border-kumo-line bg-kumo-elevated/60 px-5 py-4">
             <p className="text-[13px] font-medium tracking-[-0.2px] text-kumo-default">
-              Git synchronization unavailable
+              Git 同步不可用
             </p>
             <p className="mt-1 text-[13px] leading-5 tracking-[-0.2px] text-kumo-subtle">
-              Git content is read-only and shows its most recently cached version.
+              Git 内容为只读状态，当前显示最近缓存的版本。
             </p>
           </section>
         )}
 
         <section className="mt-9 border-t border-kumo-line pt-8">
           <p className="mb-3 text-[13px] font-medium leading-none tracking-[-0.2px] text-kumo-subtle">
-            Description
+            描述
           </p>
           {metadata.description ? (
             <p className="max-w-3xl text-[15px] leading-7 tracking-[-0.2px] text-kumo-default">
@@ -1253,7 +1254,7 @@ function CollectionOverview({
             </p>
           ) : (
             <p className="text-[13px] italic leading-5 text-kumo-inactive">
-              No description yet.
+              暂无描述。
             </p>
           )}
         </section>
@@ -1266,16 +1267,16 @@ function CollectionOverview({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-medium tracking-[-0.2px] text-kumo-default">
-                  No files in this collection
+                  此集合中没有文件
                 </p>
                 <p className="mt-1 max-w-xl text-[13px] leading-5 tracking-[-0.2px] text-kumo-subtle">
                   {isSynced
                     ? supportsGitCollections
-                      ? "This git mirror is empty. Mirror content from git, then refresh."
-                      : "No Git content was cached before synchronization became unavailable."
+                      ? "此 Git 镜像为空。请从 Git 镜像内容，然后刷新。"
+                      : "Git 同步不可用前未缓存任何内容。"
                     : canWrite
-                    ? "Use the + in the Files panel to create or upload skills or files. Agents use the names and descriptions to decide what to read."
-                    : "This collection is empty."}
+                    ? "使用“文件”面板中的“+”创建或上传技能或文件。智能体会根据名称和描述决定读取哪些内容。"
+                    : "此集合为空。"}
                 </p>
               </div>
             </div>
@@ -1367,17 +1368,17 @@ function CollectionSettingsModal({
       return;
     }
     if (!title.trim()) {
-      toasts.add({ title: "Name can't be empty", variant: "error" });
+      toasts.add({ title: "名称不能为空", variant: "error" });
       return;
     }
     setSaving(true);
     try {
       await context.updateContextCollection(collectionId, updates);
-      toasts.add({ title: "Collection updated", variant: "success" });
+      toasts.add({ title: "集合已更新", variant: "success" });
       onUpdated();
       onClose();
     } catch {
-      toasts.add({ title: "Failed to update collection", variant: "error" });
+      toasts.add({ title: "更新集合失败", variant: "error" });
       setSaving(false);
     }
   };
@@ -1386,10 +1387,10 @@ function CollectionSettingsModal({
     setDeleting(true);
     try {
       await context.deleteContextCollection(collectionId);
-      toasts.add({ title: "Collection deleted", variant: "success" });
+      toasts.add({ title: "集合已删除", variant: "success" });
       onDeleted();
     } catch {
-      toasts.add({ title: "Failed to delete collection", variant: "error" });
+      toasts.add({ title: "删除集合失败", variant: "error" });
       setDeleting(false);
     }
   };
@@ -1410,7 +1411,7 @@ function CollectionSettingsModal({
       >
         {mode === "edit" ? (
           <>
-            <ModalHeader title="Edit collection" />
+            <ModalHeader title="编辑集合" />
 
             <div className="space-y-5 px-4 py-5 sm:px-6">
               <div>
@@ -1428,7 +1429,7 @@ function CollectionSettingsModal({
               </div>
               {metadata.content.source === "git" && supportsGitCollections && (
                 <div>
-                  <FieldLabel>Git branch</FieldLabel>
+                  <FieldLabel>Git 分支</FieldLabel>
                   <WorkshopInput
                     value={branch}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBranch(e.target.value)}
@@ -1439,7 +1440,7 @@ function CollectionSettingsModal({
                     className="w-full"
                   />
                   <p className="mt-1 text-[12px] leading-4 text-kumo-subtle">
-                    This branch to pull from when refreshing the collection.
+                    刷新集合时将从此分支拉取内容。
                   </p>
                 </div>
               )}
@@ -1447,7 +1448,7 @@ function CollectionSettingsModal({
 
             <div className="flex items-center justify-end gap-2 border-t border-kumo-line px-4 py-3 sm:px-6">
               <WorkshopButton tone="secondary" className="!h-9" disabled={saving} onClick={onClose}>
-                Cancel
+                取消
               </WorkshopButton>
               <WorkshopButton
                 tone="primary"
@@ -1455,14 +1456,14 @@ function CollectionSettingsModal({
                 loading={saving}
                 disabled={!hasChanges || !title.trim()}
               >
-                Save
+                保存
               </WorkshopButton>
             </div>
           </>
         ) : (
           <>
             <ModalHeader
-              title="Delete collection"
+              title="删除集合"
               description={
                 <DeletePermanentlyDescription
                   name={metadata.title}
@@ -1473,11 +1474,11 @@ function CollectionSettingsModal({
 
             <div className="px-4 py-5 sm:px-6">
               <FieldLabel>
-                Type{" "}
+                输入
                 <span className="font-mono text-kumo-default">
                   {metadata.title}
                 </span>{" "}
-                to confirm
+                以确认
               </FieldLabel>
               <WorkshopInput
                 value={confirmText}
@@ -1499,7 +1500,7 @@ function CollectionSettingsModal({
                 disabled={!canDelete}
                 loading={deleting}
               >
-                Delete collection
+                删除集合
               </WorkshopButton>
             </div>
           </>
@@ -1550,7 +1551,7 @@ function GitTokenManagementModal({
       const result = await context.listContextCollectionGitTokens(collectionId);
       setGitTokens(result.tokens);
     } catch (err) {
-      toastsRef.current.add({ title: `Failed to load Git tokens: ${(err as Error).message}`, variant: "error" });
+      toastsRef.current.add({ title: `加载 Git 令牌失败：${(err as Error).message}`, variant: "error" });
     } finally {
       setLoadingTokens(false);
     }
@@ -1566,9 +1567,9 @@ function GitTokenManagementModal({
       const token = await context.createContextCollectionGitToken(collectionId);
       setNewGitToken(token);
       await loadGitTokens();
-      toasts.add({ title: "Git token created", variant: "success" });
+      toasts.add({ title: "Git 令牌已创建", variant: "success" });
     } catch (err) {
-      toasts.add({ title: `Failed to create Git token: ${(err as Error).message}`, variant: "error" });
+      toasts.add({ title: `创建 Git 令牌失败：${(err as Error).message}`, variant: "error" });
     } finally {
       setCreatingToken(false);
     }
@@ -1579,9 +1580,9 @@ function GitTokenManagementModal({
     try {
       await context.revokeContextCollectionGitToken(collectionId, tokenId);
       await loadGitTokens();
-      toasts.add({ title: "Git token revoked", variant: "success" });
+      toasts.add({ title: "Git 令牌已撤销", variant: "success" });
     } catch (err) {
-      toasts.add({ title: `Failed to revoke Git token: ${(err as Error).message}`, variant: "error" });
+      toasts.add({ title: `撤销 Git 令牌失败：${(err as Error).message}`, variant: "error" });
     } finally {
       setRevokingToken(null);
     }
@@ -1608,13 +1609,13 @@ function GitTokenManagementModal({
         size="sm"
       >
         <ModalHeader
-          title="Manage git tokens"
+          title="管理 Git 令牌"
         />
 
         <div className="space-y-3 px-4 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <p className="max-w-sm text-[12px] leading-4 text-kumo-subtle">
-              Create a token to mirror content from an external git repository.
+              创建令牌，以便从外部 Git 仓库镜像内容。
             </p>
             <WorkshopButton
               tone="secondary"
@@ -1623,21 +1624,21 @@ function GitTokenManagementModal({
               loading={creatingToken}
               disabled={busy}
             >
-              Create token
+              创建令牌
             </WorkshopButton>
           </div>
 
           {newGitToken && (
             <div className="space-y-3 rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-3 text-[12px] leading-5 text-kumo-subtle">
               <div>
-                <div className="font-medium text-kumo-default">Token created</div>
+                <div className="font-medium text-kumo-default">令牌已创建</div>
                 <p className="mt-0.5">
-                  Use these credentials to push content to your collection. The password is only shown once.
+                  使用这些凭据将内容推送到集合。密码仅显示一次。
                 </p>
               </div>
               <div className="space-y-2">
                 <div>
-                  <FieldLabel>Remote URL</FieldLabel>
+                  <FieldLabel>远程 URL</FieldLabel>
                   <div className="mt-1 flex gap-2">
                     <input
                       readOnly
@@ -1647,14 +1648,14 @@ function GitTokenManagementModal({
                     <WorkshopButton
                       tone="secondary"
                       className="h-8!"
-                      onClick={() => copyToClipboard(newGitToken.remote, "Remote URL copied", "Failed to copy remote URL")}
+                      onClick={() => copyToClipboard(newGitToken.remote, "远程 URL 已复制", "复制远程 URL 失败")}
                     >
-                      Copy
+                      复制
                     </WorkshopButton>
                   </div>
                 </div>
                 <div>
-                  <FieldLabel>Password</FieldLabel>
+                  <FieldLabel>密码</FieldLabel>
                   <div className="mt-1 flex gap-2">
                     <input
                       readOnly
@@ -1665,29 +1666,29 @@ function GitTokenManagementModal({
                     <WorkshopButton
                       tone="secondary"
                       className="h-8!"
-                      onClick={() => copyToClipboard(newGitToken.plaintext, "Password copied", "Failed to copy password")}
+                      onClick={() => copyToClipboard(newGitToken.plaintext, "密码已复制", "复制密码失败")}
                     >
-                      Copy
+                      复制
                     </WorkshopButton>
                   </div>
                 </div>
               </div>
               <div className="border-t border-green-500/20 pt-3">
-                <div className="font-medium text-kumo-default">Configure GitLab mirroring</div>
+                <div className="font-medium text-kumo-default">配置 GitLab 镜像</div>
                 <p className="mt-0.5">
-                  These steps are specific to GitLab. Other git providers may use different setup flows.
+                  以下步骤适用于 GitLab，其他 Git 服务提供商的设置流程可能不同。
                 </p>
                 <ol className="mt-2 list-decimal space-y-1.5 pl-4">
-                  <li>Open your GitLab project and go to Settings &gt; Repository &gt; Mirroring repositories</li>
-                  <li>Click "Add new" button to open setup flow</li>
-                  <li>Set Git repository URL to the remote URL above</li>
-                  <li>Set Mirror direction to Push</li>
-                  <li>Set Authentication method to Username and Password</li>
-                  <li>Set Username to "gitlab"</li>
-                  <li>Set Password to the password above</li>
-                  <li>Select Mirror specific branches and type in "{branch}"</li>
-                  <li>Click "Mirror repository" button to finish</li>
-                  <li>Click "Update now" button to trigger an initial push</li>
+                  <li>打开 GitLab 项目，依次进入“设置”&gt;“仓库”&gt;“镜像仓库”</li>
+                  <li>点击“新建”按钮打开设置流程</li>
+                  <li>将 Git 仓库 URL 设置为上方的远程 URL</li>
+                  <li>将镜像方向设置为“推送”</li>
+                  <li>将身份验证方式设置为“用户名和密码”</li>
+                  <li>将用户名设置为“gitlab”</li>
+                  <li>将密码设置为上方的密码</li>
+                  <li>选择“镜像特定分支”，然后输入“{branch}”</li>
+                  <li>点击“镜像仓库”按钮完成设置</li>
+                  <li>点击“立即更新”按钮触发首次推送</li>
                 </ol>
               </div>
             </div>
@@ -1695,9 +1696,9 @@ function GitTokenManagementModal({
 
           <div className="rounded-lg border border-kumo-line bg-kumo-base">
             {loadingTokens ? (
-              <div className="px-3 py-2 text-[12px] text-kumo-subtle">Loading tokens...</div>
+              <div className="px-3 py-2 text-[12px] text-kumo-subtle">正在加载令牌…</div>
             ) : gitTokens.length === 0 ? (
-              <div className="px-3 py-2 text-[12px] text-kumo-subtle">No Git tokens yet.</div>
+              <div className="px-3 py-2 text-[12px] text-kumo-subtle">还没有 Git 令牌。</div>
             ) : (
               <div className="divide-y divide-kumo-line">
                 {gitTokens.map((token) => (
@@ -1708,7 +1709,7 @@ function GitTokenManagementModal({
                     <div className="min-w-0">
                       <div className="truncate font-mono text-[11px] text-kumo-default">{token.id}</div>
                       <div className="text-kumo-subtle">
-                        expires {new Date(token.expiresAt).toLocaleDateString()}
+                        到期日期：{new Date(token.expiresAt).toLocaleDateString("zh-CN")}
                       </div>
                     </div>
                     <WorkshopButton
@@ -1718,7 +1719,7 @@ function GitTokenManagementModal({
                       loading={revokingToken === token.id}
                       disabled={revokingToken !== null}
                     >
-                      Revoke
+                      撤销
                     </WorkshopButton>
                   </div>
                 ))}
@@ -1729,7 +1730,7 @@ function GitTokenManagementModal({
 
         <div className="flex items-center justify-end gap-2 border-t border-kumo-line px-4 py-3 sm:px-6">
           <WorkshopButton tone="secondary" className="h-9!" disabled={busy} onClick={onClose}>
-            Close
+            关闭
           </WorkshopButton>
         </div>
       </Dialog>
@@ -1882,7 +1883,7 @@ function CreateRow({ depth, ctx }: { depth: number; ctx: TreeCtx }) {
         onChange={ctx.setCreatingName}
         onCommit={ctx.commitCreate}
         onCancel={ctx.cancelCreate}
-        placeholder={isFolder ? "folder-name" : "file-name.md"}
+        placeholder={isFolder ? "文件夹名称" : "文件名.md"}
       />
     </div>
   );
@@ -1975,10 +1976,10 @@ function FolderView({
                 </span>
                 {isSkill && (
                   <span
-                    title="Contains a valid Agent Skill"
+                    title="包含有效的智能体技能"
                     className="shrink-0 text-[10px] font-medium uppercase leading-none tracking-[0.4px] text-kumo-inactive"
                   >
-                    skill
+                    技能
                   </span>
                 )}
               </>
@@ -1989,7 +1990,7 @@ function FolderView({
               stopPropagation
               trigger={
                 <WorkshopIconButton
-                  aria-label={`Actions for ${folder.name}`}
+                  aria-label={`${folder.name}的操作`}
                   onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   className={TREE_ROW_TRIGGER}
                 >
@@ -2002,21 +2003,21 @@ function FolderView({
                 onClick={() => ctx.startCreate(folder.path, "file")}
                 className={MENU_ITEM}
               >
-                New file
+                新建文件
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 icon={<FolderPlus size={12} className="mr-2" />}
                 onClick={() => ctx.startCreate(folder.path, "folder")}
                 className={MENU_ITEM}
               >
-                New folder
+                新建文件夹
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 icon={<PencilSimple size={12} className="mr-2" />}
                 onClick={() => ctx.startRename(folder.path)}
                 className={MENU_ITEM}
               >
-                Rename
+                重命名
               </DropdownMenu.Item>
               <DropdownMenu.Separator />
               <DropdownMenu.Item
@@ -2025,7 +2026,7 @@ function FolderView({
                 onClick={() => ctx.deletePath(folder.path, true)}
                 className={MENU_ITEM_DANGER}
               >
-                Delete
+                删除
               </DropdownMenu.Item>
             </KebabMenu>
           )}
@@ -2115,7 +2116,7 @@ function FileView({
           stopPropagation
           trigger={
             <WorkshopIconButton
-              aria-label={`Actions for ${baseName(doc.path)}`}
+              aria-label={`${baseName(doc.path)}的操作`}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className={TREE_ROW_TRIGGER}
             >
@@ -2128,7 +2129,7 @@ function FileView({
             onClick={() => ctx.startRename(doc.path)}
             className={MENU_ITEM}
           >
-            Rename
+            重命名
           </DropdownMenu.Item>
           <DropdownMenu.Item
             icon={<Trash size={12} className="mr-2" />}
@@ -2136,7 +2137,7 @@ function FileView({
             onClick={() => ctx.deletePath(doc.path, false)}
             className={MENU_ITEM_DANGER}
           >
-            Delete
+            删除
           </DropdownMenu.Item>
         </KebabMenu>
       )}
@@ -2255,9 +2256,9 @@ function CollectionEditor({
     try {
       await context.syncContextCollectionArtifactSource(collectionId);
       await loadDocs();
-      toasts.add({ title: "Collection refreshed", variant: "success" });
+      toasts.add({ title: "集合已刷新", variant: "success" });
     } catch (err) {
-      toasts.add({ title: `Failed to refresh: ${(err as Error).message}`, variant: "error" });
+      toasts.add({ title: `刷新失败：${(err as Error).message}`, variant: "error" });
     } finally {
       setRefreshingSource(false);
     }
@@ -2323,7 +2324,7 @@ function CollectionEditor({
       setEditOnOpenPath(filePath);
       setSelectedPath(filePath);
     } catch {
-      toasts.add({ title: "Failed to create file", variant: "error" });
+      toasts.add({ title: "创建文件失败", variant: "error" });
     }
   };
 
@@ -2367,7 +2368,7 @@ function CollectionEditor({
       await relocate(renaming, dest);
     } catch (err) {
       toasts.add({
-        title: `Failed to rename: ${(err as Error).message}`,
+        title: `重命名失败：${(err as Error).message}`,
         variant: "error",
       });
     } finally {
@@ -2384,7 +2385,7 @@ function CollectionEditor({
       await relocate(from, dest);
     } catch (err) {
       toasts.add({
-        title: `Failed to move: ${(err as Error).message}`,
+        title: `移动失败：${(err as Error).message}`,
         variant: "error",
       });
     }
@@ -2435,7 +2436,7 @@ function CollectionEditor({
       setPendingDelete(null);
     } catch {
       toasts.add({
-        title: isDir ? "Failed to delete folder" : "Failed to delete document",
+        title: isDir ? "删除文件夹失败" : "删除文档失败",
         variant: "error",
       });
     } finally {
@@ -2467,7 +2468,7 @@ function CollectionEditor({
       }
     });
     toasts.add({
-      title: `Uploaded ${pluralize(ok, "file")}${failed ? `, ${failed} failed` : ""}`,
+      title: `已上传${pluralize(ok, "文件")}${failed ? `，${failed} 个失败` : ""}`,
       variant: failed ? "error" : "success",
     });
     await loadDocs();
@@ -2518,15 +2519,15 @@ function CollectionEditor({
             className="press -ml-1 mb-4 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[13px] font-medium tracking-[-0.25px] text-kumo-subtle transition-colors hover:text-kumo-default"
           >
             <CaretLeft size={14} />
-            Context &amp; Skills
+            上下文与技能
           </button>
-          <div className="rounded-xl border border-kumo-line bg-kumo-base px-5 py-10 text-center shadow-[0_1px_2px_rgba(20,17,16,0.03)]">
+          <div className="rounded-xl border border-kumo-line bg-kumo-base px-5 py-10 text-center shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
             <BookOpen size={32} className="mx-auto mb-3 text-kumo-subtle" />
             <p className="m-0 text-[15px] leading-5 font-medium tracking-[-0.25px] text-kumo-default">
-              This collection is no longer available
+              此集合已不可用
             </p>
             <p className="mt-1 text-[13px] leading-[18px] font-normal tracking-[-0.25px] text-kumo-subtle">
-              It may have been deleted.
+              它可能已被删除。
             </p>
           </div>
         </div>
@@ -2577,7 +2578,7 @@ function CollectionEditor({
           size="sm"
         >
           <ModalHeader
-            title={pendingDelete?.isDir ? "Delete folder" : "Delete document"}
+            title={pendingDelete?.isDir ? "删除文件夹" : "删除文档"}
             description={
               <DeletePermanentlyDescription
                 name={pendingDelete ? baseName(pendingDelete.path) : ""}
@@ -2596,7 +2597,7 @@ function CollectionEditor({
               disabled={deletingPath}
               onClick={() => setPendingDelete(null)}
             >
-              Cancel
+              取消
             </WorkshopButton>
             <WorkshopButton
               tone="danger"
@@ -2604,7 +2605,7 @@ function CollectionEditor({
               onClick={performDeletePath}
               loading={deletingPath}
             >
-              {pendingDelete?.isDir ? "Delete folder" : "Delete document"}
+              {pendingDelete?.isDir ? "删除文件夹" : "删除文档"}
             </WorkshopButton>
           </div>
         </Dialog>
@@ -2624,7 +2625,7 @@ function CollectionEditor({
             className="press -ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[13px] font-medium tracking-[-0.25px] text-kumo-subtle transition-colors hover:text-kumo-default"
           >
             <CaretLeft size={14} />
-            Context &amp; Skills
+            上下文与技能
           </button>
         </div>
           {metadata && (
@@ -2633,7 +2634,7 @@ function CollectionEditor({
                   when nothing is selected. */}
               <button
                 onClick={() => setSelectedPath(null)}
-                title="Collection overview"
+                title="集合概览"
                 aria-current={selectedPath ? undefined : "page"}
                 className={`flex w-full transform-none items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kumo-ring/30 active:scale-100 ${
                   selectedPath ? "hover:bg-kumo-tint" : "bg-kumo-recessed"
@@ -2649,15 +2650,15 @@ function CollectionEditor({
 
           <div className="flex h-8 shrink-0 items-center justify-between gap-2 px-5">
             <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-kumo-inactive">
-              Files
+              文件
             </span>
             {canEditDocuments && (
               <>
             <KebabMenu
               trigger={
                 <WorkshopIconButton
-                  aria-label="Add"
-                  title="Add file or folder"
+                  aria-label="添加"
+                  title="添加文件或文件夹"
                   className="!h-6 !w-6 text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default data-[popup-open]:bg-kumo-tint data-[popup-open]:text-kumo-default"
                 >
                   <Plus size={14} weight="bold" />
@@ -2669,14 +2670,14 @@ function CollectionEditor({
                 onClick={() => startCreate("", "file")}
                 className={MENU_ITEM}
               >
-                New file
+                新建文件
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 icon={<FolderPlus size={13} className="mr-2" />}
                 onClick={() => startCreate("", "folder")}
                 className={MENU_ITEM}
               >
-                New folder
+                新建文件夹
               </DropdownMenu.Item>
               <DropdownMenu.Separator />
               <DropdownMenu.Item
@@ -2684,14 +2685,14 @@ function CollectionEditor({
                 onClick={() => fileInputRef.current?.click()}
                 className={MENU_ITEM}
               >
-                Upload files
+                上传文件
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 icon={<Folder size={13} className="mr-2" />}
                 onClick={() => dirInputRef.current?.click()}
                 className={MENU_ITEM}
               >
-                Upload folder
+                上传文件夹
               </DropdownMenu.Item>
             </KebabMenu>
             <input
@@ -2721,14 +2722,14 @@ function CollectionEditor({
           </div>
           <div className="ctx-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3.5 pb-6 pt-0.5">
             {loading ? (
-              <p className="px-2 py-2 text-[13px] text-kumo-subtle">Loading…</p>
+              <p className="px-2 py-2 text-[13px] text-kumo-subtle">正在加载…</p>
             ) : docs.length === 0 && pendingFolders.size === 0 && !creating ? (
               <p className="px-2 py-2 text-[12px] leading-5 text-kumo-inactive">
                 {metadata?.content.source === "git"
                   ? supportsGitCollections
-                    ? "No files yet. Mirror content from git, then refresh."
-                    : "No Git content was cached before synchronization became unavailable."
-                  : canWrite ? "No files yet. Use + to create or upload skills or files." : "No files yet."}
+                    ? "还没有文件。请从 Git 镜像内容，然后刷新。"
+                    : "Git 同步不可用前未缓存任何内容。"
+                  : canWrite ? "还没有文件。使用“+”创建或上传技能或文件。" : "还没有文件。"}
               </p>
             ) : (
               <FolderView folder={tree} depth={0} ctx={ctx} />
@@ -2746,7 +2747,7 @@ function CollectionEditor({
                 className="flex sm:hidden flex-shrink-0 items-center gap-1 border-b border-kumo-line px-4 py-2.5 text-[13px] text-kumo-subtle transition-colors hover:text-kumo-default"
               >
                 <CaretLeft size={14} />
-                Files
+                文件
               </button>
               <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
                 <DocumentEditor
@@ -2870,7 +2871,7 @@ function MarkdownPreview({
               {content}
             </ReactMarkdown>
           ) : (
-            <p className="italic text-kumo-inactive">This document is empty.</p>
+            <p className="italic text-kumo-inactive">此文档为空。</p>
           )}
         </div>
       </div>
@@ -2920,8 +2921,7 @@ function renderDocumentBody({
   if (!isText) {
     return (
       <div className="p-4 text-[13px] text-kumo-subtle">
-        Binary document ({contentType}, {Math.round((body.length * 3) / 4 / 1024)} KB). Use Replace to
-        update it.
+        二进制文档（{contentType}，{Math.round((body.length * 3) / 4 / 1024)} KB）。请使用“替换”进行更新。
       </div>
     );
   }
@@ -3028,7 +3028,7 @@ function DocumentEditor({
       if (cancelled) return;
       setLoading(false);
       toasts.add({
-        title: `Failed to load document: ${(err as Error).message}`,
+        title: `加载文档失败：${(err as Error).message}`,
         variant: "error",
       });
     });
@@ -3064,10 +3064,10 @@ function DocumentEditor({
       };
       setSkillName(saved?.skillName ?? null);
       setDirty(false);
-      toasts.add({ title: "Saved", variant: "success" });
+      toasts.add({ title: "已保存", variant: "success" });
       onChanged();
     } catch {
-      toasts.add({ title: "Failed to save", variant: "error" });
+      toasts.add({ title: "保存失败", variant: "error" });
     } finally {
       setSaving(false);
     }
@@ -3081,7 +3081,7 @@ function DocumentEditor({
       return;
     }
     if (trimmed.includes("/")) {
-      toasts.add({ title: "File name can't contain '/'", variant: "error" });
+      toasts.add({ title: "文件名不能包含“/”", variant: "error" });
       setFilename(baseName(path));
       return;
     }
@@ -3092,7 +3092,7 @@ function DocumentEditor({
       await context.moveContextDocument(collectionId, path, newPath);
       onRenamed(newPath);
     } catch (err) {
-      toasts.add({ title: `Rename failed: ${(err as Error).message}`, variant: "error" });
+      toasts.add({ title: `重命名失败：${(err as Error).message}`, variant: "error" });
       setFilename(baseName(path));
     } finally {
       setRenaming(false);
@@ -3109,7 +3109,7 @@ function DocumentEditor({
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-kumo-subtle">
-        Loading…
+        正在加载…
       </div>
     );
   }
@@ -3133,15 +3133,15 @@ function DocumentEditor({
               else if (e.key === "Escape") { setFilename(baseName(path)); e.currentTarget.blur(); }
             }}
             className="w-full bg-transparent text-[18px] font-semibold leading-6 tracking-[-0.4px] text-kumo-default focus:outline-none"
-            placeholder="file-name.md"
-            title="File name — edit to rename (the extension sets the type)"
+            placeholder="文件名.md"
+            title="文件名——编辑即可重命名（扩展名决定文件类型）"
           />
 
         </div>
         {/* Contextual actions sit left of the toggle so the always-present toggle/delete cluster
             stays right-anchored — toggling View/Edit never shifts the toggle. */}
         {!readOnly && dirty && (
-          // Disabled overrides keep the inactive state grey rather than faded orange.
+          // Disabled overrides keep the inactive state grey rather than faded blue.
           <WorkshopButton
             tone="primary"
             className="!h-8 !bg-kumo-contrast !text-kumo-inverse enabled:hover:!bg-kumo-strong disabled:!bg-kumo-fill disabled:!text-kumo-inactive disabled:!opacity-100"
@@ -3149,12 +3149,12 @@ function DocumentEditor({
             loading={saving}
             disabled={!dirty}
           >
-            Save
+            保存
           </WorkshopButton>
         )}
         {!readOnly && !isText && mode === "edit" && (
           <label className="press flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-kumo-line px-2.5 text-[12px] font-medium text-kumo-subtle transition-colors hover:bg-kumo-tint hover:text-kumo-default">
-            <UploadSimple size={14} /> Replace
+            <UploadSimple size={14} /> 替换
             <input
               type="file"
               className="hidden"
@@ -3169,8 +3169,8 @@ function DocumentEditor({
         {showModeToggle && (
           <div className="inline-flex h-8 shrink-0 items-center rounded-lg border border-kumo-line bg-kumo-fill p-0.5">
             {[
-              { m: "read" as const, Icon: Eye, label: "View" },
-              { m: "edit" as const, Icon: readOnly ? Code : PencilSimple, label: readOnly ? "Source" : "Edit" },
+              { m: "read" as const, Icon: Eye, label: "查看" },
+              { m: "edit" as const, Icon: readOnly ? Code : PencilSimple, label: readOnly ? "源代码" : "编辑" },
             ].map(({ m, Icon, label }) => (
               <button
                 key={m}
@@ -3196,7 +3196,8 @@ function DocumentEditor({
           <span className="mx-0.5 h-5 w-px shrink-0 bg-kumo-line" aria-hidden="true" />
           <button
             onClick={onRequestDelete}
-            title="Delete document"
+            title="删除文档"
+            aria-label="删除文档"
             className="press flex h-8 w-8 items-center justify-center rounded-md text-kumo-subtle transition-colors hover:bg-kumo-tint hover:text-kumo-danger"
           >
             <Trash size={16} />
@@ -3209,23 +3210,23 @@ function DocumentEditor({
           declare their own description show it read-only; otherwise the author writes it. */}
       <div className="border-b border-kumo-line px-6 py-3.5 sm:px-10">
         <label className="mb-1.5 block text-[12px] font-medium tracking-[-0.15px] text-kumo-subtle">
-          When to use this
+          使用场景
           {skillName && (
             <span className="ml-1 font-mono text-kumo-brand">· /{skillName}</span>
           )}
           {extractedDescription !== null && (
             <span
               className="ml-1 text-kumo-inactive"
-              title="Defined in this file; edit it in the document below."
+              title="此描述在文件中定义，请在下方文档中编辑。"
             >
-              · from file
+              · 来自文件
             </span>
           )}
         </label>
         {extractedDescription !== null ? (
           <p className="max-w-3xl text-[14px] leading-5 tracking-[-0.2px] text-kumo-default">
             {effectiveDescription || (
-              <span className="italic text-kumo-inactive">No description in this file yet.</span>
+              <span className="italic text-kumo-inactive">此文件中暂无描述。</span>
             )}
           </p>
         ) : descriptionIsEditable ? (
@@ -3236,13 +3237,13 @@ function DocumentEditor({
               setDescription(nextDescription);
               setDirty(documentIsDirty(nextDescription, body));
             }}
-            placeholder="Describe what this document contains and when an agent should use it…"
+            placeholder="说明此文档包含的内容，以及智能体应在何时使用它…"
             className="w-full bg-transparent text-[14px] leading-5 tracking-[-0.2px] text-kumo-default placeholder:text-kumo-inactive focus:outline-none"
           />
         ) : (
           <p className="max-w-3xl text-[14px] leading-5 tracking-[-0.2px] text-kumo-default">
             {description || (
-              <span className="italic text-kumo-inactive">No description yet.</span>
+              <span className="italic text-kumo-inactive">暂无描述。</span>
             )}
           </p>
         )}
@@ -3280,7 +3281,7 @@ const monoFont =
 // Token colors matching the Workshop's Monaco theme, including its subdued markdown (headers use
 // keyword purple, URLs green, the rest default).
 const gadgetsHighlightStyleLight = HighlightStyle.define([
-  { tag: t.comment, color: "#a39990", fontStyle: "italic" },
+  { tag: t.comment, color: "#64748b", fontStyle: "italic" },
   {
     tag: [
       t.keyword,
@@ -3293,17 +3294,17 @@ const gadgetsHighlightStyleLight = HighlightStyle.define([
     ],
     color: "#8e3aa6",
   },
-  { tag: t.operator, color: "#6b6157" },
+  { tag: t.operator, color: "#475569" },
   { tag: [t.string, t.special(t.string), t.regexp, t.escape], color: "#4d8a44" },
-  { tag: [t.number, t.bool, t.null, t.atom], color: "#b56a1f" },
-  { tag: [t.typeName, t.className, t.namespace], color: "#b56a1f" },
+  { tag: [t.number, t.bool, t.null, t.atom], color: "#1d4ed8" },
+  { tag: [t.typeName, t.className, t.namespace], color: "#1d4ed8" },
   { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#3a72c9" },
-  { tag: [t.variableName, t.propertyName], color: "#1f1d1a" },
-  { tag: t.constant(t.variableName), color: "#b56a1f" },
+  { tag: [t.variableName, t.propertyName], color: "#1e293b" },
+  { tag: t.constant(t.variableName), color: "#1d4ed8" },
   { tag: t.standard(t.variableName), color: "#3a72c9" },
-  { tag: [t.punctuation, t.separator, t.bracket, t.paren, t.brace], color: "#6b6157" },
-  { tag: t.tagName, color: "#c14438" },
-  { tag: t.attributeName, color: "#b56a1f" },
+  { tag: [t.punctuation, t.separator, t.bracket, t.paren, t.brace], color: "#475569" },
+  { tag: t.tagName, color: "#1d4ed8" },
+  { tag: t.attributeName, color: "#1d4ed8" },
   { tag: t.attributeValue, color: "#4d8a44" },
   // Markdown: match Monaco (headers = keyword purple, URLs green, the rest default).
   { tag: t.heading, color: "#8e3aa6" },
@@ -3312,7 +3313,7 @@ const gadgetsHighlightStyleLight = HighlightStyle.define([
 
 const gadgetsEditorThemeLight = EditorView.theme(
   {
-    "&": { color: "#1f1d1a", backgroundColor: "transparent", height: "100%", fontSize: "13px" },
+    "&": { color: "#1e293b", backgroundColor: "transparent", height: "100%", fontSize: "13px" },
     "&.cm-focused": { outline: "none" },
     ".cm-scroller": {
       fontFamily: monoFont,
@@ -3327,20 +3328,20 @@ const gadgetsEditorThemeLight = EditorView.theme(
       borderRadius: "4px",
     },
     ".cm-scroller::-webkit-scrollbar-track": { background: "transparent" },
-    ".cm-content": { padding: "12px 0", caretColor: "#1f1d1a" },
+    ".cm-content": { padding: "12px 0", caretColor: "#1e293b" },
     ".cm-line": { padding: "0 16px" },
     ".cm-gutters": {
       backgroundColor: "transparent",
       border: "none",
-      color: "#bdb7ae",
+      color: "#94a3b8",
       fontSize: "12px",
     },
     ".cm-lineNumbers .cm-gutterElement": {
       padding: "0 8px 0 14px",
       minWidth: "28px",
     },
-    ".cm-activeLineGutter": { backgroundColor: "transparent", color: "#6b6157" },
-    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#1f1d1a" },
+    ".cm-activeLineGutter": { backgroundColor: "transparent", color: "#475569" },
+    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#1e293b" },
     "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
       backgroundColor: "#b3d4ff",
     },
@@ -3364,15 +3365,15 @@ const gadgetsHighlightStyleDark = HighlightStyle.define([
   },
   { tag: t.operator, color: "#b9b5c8" },
   { tag: [t.string, t.special(t.string), t.regexp, t.escape], color: "#86efac" },
-  { tag: [t.number, t.bool, t.null, t.atom], color: "#fbbf24" },
-  { tag: [t.typeName, t.className, t.namespace], color: "#fbbf24" },
+  { tag: [t.number, t.bool, t.null, t.atom], color: "#60a5fa" },
+  { tag: [t.typeName, t.className, t.namespace], color: "#60a5fa" },
   { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#93c5fd" },
   { tag: [t.variableName, t.propertyName], color: "#e8e6f0" },
-  { tag: t.constant(t.variableName), color: "#fbbf24" },
+  { tag: t.constant(t.variableName), color: "#60a5fa" },
   { tag: t.standard(t.variableName), color: "#93c5fd" },
   { tag: [t.punctuation, t.separator, t.bracket, t.paren, t.brace], color: "#b9b5c8" },
   { tag: t.tagName, color: "#fca5a5" },
-  { tag: t.attributeName, color: "#fbbf24" },
+  { tag: t.attributeName, color: "#60a5fa" },
   { tag: t.attributeValue, color: "#86efac" },
   { tag: t.heading, color: "#d8b4fe" },
   { tag: t.url, color: "#86efac" },

@@ -135,12 +135,12 @@ function describeCallService(
   // `undefined` leak into the approval card title.
   if (typeof domain !== "string" || !domain || typeof service !== "string" || !service) {
     return {
-      title: "Invalid service call",
+      title: "无效的服务调用",
       description:
-        `The gatekeeper received a malformed callService action ` +
-        `(domain=${JSON.stringify(domain)}, service=${JSON.stringify(service)}). ` +
-        `This indicates a programming error in the gadget that called callService(); ` +
-        `it likely passed a single options object instead of positional arguments.`,
+        `Gatekeeper 收到了格式错误的 callService 操作` +
+        `（domain=${JSON.stringify(domain)}, service=${JSON.stringify(service)}）。` +
+        `这说明调用 callService() 的应用存在编程错误；` +
+        `它可能传入了单个选项对象，而不是按位置传参。`,
       implementsRevert: false,
     };
   }
@@ -173,15 +173,15 @@ function describeCallService(
       if (ids.length === 1) {
         parts.push(`${entityFriendlyName(ids[0], registry)} (\`${ids[0]}\`)`);
       } else {
-        parts.push(`${ids.length} entities`);
+        parts.push(`${ids.length} 个实体`);
       }
     }
     if (target.device_id) {
       const ids = asArray(target.device_id);
       parts.push(
         ids.length === 1
-          ? `device "${deviceName(ids[0], registry)}"`
-          : `${ids.length} devices`,
+          ? `设备“${deviceName(ids[0], registry)}”`
+          : `${ids.length} 个设备`,
       );
     }
     if (target.area_id) {
@@ -193,9 +193,9 @@ function describeCallService(
       parts.push(
         ids.length === 1
           ? includeCount
-            ? `area "${areaName(ids[0], registry)}" (${affectedEntityCount} entities)`
-            : `area "${areaName(ids[0], registry)}"`
-          : `${ids.length} areas`,
+            ? `区域“${areaName(ids[0], registry)}”（${affectedEntityCount} 个实体）`
+            : `区域“${areaName(ids[0], registry)}”`
+          : `${ids.length} 个区域`,
       );
     }
     if (target.label_id) {
@@ -204,15 +204,15 @@ function describeCallService(
       parts.push(
         ids.length === 1
           ? includeCount
-            ? `label "${labelName(ids[0], registry)}" (${affectedEntityCount} entities)`
-            : `label "${labelName(ids[0], registry)}"`
-          : `${ids.length} labels`,
+            ? `标签“${labelName(ids[0], registry)}”（${affectedEntityCount} 个实体）`
+            : `标签“${labelName(ids[0], registry)}”`
+          : `${ids.length} 个标签`,
       );
     }
     if (target.floor_id) {
-      parts.push(`floor ${asArray(target.floor_id).join(", ")}`);
+      parts.push(`楼层 ${asArray(target.floor_id).join("、")}`);
     }
-    targetText = parts.join(", ");
+    targetText = parts.join("、");
   }
 
   // For multi-entity scopes (area / label / device), append an entity count to the title so
@@ -220,30 +220,30 @@ function describeCallService(
   const fanOutSuffix =
     (origin.kind === "area" || origin.kind === "label" || origin.kind === "device") &&
     affectedEntityCount > 1
-      ? ` (${affectedEntityCount} entities)`
+      ? `（${affectedEntityCount} 个实体）`
       : "";
 
   // Title — prefer a concise human-friendly form when we can.
   let title: string;
   if (origin.kind === "entity") {
     const name = entityFriendlyName(origin.entityId, registry);
-    title = `${humanizeService(domain, service)}: ${name}`;
+    title = `${humanizeService(domain, service)}：${name}`;
   } else if (origin.kind === "area") {
-    title = `${humanizeService(domain, service)} in area "${areaName(origin.areaId, registry)}"${fanOutSuffix}`;
+    title = `${humanizeService(domain, service)}，区域“${areaName(origin.areaId, registry)}”${fanOutSuffix}`;
   } else if (origin.kind === "label") {
-    title = `${humanizeService(domain, service)} for label "${labelName(origin.labelId, registry)}"${fanOutSuffix}`;
+    title = `${humanizeService(domain, service)}，标签“${labelName(origin.labelId, registry)}”${fanOutSuffix}`;
   } else if (origin.kind === "device") {
-    title = `${humanizeService(domain, service)} on device "${deviceName(origin.deviceId, registry)}"${fanOutSuffix}`;
+    title = `${humanizeService(domain, service)}，设备“${deviceName(origin.deviceId, registry)}”${fanOutSuffix}`;
   } else {
-    title = `Call ${domain}.${service}`;
-    if (targetText) title += ` on ${targetText}`;
+    title = `调用 ${domain}.${service}`;
+    if (targetText) title += `，目标为${targetText}`;
   }
 
   // Description — fuller detail for the approver.
-  let description = `Calls \`${domain}.${service}\``;
-  if (targetText) description += ` on ${targetText}`;
-  if (dataStr) description += ` with ${dataStr}`;
-  description += ".";
+  let description = `调用 \`${domain}.${service}\``;
+  if (targetText) description += `，目标为${targetText}`;
+  if (dataStr) description += `，参数为 ${dataStr}`;
+  description += "。";
 
   return {
     title,
@@ -255,11 +255,11 @@ function describeCallService(
 function describeFireEvent(action: HomeAssistantAction & { type: "fireEvent" }): ActionDescription {
   const dataStr = fmtData(action.data);
   return {
-    title: `Fire event: ${action.eventType}`,
+    title: `触发事件：${action.eventType}`,
     description:
-      `Fires the \`${action.eventType}\` event on the Home Assistant event bus` +
-      (dataStr ? ` with ${dataStr}` : "") +
-      ".",
+      `在 Home Assistant 事件总线上触发 \`${action.eventType}\` 事件` +
+      (dataStr ? `，参数为 ${dataStr}` : "") +
+      "。",
     implementsRevert: false,
   };
 }
@@ -268,15 +268,15 @@ function describeSaveDashboard(
   action: HomeAssistantAction & { type: "saveDashboard" },
 ): ActionDescription {
   const config = action.config as { title?: string; views?: unknown[] } | undefined;
-  const urlLabel = action.urlPath ?? "lovelace (default)";
+  const urlLabel = action.urlPath ?? "lovelace（默认）";
   const viewCount = Array.isArray(config?.views) ? config!.views!.length : 0;
   const cardCount = countCards(config);
   const title = config?.title ? `${config.title}` : urlLabel;
   return {
-    title: `Edit dashboard: ${title}`,
+    title: `编辑仪表板：${title}`,
     description:
-      `Replaces the configuration of the Lovelace dashboard \`${urlLabel}\` ` +
-      `with ${viewCount} view${viewCount === 1 ? "" : "s"} and ${cardCount} card${cardCount === 1 ? "" : "s"}.`,
+      `将 Lovelace 仪表板 \`${urlLabel}\` 的配置替换为` +
+      `${viewCount} 个视图和 ${cardCount} 张卡片。`,
     implementsRevert: true,
   };
 }
@@ -305,90 +305,90 @@ function humanizeService(domain: string, service: string): string {
     case "input_boolean.turn_on":
     case "automation.turn_on":
     case "humidifier.turn_on":
-      return `Turn on ${domain}`;
+      return `开启 ${domain}`;
     case "light.turn_off":
     case "switch.turn_off":
     case "fan.turn_off":
     case "input_boolean.turn_off":
     case "automation.turn_off":
     case "humidifier.turn_off":
-      return `Turn off ${domain}`;
+      return `关闭 ${domain}`;
     case "light.toggle":
     case "switch.toggle":
     case "fan.toggle":
     case "input_boolean.toggle":
     case "automation.toggle":
-      return `Toggle ${domain}`;
+      return `切换 ${domain}`;
     case "cover.open_cover":
-      return "Open cover";
+      return "打开遮盖设备";
     case "cover.close_cover":
-      return "Close cover";
+      return "关闭遮盖设备";
     case "cover.stop_cover":
-      return "Stop cover";
+      return "停止遮盖设备";
     case "cover.set_cover_position":
-      return "Set cover position";
+      return "设置遮盖设备位置";
     case "climate.set_temperature":
-      return "Set temperature";
+      return "设置温度";
     case "climate.set_hvac_mode":
-      return "Set HVAC mode";
+      return "设置 HVAC 模式";
     case "climate.set_fan_mode":
-      return "Set fan mode";
+      return "设置风扇模式";
     case "lock.lock":
-      return "Lock";
+      return "上锁";
     case "lock.unlock":
-      return "Unlock";
+      return "解锁";
     case "media_player.media_play":
-      return "Play media";
+      return "播放媒体";
     case "media_player.media_pause":
-      return "Pause media";
+      return "暂停媒体";
     case "media_player.media_stop":
-      return "Stop media";
+      return "停止媒体";
     case "media_player.media_next_track":
-      return "Next track";
+      return "下一曲";
     case "media_player.media_previous_track":
-      return "Previous track";
+      return "上一曲";
     case "media_player.volume_set":
-      return "Set volume";
+      return "设置音量";
     case "media_player.volume_mute":
-      return "Mute";
+      return "静音";
     case "media_player.play_media":
-      return "Play media";
+      return "播放媒体";
     case "fan.set_percentage":
-      return "Set fan speed";
+      return "设置风扇速度";
     case "vacuum.start":
-      return "Start vacuum";
+      return "启动扫地机器人";
     case "vacuum.stop":
-      return "Stop vacuum";
+      return "停止扫地机器人";
     case "vacuum.return_to_base":
-      return "Return vacuum to base";
+      return "让扫地机器人返回基站";
     case "vacuum.locate":
-      return "Locate vacuum";
+      return "查找扫地机器人";
     case "scene.turn_on":
-      return "Activate scene";
+      return "激活场景";
     case "script.turn_on":
-      return "Run script";
+      return "运行脚本";
     case "button.press":
     case "input_button.press":
-      return "Press button";
+      return "按下按钮";
     case "input_number.set_value":
     case "number.set_value":
-      return "Set number value";
+      return "设置数值";
     case "input_text.set_value":
     case "text.set_value":
-      return "Set text value";
+      return "设置文本值";
     case "input_select.select_option":
     case "select.select_option":
-      return "Select option";
+      return "选择选项";
     case "input_datetime.set_datetime":
-      return "Set date/time";
+      return "设置日期/时间";
     case "automation.trigger":
-      return "Trigger automation";
+      return "触发自动化";
     case "automation.reload":
-      return "Reload automations";
+      return "重新加载自动化";
     case "notify.send_message":
-      return "Send notification";
+      return "发送通知";
     default:
-      return `Call ${key}`;
+      return `调用 ${key}`;
   }
 }
 

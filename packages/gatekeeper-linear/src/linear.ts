@@ -100,22 +100,22 @@ const OAUTH_SCOPES = ["read", "write"];
 
 const WORKSPACE_RESOURCE: SupportedResource = {
   urlPattern: "https://linear.app/:workspace",
-  title: "Linear Workspace",
+  title: "Linear 工作区",
   description:
-    "Read and manage every team and issue in a Linear workspace. This is the broadest option — " +
-    "connect a single team or issue instead to limit what a Gadget can access.",
+    "读取和管理 Linear 工作区中的所有团队与议题。这是范围最广的选项；若要限制小程序的访问范围，" +
+    "请改为连接单个团队或议题。",
 };
 
 const TEAM_RESOURCE: SupportedResource = {
   urlPattern: "https://linear.app/:workspace/team/:teamKey{/:rest}*",
-  title: "Linear Team",
-  description: "Read and manage the issues, labels, states, and cycles of a single Linear team.",
+  title: "Linear 团队",
+  description: "读取和管理单个 Linear 团队的议题、标签、状态和周期。",
 };
 
 const ISSUE_RESOURCE: SupportedResource = {
   urlPattern: "https://linear.app/:workspace/issue/:issueId{/:rest}*",
-  title: "Linear Issue",
-  description: "Read and manage a single Linear issue and its comments.",
+  title: "Linear 议题",
+  description: "读取和管理单个 Linear 议题及其评论。",
 };
 
 const SUPPORTED_RESOURCES: SupportedResource[] = [WORKSPACE_RESOURCE, TEAM_RESOURCE, ISSUE_RESOURCE];
@@ -123,32 +123,32 @@ const SUPPORTED_RESOURCES: SupportedResource[] = [WORKSPACE_RESOURCE, TEAM_RESOU
 const LINEAR_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(LINEAR_LOGO_SVG)}`;
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #5e6ad2; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #5e6ad2; color: white; border: none; border-radius: 4px; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem;">Linear Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6;">Please configure a Linear OAuth client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem;">Linear Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6;">请为此 Gatekeeper 配置 Linear OAuth 客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -405,7 +405,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
 
     const relPath = url.pathname.slice(basePath.length);
@@ -439,21 +439,21 @@ export default {
     if (relPath === "/oauth") {
       const error = url.searchParams.get("error");
       if (error) {
-        return new Response("Linear authorization failed. Please restart the connection flow from Cloudflare OS.", {
+        return new Response("Linear 授权失败。请从 NINT os 重新开始连接流程。", {
           status: 400,
           headers: { "Content-Type": "text/plain; charset=utf-8" },
         });
       }
 
       const state = url.searchParams.get("state");
-      if (!state) return badRequest("Error: no 'state' provided");
+      if (!state) return badRequest("错误：未提供“state”");
       const colonIndex = state.indexOf(":");
-      if (colonIndex < 0) return badRequest("Error: malformed state");
+      if (colonIndex < 0) return badRequest("错误：“state”格式不正确");
 
       const doId = state.slice(0, colonIndex);
       const oauthNonce = state.slice(colonIndex + 1);
       const code = url.searchParams.get("code");
-      if (!code) return badRequest("Error: no 'code' provided");
+      if (!code) return badRequest("错误：未提供“code”");
 
       // Validate the DO id shape before idFromString(), which throws (→ unhandled 500) on garbage.
       if (!/^[0-9a-f]{64}$/.test(doId)) {
@@ -469,7 +469,7 @@ export default {
       return new Response(SELF_CLOSING_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -484,10 +484,9 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://linear.app",
       logo: { url: LINEAR_LOGO_URL },
       color: "#f4f5f8",
-      tagline: "Triage, create, and update issues",
+      tagline: "分流、创建并更新议题",
       description:
-        "Connect your Linear account so Cloudflare OS can read and manage issues, projects, and " +
-        "comments across the teams you choose.",
+        "连接你的 Linear 账户，让 NINT os 读取并管理你所选团队中的议题、项目和评论。",
     };
   }
 
@@ -562,12 +561,12 @@ export class UserAccount extends DurableObject<Env> {
     this.ctx.storage.kv.delete("nonce");
 
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("Linear OAuth is not configured.");
+      throw new Error("Linear OAuth 尚未配置。");
     }
 
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const grant = await exchangeAuthCode({
@@ -601,7 +600,7 @@ export class UserAccount extends DurableObject<Env> {
   // Returns a currently-valid access token, refreshing it first if it is about to expire.
   async getAccessToken(): Promise<string> {
     const grant = this.ctx.storage.kv.get<LinearOAuthGrant>("grant");
-    if (!grant) throw new Error("Linear credentials have not been configured for this account.");
+    if (!grant) throw new Error("尚未为此账户配置 Linear 凭据。");
 
     if (Date.now() < grant.expiresAt - TOKEN_REFRESH_SKEW_MS) {
       return grant.accessToken;
@@ -623,7 +622,7 @@ export class UserAccount extends DurableObject<Env> {
       // Workshop here, since the error type is lost when it crosses the RPC boundary to the caller.
       if (err instanceof LinearApiError && err.isAuthError) {
         await this.noteCredentialsExpired();
-        throw new Error("Linear credentials have expired or been revoked. Please reconnect the account.", { cause: err });
+        throw new Error("Linear 凭据已过期或被撤销，请重新连接账户。", { cause: err });
       }
       throw err;
     }
@@ -695,7 +694,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
             event: "credentials.expiry.note.failed", error: notifyErr,
           });
         }
-        throw new Error("Linear credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("Linear 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -731,12 +730,12 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
   }> {
     const parsed = new URL(url);
     if (parsed.hostname !== "linear.app") {
-      throw new Error(`Unsupported Linear URL: ${url}`);
+      throw new Error(`不支持的 Linear URL：${url}`);
     }
     const segments = parsed.pathname.split("/").filter(Boolean);
     const workspaceUrlKey = segments[0];
     if (!workspaceUrlKey) {
-      throw new Error(`Unsupported Linear URL: ${url}`);
+      throw new Error(`不支持的 Linear URL：${url}`);
     }
 
     const props: LinearGatekeeperImplProps = {
@@ -781,7 +780,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
         ui: new RpcStub(new LinearIssueConfiguratorUI(getToken)),
       };
     }
-    throw new Error(`Unsupported Linear resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的 Linear 资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -966,7 +965,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
             event: "credentials.expiry.note.failed", error: notifyErr,
           });
         }
-        throw new Error("Linear credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("Linear 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -1077,7 +1076,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
     const real = this.ctx.storage.kv.get<string>(`provisional:${ref}`);
     if (!real) {
       throw new Error(
-        `Issue ${ref} has not been created on Linear yet — its create action has not been applied.`);
+        `议题 ${ref} 尚未在 Linear 上创建，其创建操作尚未应用。`);
     }
     return real;
   }
@@ -1095,7 +1094,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
   #requireLabelId(id: string): string {
     const real = this.#resolveLabelId(id);
     if (!real) {
-      throw new Error(`Label ${id} has not been created on Linear yet — its create action has not been applied.`);
+      throw new Error(`标签 ${id} 尚未在 Linear 上创建，其创建操作尚未应用。`);
     }
     return real;
   }
@@ -1253,7 +1252,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
 
   async findTeamRaw(keyOrId: string): Promise<RawTeam> {
     const team = await this.#run(api => api.findTeam(keyOrId));
-    if (!team) throw new Error(`Linear team not found: ${keyOrId}`);
+    if (!team) throw new Error(`未找到 Linear 团队：${keyOrId}`);
     return team;
   }
 
@@ -1291,11 +1290,11 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
       const create = this.#pendingActions().find(
         (a): a is Extract<StoredAction, { kind: "createIssue" }> =>
           a.kind === "createIssue" && a.provisionalId === ref);
-      if (!create) throw new Error(`Linear issue not found: ${ref}`);
+      if (!create) throw new Error(`未找到 Linear 议题：${ref}`);
       return this.#overlayIssue(create.synthetic);
     }
     const issue = await this.#run(api => api.getIssue(this.resolveIssueRef(ref)));
-    if (!issue) throw new Error(`Linear issue not found: ${ref}`);
+    if (!issue) throw new Error(`未找到 Linear 议题：${ref}`);
     return this.#overlayIssue(issue);
   }
 
@@ -1380,9 +1379,9 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
         { name: { eqIgnoreCase: query } },
       ] },
     }));
-    if (users.length === 0) throw new Error(`No workspace member matches "${query}".`);
+    if (users.length === 0) throw new Error(`没有与“${query}”匹配的工作区成员。`);
     if (users.length > 1) {
-      throw new Error(`"${query}" matches multiple members; use an email or UUID to disambiguate.`);
+      throw new Error(`“${query}”匹配多个成员；请使用电子邮件或 UUID 区分。`);
     }
     return users[0];
   }
@@ -1399,7 +1398,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
       return {
         url: `https://linear.app/${workspace}/team/${team?.key ?? teamKeyOrId}`,
         title: team ? `${team.key} · ${team.name}` : `Linear team ${teamKeyOrId}`,
-        snippet: snippet(team?.description, "Linear team"),
+        snippet: snippet(team?.description, "Linear 团队"),
         suggestedBindingName: "LINEAR_TEAM",
         tsType: "LinearTeam",
       };
@@ -1411,7 +1410,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
       return {
         url: issue?.url ?? `https://linear.app/${workspace}/issue/${issueRef}`,
         title: issue ? `${issue.identifier} ${issue.title}` : `Linear issue ${issueRef}`,
-        snippet: snippet(issue?.description, "Linear issue"),
+        snippet: snippet(issue?.description, "Linear 议题"),
         suggestedBindingName: "LINEAR_ISSUE",
         tsType: "LinearIssue",
       };
@@ -1420,8 +1419,8 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
     const org = await this.#run(api => api.getOrganization());
     return {
       url: `https://linear.app/${org.urlKey}`,
-      title: `${org.name} (Linear)`,
-      snippet: "Linear workspace",
+      title: `${org.name}（Linear）`,
+      snippet: "Linear 工作区",
       suggestedBindingName: "LINEAR_WORKSPACE",
       tsType: "LinearWorkspace",
     };
@@ -1469,8 +1468,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
       const teamKeyOrId = this.ctx.props.teamKeyOrId!;
       if (!(await verifier.hasTeamAccess(ws, teamKeyOrId))) {
         throw new Error(
-          `This collaborator does not have access to the Linear team \`${teamKeyOrId}\`, so they ` +
-          `cannot be allowed to observe data this workspace read from it.`);
+          `此协作者无权访问 Linear 团队 \`${teamKeyOrId}\`，因此不能查看此工作区从中读取的数据。`);
       }
       return;
     }
@@ -1479,8 +1477,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
       const issueRef = this.ctx.props.issueRef!;
       if (!(await verifier.hasIssueAccess(ws, issueRef))) {
         throw new Error(
-          `This collaborator does not have access to the Linear issue \`${issueRef}\`, so they ` +
-          `cannot be allowed to observe data this workspace read from it.`);
+          `此协作者无权访问 Linear 议题 \`${issueRef}\`，因此不能查看此工作区从中读取的数据。`);
       }
       return;
     }
@@ -1488,8 +1485,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
     // Workspace binding.
     if (!(await verifier.hasWorkspaceAccess(ws))) {
       throw new Error(
-        `This collaborator is not a member of the Linear workspace \`${ws}\`, so they cannot be ` +
-        `allowed to observe it.`);
+        `此协作者不是 Linear 工作区 \`${ws}\` 的成员，因此不能查看该工作区。`);
     }
     const checked = new Set<string>();
     while (true) {
@@ -1502,8 +1498,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
         teamIds.map(teamId => verifier.hasTeamAccess(ws, teamId)));
       if (teamAccess.some(hasAccess => !hasAccess)) {
         throw new Error(
-          `This collaborator does not have access to a Linear team whose data this workspace has read, ` +
-          `so they cannot be allowed to observe it.`);
+          `此协作者无权访问此工作区已读取数据的某个 Linear 团队，因此不能查看这些数据。`);
       }
       for (const teamId of teamIds) checked.add(teamId);
     }
@@ -1515,7 +1510,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
 
   async applyAction(actionId: number): Promise<void> {
     const action = this.ctx.storage.kv.get<StoredAction>(`action:${actionId}`);
-    if (!action) throw new Error(`Unknown action: ${actionId}`);
+    if (!action) throw new Error(`未知操作：${actionId}`);
 
     await this.#run(async api => {
       switch (action.kind) {
@@ -1633,7 +1628,7 @@ export class LinearGatekeeperImpl extends DurableObject<Env, LinearGatekeeperImp
   async revertAction(actionId: number):
       Promise<void | { message?: string; canRetry?: boolean; restart?: boolean }> {
     const action = this.ctx.storage.kv.get<StoredAction>(`action:${actionId}`);
-    if (!action) throw new Error(`Unknown action: ${actionId}`);
+    if (!action) throw new Error(`未知操作：${actionId}`);
 
     await this.#run(async api => {
       switch (action.kind) {
@@ -1755,8 +1750,8 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
     const org = await this.#gk.orgRaw();
     // Workspace-level metadata is visible to any workspace member, so no team attribution is needed.
     await this.#gk.authorizeTeamObservation(this.#queue, [], {
-      title: "Read workspace info",
-      description: `Read metadata for the Linear workspace **${org.name}**.`,
+      title: "读取工作区信息",
+      description: `读取 Linear 工作区 **${org.name}** 的元数据。`,
     });
     return { id: org.id, name: org.name, urlKey: org.urlKey, url: `https://linear.app/${org.urlKey}` };
   }
@@ -1768,7 +1763,7 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
       this.#queue.dup(),
       after => this.#gk.teamsPage(after, first, options?.includeArchived ?? false),
       raw => normTeamSummary(raw, this.#wsKey),
-      items => ({ title: "List teams", description: `Listed ${items.length} team(s) in the workspace.` }),
+      items => ({ title: "列出团队", description: `列出工作区中的 ${items.length} 个团队。` }),
       // Each listed team is itself a data set whose existence/metadata (incl. private teams) the
       // observer must be allowed to see.
       teams => teams.map(t => t.id),
@@ -1786,7 +1781,7 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
       this.#queue.dup(),
       after => this.#gk.projectsPage(null, after, first, options?.includeArchived ?? false),
       normProjectSummary,
-      items => ({ title: "List projects", description: `Listed ${items.length} project(s) in the workspace.` }),
+      items => ({ title: "列出项目", description: `列出工作区中的 ${items.length} 个项目。` }),
       // A project's access is gated by the team(s) it belongs to (populated by the workspace-wide
       // query via PROJECT_LIST_FIELDS), so attribute the listing to all of them.
       projects => projects.flatMap(p => (p.teams?.nodes ?? []).map(t => t.id)),
@@ -1801,7 +1796,7 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
       this.#queue.dup(),
       after => this.#gk.issuesPage(args, after, first),
       raw => normIssueSummary(raw, this.#wsKey),
-      items => ({ title: "List issues", description: `Listed ${items.length} issue(s) across the workspace.` }),
+      items => ({ title: "列出议题", description: `列出整个工作区中的 ${items.length} 个议题。` }),
       issues => issues.map(i => i.team.id),
     );
   }
@@ -1814,7 +1809,7 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
       this.#queue.dup(),
       after => this.#gk.searchPage(query.text, args, after, first),
       raw => normIssueSummary(raw, this.#wsKey),
-      items => ({ title: "Search issues", description: `Searched workspace issues for "${query.text}" (${items.length} result(s)).` }),
+      items => ({ title: "搜索议题", description: `在工作区议题中搜索“${query.text}”（${items.length} 个结果）。` }),
       issues => issues.map(i => i.team.id),
     );
   }
@@ -1831,8 +1826,8 @@ class LinearWorkspaceSessionImpl extends RpcTarget implements LinearWorkspace {
     const users = await this.#gk.findMembersRaw(query);
     // The workspace member directory is visible to any workspace member, so no team attribution.
     await this.#gk.authorizeTeamObservation(this.#queue, [], {
-      title: "Find members",
-      description: `Looked up ${users.length} workspace member(s)${query ? ` matching "${query}"` : ""}.`,
+      title: "查找成员",
+      description: `查找到 ${users.length} 个工作区成员${query ? `，匹配“${query}”` : ""}。`,
     });
     return users.map(u => normUser(u)!).filter(Boolean);
   }
@@ -1874,8 +1869,8 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
   async getMetadata(): Promise<LinearTeamMetadata> {
     const team = await this.#team();
     await this.#gk.authorizeTeamObservation(this.#queue, [team.id], {
-      title: "Read team info",
-      description: `Read metadata for team **${team.key} · ${team.name}**.`,
+      title: "读取团队信息",
+      description: `读取团队 **${team.key} · ${team.name}** 的元数据。`,
     });
     return normTeamSummary(team, this.#wsKey);
   }
@@ -1889,7 +1884,7 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
       this.#queue.dup(),
       after => this.#gk.issuesPage(args, after, first),
       raw => normIssueSummary(raw, this.#wsKey),
-      items => ({ title: "List team issues", description: `Listed ${items.length} issue(s) in team ${team.key}.` }),
+      items => ({ title: "列出团队议题", description: `列出团队 ${team.key} 中的 ${items.length} 个议题。` }),
       () => [team.id],
     );
   }
@@ -1903,7 +1898,7 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
       this.#queue.dup(),
       after => this.#gk.searchPage(query.text, args, after, first),
       raw => normIssueSummary(raw, this.#wsKey),
-      items => ({ title: "Search team issues", description: `Searched team ${team.key} for "${query.text}" (${items.length} result(s)).` }),
+      items => ({ title: "搜索团队议题", description: `在团队 ${team.key} 中搜索“${query.text}”（${items.length} 个结果）。` }),
       () => [team.id],
     );
   }
@@ -1922,8 +1917,8 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
     const team = await this.#team();
     const states = await this.#gk.workflowStatesRaw(team.id);
     await this.#gk.authorizeTeamObservation(this.#queue, [team.id], {
-      title: "List workflow states",
-      description: `Listed ${states.length} workflow state(s) for team ${team.key}.`,
+      title: "列出工作流状态",
+      description: `列出团队 ${team.key} 的 ${states.length} 个工作流状态。`,
     });
     return states.map(normState).toSorted((a, b) => (a.position ?? 0) - (b.position ?? 0));
   }
@@ -1932,8 +1927,8 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
     const team = await this.#team();
     const labels = await this.#gk.labelsForDisplay(team.id);
     await this.#gk.authorizeTeamObservation(this.#queue, [team.id], {
-      title: "List labels",
-      description: `Listed ${labels.length} label(s) for team ${team.key}.`,
+      title: "列出标签",
+      description: `列出团队 ${team.key} 的 ${labels.length} 个标签。`,
     });
     return labels.map(normLabel);
   }
@@ -1944,16 +1939,16 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
     // name (which would also collide on the `~label:<name>` provisional id).
     const existing = await this.#gk.labelsForDisplay(team.id);
     if (existing.some(l => l.name.toLowerCase() === name.toLowerCase())) {
-      throw new Error(`A label named "${name}" already exists in team ${team.key}.`);
+      throw new Error(`团队 ${team.key} 中已存在名为“${name}”的标签。`);
     }
     const synthetic: RawLabel = { id: `~label:${name}`, name, color: options?.color ?? null };
     await this.#gk.enqueue(
       this.#queue,
       { kind: "createLabel", teamId: team.id, name, color: options?.color, description: options?.description,
-        synthetic, title: `Create label "${name}"` },
+        synthetic, title: `创建标签“${name}”` },
       {
-        title: `Create label "${name}" in ${team.key}`,
-        body: `Create a new label named **${name}**${options?.color ? ` (color ${options.color})` : ""} in team ${team.key}.`,
+        title: `在 ${team.key} 中创建标签“${name}”`,
+        body: `在团队 ${team.key} 中创建名为 **${name}** 的新标签${options?.color ? `（颜色 ${options.color}）` : ""}。`,
         implementsRevert: true,
       },
     );
@@ -1969,7 +1964,7 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
       this.#queue.dup(),
       after => this.#gk.projectsPage(team.id, after, first, options?.includeArchived ?? false),
       normProjectSummary,
-      items => ({ title: "List team projects", description: `Listed ${items.length} project(s) for team ${team.key}.` }),
+      items => ({ title: "列出团队项目", description: `列出团队 ${team.key} 的 ${items.length} 个项目。` }),
       // Team-scoped listing: the projects are reached through this team, so attribute to it.
       () => [team.id],
     );
@@ -1983,7 +1978,7 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
       this.#queue.dup(),
       after => this.#gk.cyclesPage(team.id, after, first),
       normCycle,
-      items => ({ title: "List cycles", description: `Listed ${items.length} cycle(s) for team ${team.key}.` }),
+      items => ({ title: "列出周期", description: `列出团队 ${team.key} 的 ${items.length} 个周期。` }),
       () => [team.id],
     );
   }
@@ -1992,8 +1987,8 @@ class LinearTeamSessionImpl extends RpcTarget implements LinearTeam {
     const team = await this.#team();
     const members = await this.#gk.teamMembersRaw(team.id);
     await this.#gk.authorizeTeamObservation(this.#queue, [team.id], {
-      title: "List team members",
-      description: `Listed ${members.length} member(s) of team ${team.key}.`,
+      title: "列出团队成员",
+      description: `列出团队 ${team.key} 的 ${members.length} 个成员。`,
     });
     return members.map(m => normUser(m)!).filter(Boolean);
   }
@@ -2029,7 +2024,7 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
   async #requireIssue(): Promise<RawIssue> {
     const issue = await this.#gk.issueRaw(this.#ref);
     if (this.#teamScope && issue.team.id !== this.#teamScope) {
-      throw new Error(`Issue ${issue.identifier} is not in the team this connection is limited to.`);
+      throw new Error(`议题 ${issue.identifier} 不属于此连接限定的团队。`);
     }
     return issue;
   }
@@ -2037,8 +2032,8 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
   async getDetails(): Promise<LinearIssueDetails> {
     const issue = await this.#requireIssue();
     await this.#gk.authorizeTeamObservation(this.#queue, [issue.team.id], {
-      title: `Read issue ${issue.identifier}`,
-      description: `Read details of issue **${issue.identifier} ${issue.title}**.`,
+      title: `读取议题 ${issue.identifier}`,
+      description: `读取议题 **${issue.identifier} ${issue.title}** 的详情。`,
     });
     return normIssueDetails(issue, this.#wsKey);
   }
@@ -2048,9 +2043,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     await this.#gk.enqueue(
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { title },
-        previous: { title: issue.title }, patch: { title }, title: `Set title of ${issue.identifier}` },
-      { title: `Rename ${issue.identifier}`,
-        body: `Change the title of **${issue.identifier}** from "${issue.title}" to "${title}".`,
+        previous: { title: issue.title }, patch: { title }, title: `设置 ${issue.identifier} 的标题` },
+      { title: `重命名 ${issue.identifier}`,
+        body: `将 **${issue.identifier}** 的标题从“${issue.title}”改为“${title}”。`,
         implementsRevert: true },
     );
   }
@@ -2061,9 +2056,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { description: descriptionMarkdown },
         previous: { description: issue.description ?? "" }, patch: { description: descriptionMarkdown },
-        title: `Edit description of ${issue.identifier}` },
-      { title: `Edit description of ${issue.identifier}`,
-        body: `Replace the description of **${issue.identifier} ${issue.title}**.`,
+        title: `编辑 ${issue.identifier} 的描述` },
+      { title: `编辑 ${issue.identifier} 的描述`,
+        body: `替换 **${issue.identifier} ${issue.title}** 的描述。`,
         implementsRevert: true },
     );
   }
@@ -2073,15 +2068,15 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     const states = await this.#gk.workflowStatesRaw(issue.team.id);
     const target = states.find(s => s.name.toLowerCase() === state.toLowerCase());
     if (!target) {
-      throw new Error(`No workflow state named "${state}" in team ${issue.team.key}.`);
+      throw new Error(`团队 ${issue.team.key} 中没有名为“${state}”的工作流状态。`);
     }
     await this.#gk.enqueue(
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { stateId: target.id },
         previous: { stateId: issue.state?.id }, patch: { state: target },
-        title: `Move ${issue.identifier} to ${target.name}` },
-      { title: `Move ${issue.identifier} to ${target.name}`,
-        body: `Change the state of **${issue.identifier} ${issue.title}** from "${issue.state?.name ?? "Unknown"}" to "${target.name}".`,
+        title: `将 ${issue.identifier} 移至 ${target.name}` },
+      { title: `将 ${issue.identifier} 移至 ${target.name}`,
+        body: `将 **${issue.identifier} ${issue.title}** 的状态从“${issue.state?.name ?? "未知"}”改为“${target.name}”。`,
         implementsRevert: true },
     );
   }
@@ -2090,11 +2085,11 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     const issue = await this.#requireIssue();
     let assigneeId: string | null = null;
     let assigneeUser: RawUser | null = null;
-    let label = "Unassign";
+    let label = "取消分配";
     if (assignee !== null) {
       assigneeUser = await this.#gk.resolveMemberRaw(assignee);
       assigneeId = assigneeUser.id;
-      label = `Assign to ${assigneeUser.displayName ?? assigneeUser.name}`;
+      label = `分配给 ${assigneeUser.displayName ?? assigneeUser.name}`;
     }
     await this.#gk.enqueue(
       this.#queue,
@@ -2102,7 +2097,7 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
         previous: { assigneeId: issue.assignee?.id ?? null }, patch: { assignee: assigneeUser },
         title: `${label} (${issue.identifier})` },
       { title: `${label}: ${issue.identifier}`,
-        body: `${label} for issue **${issue.identifier} ${issue.title}**.`,
+        body: `为议题 **${issue.identifier} ${issue.title}** ${label}。`,
         implementsRevert: true },
     );
   }
@@ -2113,9 +2108,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { priority: PRIORITY_TO_NUM[priority] },
         previous: { priority: issue.priority }, patch: { priority: PRIORITY_TO_NUM[priority] },
-        title: `Set priority of ${issue.identifier}` },
-      { title: `Set priority of ${issue.identifier} to ${priority}`,
-        body: `Change the priority of **${issue.identifier} ${issue.title}** to "${priority}".`,
+        title: `设置 ${issue.identifier} 的优先级` },
+      { title: `将 ${issue.identifier} 的优先级设为 ${priority}`,
+        body: `将 **${issue.identifier} ${issue.title}** 的优先级改为“${priority}”。`,
         implementsRevert: true },
     );
   }
@@ -2131,17 +2126,16 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       const found = byName.get(name.toLowerCase());
       if (!found) {
         throw new Error(
-          `No label named "${name}" exists in team ${issue.team.key}. ` +
-          `Create it with createLabel() first.`);
+          `团队 ${issue.team.key} 中没有名为“${name}”的标签。请先使用 createLabel() 创建。`);
       }
       resolved.push(found);
     }
     await this.#gk.enqueue(
       this.#queue,
       { kind: "addLabels", issueRef: this.#ref, labelIds: resolved.map(l => l.id), labels: resolved,
-        title: `Add labels to ${issue.identifier}` },
-      { title: `Add labels to ${issue.identifier}`,
-        body: `Add label(s) ${labels.map(l => `"${l}"`).join(", ")} to **${issue.identifier} ${issue.title}**.`,
+        title: `为 ${issue.identifier} 添加标签` },
+      { title: `为 ${issue.identifier} 添加标签`,
+        body: `为 **${issue.identifier} ${issue.title}** 添加标签 ${labels.map(l => `“${l}”`).join("、")}。`,
         implementsRevert: true },
     );
   }
@@ -2155,9 +2149,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       .map(l => l.id);
     await this.#gk.enqueue(
       this.#queue,
-      { kind: "removeLabels", issueRef: this.#ref, labelIds: removeIds, title: `Remove labels from ${issue.identifier}` },
-      { title: `Remove labels from ${issue.identifier}`,
-        body: `Remove label(s) ${labels.map(l => `"${l}"`).join(", ")} from **${issue.identifier} ${issue.title}**.`,
+      { kind: "removeLabels", issueRef: this.#ref, labelIds: removeIds, title: `从 ${issue.identifier} 移除标签` },
+      { title: `从 ${issue.identifier} 移除标签`,
+        body: `从 **${issue.identifier} ${issue.title}** 移除标签 ${labels.map(l => `“${l}”`).join("、")}。`,
         implementsRevert: true },
     );
   }
@@ -2165,16 +2159,16 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
   async setProject(projectId: string | null): Promise<void> {
     const issue = await this.#requireIssue();
     const project = projectId ? await this.#gk.getProjectRaw(projectId) : null;
-    if (projectId && !project) throw new Error(`Project not found: ${projectId}`);
+    if (projectId && !project) throw new Error(`未找到项目：${projectId}`);
     await this.#gk.enqueue(
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { projectId },
         previous: { projectId: issue.project?.id ?? null }, patch: { project },
-        title: `Set project of ${issue.identifier}` },
-      { title: `${projectId ? "Move" : "Remove"} ${issue.identifier} ${projectId ? "into a project" : "from its project"}`,
+        title: `设置 ${issue.identifier} 的项目` },
+      { title: projectId ? `将 ${issue.identifier} 移入项目` : `从项目中移除 ${issue.identifier}`,
         body: projectId
-          ? `Move **${issue.identifier} ${issue.title}** into project ${projectId}.`
-          : `Remove **${issue.identifier} ${issue.title}** from its project.`,
+          ? `将 **${issue.identifier} ${issue.title}** 移入项目 ${projectId}。`
+          : `从其项目中移除 **${issue.identifier} ${issue.title}**。`,
         implementsRevert: true },
     );
   }
@@ -2185,11 +2179,11 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { dueDate: date },
         previous: { dueDate: issue.dueDate ?? null }, patch: { dueDate: date },
-        title: `Set due date of ${issue.identifier}` },
-      { title: `Set due date of ${issue.identifier}`,
+        title: `设置 ${issue.identifier} 的截止日期` },
+      { title: `设置 ${issue.identifier} 的截止日期`,
         body: date
-          ? `Set the due date of **${issue.identifier} ${issue.title}** to ${date}.`
-          : `Clear the due date of **${issue.identifier} ${issue.title}**.`,
+          ? `将 **${issue.identifier} ${issue.title}** 的截止日期设为 ${date}。`
+          : `清除 **${issue.identifier} ${issue.title}** 的截止日期。`,
         implementsRevert: true },
     );
   }
@@ -2201,7 +2195,7 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     if (parentId !== null) {
       const parent = await this.#gk.issueRaw(parentId);
       if (this.#teamScope && parent.team.id !== this.#teamScope) {
-        throw new Error(`Parent issue ${parent.identifier} is not in the team this connection is limited to.`);
+        throw new Error(`父议题 ${parent.identifier} 不属于此连接限定的团队。`);
       }
       resolvedParentId = parent.id;
       parentOverlay = { id: parent.id, identifier: parent.identifier, url: parent.url, title: parent.title };
@@ -2210,11 +2204,11 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       this.#queue,
       { kind: "updateIssue", issueRef: this.#ref, input: { parentId: resolvedParentId },
         previous: { parentId: issue.parent?.id ?? null }, patch: { parent: parentOverlay },
-        title: `Set parent of ${issue.identifier}` },
-      { title: `${parentId ? "Set" : "Clear"} parent of ${issue.identifier}`,
+        title: `设置 ${issue.identifier} 的父议题` },
+      { title: parentId ? `设置 ${issue.identifier} 的父议题` : `清除 ${issue.identifier} 的父议题`,
         body: parentId
-          ? `Make **${issue.identifier} ${issue.title}** a sub-issue of ${parentId}.`
-          : `Detach **${issue.identifier} ${issue.title}** from its parent.`,
+          ? `将 **${issue.identifier} ${issue.title}** 设为 ${parentId} 的子议题。`
+          : `解除 **${issue.identifier} ${issue.title}** 与父议题的关系。`,
         implementsRevert: true },
     );
   }
@@ -2230,7 +2224,7 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
       this.#queue.dup(),
       after => this.#gk.commentsPage(ref, after, first),
       normComment,
-      items => ({ title: `Read comments on ${ref}`, description: `Read ${items.length} comment(s) on issue ${ref}.` }),
+      items => ({ title: `读取 ${ref} 的评论`, description: `读取议题 ${ref} 的 ${items.length} 条评论。` }),
       () => [teamId],
     );
   }
@@ -2246,9 +2240,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     };
     await this.#gk.enqueue(
       this.#queue,
-      { kind: "postComment", issueRef: this.#ref, body: bodyMarkdown, synthetic, title: `Comment on ${issue.identifier}` },
-      { title: `Comment on ${issue.identifier}`,
-        body: `Post a comment on **${issue.identifier} ${issue.title}**:\n\n${bodyMarkdown}`,
+      { kind: "postComment", issueRef: this.#ref, body: bodyMarkdown, synthetic, title: `评论 ${issue.identifier}` },
+      { title: `评论 ${issue.identifier}`,
+        body: `在 **${issue.identifier} ${issue.title}** 上发表评论：\n\n${bodyMarkdown}`,
         implementsRevert: true },
     );
   }
@@ -2268,9 +2262,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     const issue = await this.#requireIssue();
     await this.#gk.enqueue(
       this.#queue,
-      { kind: "archive", issueRef: this.#ref, archived: true, title: `Archive ${issue.identifier}` },
-      { title: `Archive ${issue.identifier}`,
-        body: `Archive issue **${issue.identifier} ${issue.title}**.`, implementsRevert: true },
+      { kind: "archive", issueRef: this.#ref, archived: true, title: `归档 ${issue.identifier}` },
+      { title: `归档 ${issue.identifier}`,
+        body: `归档议题 **${issue.identifier} ${issue.title}**。`, implementsRevert: true },
     );
   }
 
@@ -2278,9 +2272,9 @@ class LinearIssueImpl extends RpcTarget implements LinearIssue {
     const issue = await this.#requireIssue();
     await this.#gk.enqueue(
       this.#queue,
-      { kind: "archive", issueRef: this.#ref, archived: false, title: `Unarchive ${issue.identifier}` },
-      { title: `Unarchive ${issue.identifier}`,
-        body: `Restore archived issue **${issue.identifier} ${issue.title}**.`, implementsRevert: true },
+      { kind: "archive", issueRef: this.#ref, archived: false, title: `取消归档 ${issue.identifier}` },
+      { title: `取消归档 ${issue.identifier}`,
+        body: `恢复已归档议题 **${issue.identifier} ${issue.title}**。`, implementsRevert: true },
     );
   }
 }
@@ -2308,10 +2302,10 @@ async function createIssueViaQueue(
   teamScope?: string,
 ): Promise<LinearIssue> {
   if (!options.teamId && !options.teamKey && opts.requireTeam) {
-    throw new Error("createIssue requires a teamKey (or teamId) at this granularity.");
+    throw new Error("在此粒度下，createIssue 需要 teamKey（或 teamId）。");
   }
   const teamKeyOrId = options.teamId ?? options.teamKey;
-  if (!teamKeyOrId) throw new Error("Could not determine which team to create the issue in.");
+  if (!teamKeyOrId) throw new Error("无法确定要在哪个团队中创建议题。");
   const team = await gk.findTeamRaw(teamKeyOrId);
   const teamId = team.id;
 
@@ -2329,7 +2323,7 @@ async function createIssueViaQueue(
   if (options.state) {
     const states = await gk.workflowStatesRaw(teamId);
     const target = states.find(s => s.name.toLowerCase() === options.state!.toLowerCase());
-    if (!target) throw new Error(`No workflow state named "${options.state}" in this team.`);
+    if (!target) throw new Error(`此团队中没有名为“${options.state}”的工作流状态。`);
     input.stateId = target.id;
     stateObj = target;
   }
@@ -2346,7 +2340,7 @@ async function createIssueViaQueue(
     const byName = new Map(teamLabels.map(l => [l.name.toLowerCase(), l]));
     for (const name of options.labels) {
       const found = byName.get(name.toLowerCase());
-      if (!found) throw new Error(`No label named "${name}" in the team. Create it with createLabel() first.`);
+      if (!found) throw new Error(`团队中没有名为“${name}”的标签，请先使用 createLabel() 创建。`);
       labelObjs.push(found);
     }
     input.labelIds = labelObjs.map(l => l.id);
@@ -2385,9 +2379,9 @@ async function createIssueViaQueue(
 
   await gk.enqueue(
     queue,
-    { kind: "createIssue", input, provisionalId, synthetic, title: `Create issue "${options.title}"` },
-    { title: `Create issue "${options.title}"`,
-      body: `Create a new issue titled **${options.title}**${options.assignee ? `, assigned to ${options.assignee}` : ""}.`,
+    { kind: "createIssue", input, provisionalId, synthetic, title: `创建议题“${options.title}”` },
+    { title: `创建议题“${options.title}”`,
+      body: `创建标题为 **${options.title}** 的新议题${options.assignee ? `，分配给 ${options.assignee}` : ""}。`,
       implementsRevert: true },
   );
 

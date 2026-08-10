@@ -118,7 +118,7 @@ describe("ConfluenceObserverTracker", () => {
     await observe(tracker, ["space:10", "content:20"]);
     const denied = verifier({ spaces: [], content: ["20"] });
 
-    await expect(tracker.addObserver("observer-1", denied.api)).rejects.toThrow(/does not have access/);
+    await expect(tracker.addObserver("observer-1", denied.api)).rejects.toThrow(/无权访问/);
     expect(denied.calls.spaces).toEqual(["10"]);
     expect(denied.calls.content).toEqual(["20"]);
 
@@ -210,7 +210,7 @@ describe("ConfluenceObserverTracker", () => {
     const preparing = tracker.prepareObservation(["content:new"]);
     expect(kv.get("observed:content:new")).toBe("pending");
     const denied = verifier({ content: [] });
-    await expect(tracker.addObserver("new", denied.api)).rejects.toThrow(/does not have access/);
+    await expect(tracker.addObserver("new", denied.api)).rejects.toThrow(/无权访问/);
     release();
     (await preparing).commit();
     expect(denied.calls.content).toEqual(["new"]);
@@ -234,7 +234,7 @@ describe("ConfluenceObserverTracker", () => {
     const admission = tracker.addObserver("candidate", candidate);
     await tracker.prepareObservation(["content:new"]);
     release();
-    await expect(admission).rejects.toThrow(/does not have access/);
+    await expect(admission).rejects.toThrow(/无权访问/);
     expect(calls).toEqual(["old", "new"]);
   });
 
@@ -266,7 +266,7 @@ describe("ConfluenceObserverTracker", () => {
     const tracker = new ConfluenceObserverTracker(kv, "cloud");
     const denied = verifier({ content: [] });
 
-    await expect(tracker.addObserver("candidate", denied.api)).rejects.toThrow(/does not have access/);
+    await expect(tracker.addObserver("candidate", denied.api)).rejects.toThrow(/无权访问/);
     expect(denied.calls.content).toEqual(["legacy"]);
     expect((await tracker.prepareObservation(["content:legacy"])).pendingSets).toEqual([]);
   });

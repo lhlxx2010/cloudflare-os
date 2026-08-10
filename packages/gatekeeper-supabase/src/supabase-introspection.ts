@@ -132,7 +132,7 @@ async function getTableSummary(
     [schema, name],
   );
   if (rows.length === 0) {
-    throw new Error(`Table ${schema}.${name} was not found.`);
+    throw new Error(`未找到数据表 ${schema}.${name}。`);
   }
   return rowToTable(rows[0]);
 }

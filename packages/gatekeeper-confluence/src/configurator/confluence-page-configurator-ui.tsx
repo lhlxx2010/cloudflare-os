@@ -22,13 +22,13 @@ export default {
   render({ values, setValues, ui }) {
     return <Section>
       <Field
-        label="Page or blog post"
-        description="Search the pages and blog posts shared with this connection, or paste a Confluence URL."
+        label="页面或博客文章"
+        description="搜索已与此连接共享的页面和博客文章，或粘贴 Confluence URL。"
       >
         <Autocomplete
           name="pageUrl"
           value={values.pageUrl}
-          placeholder="Search Confluence..."
+          placeholder="搜索 Confluence…"
           loadOptions={query => ui.listPages(query)}
           onChange={pageUrl => setValues({ pageUrl })}
         />

@@ -58,17 +58,17 @@ export function assertChatAttachmentSupportedByProvider(
   byteLength: number,
 ): void {
   if (byteLength > MAX_CHAT_ATTACHMENT_BYTES) {
-    throw new Error("Chat attachment is too large.");
+    throw new Error("聊天附件过大。");
   }
 
   if (!provider) {
     if (isTextOrImageMime(mimeType)) return;
-    throw new Error("Unsupported file type");
+    throw new Error("不支持此文件类型");
   }
 
   if (ATTACHMENT_SUPPORT_BY_PROVIDER[provider](mimeType)) return;
 
-  throw new Error("Unsupported file type");
+  throw new Error("不支持此文件类型");
 }
 
 /** Normalize and validate attachment bytes before staging them in chat storage. */
@@ -84,7 +84,7 @@ export function validateChatAttachmentUpload(
   if (signature) {
     for (let [index, expected] of signature.entries()) {
       if (expected !== null && attachment.content[index] !== expected) {
-        throw new Error("Chat attachment content does not match its MIME type.");
+        throw new Error("聊天附件内容与其 MIME 类型不匹配。");
       }
     }
   }

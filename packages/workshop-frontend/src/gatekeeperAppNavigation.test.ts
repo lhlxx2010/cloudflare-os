@@ -29,7 +29,7 @@ describe("parseGatekeeperAppWorkspaceTarget", () => {
     [WORKSPACE_ID, "1"],
   ])("rejects (%s, %s)", (workspaceId, gadgetId) => {
     expect(() => parseGatekeeperAppWorkspaceTarget(workspaceId, gadgetId)).toThrow(
-      "Invalid gatekeeper app workspace target",
+      "Gatekeeper 应用的工作区目标无效",
     );
   });
 });
@@ -40,9 +40,9 @@ describe("normalizeGatekeeperAppPrompt", () => {
   });
 
   it("rejects empty and oversized prompts", () => {
-    expect(() => normalizeGatekeeperAppPrompt("   ")).toThrow("cannot be empty");
+    expect(() => normalizeGatekeeperAppPrompt("   ")).toThrow("不能为空");
     expect(() =>
       normalizeGatekeeperAppPrompt("x".repeat(MAX_GATEKEEPER_APP_PROMPT_LENGTH + 1)),
-    ).toThrow("too long");
+    ).toThrow("过长");
   });
 });

@@ -13,7 +13,7 @@ describe("assertChatAttachmentSupportedByProvider", () => {
 
   it("rejects pdfs without a selected model", () => {
     expect(() => assertChatAttachmentSupportedByProvider(undefined, "application/pdf", 1))
-      .toThrow("Unsupported file type");
+      .toThrow("不支持此文件类型");
   });
 
   it("applies provider raw-file policy", () => {
@@ -28,16 +28,16 @@ describe("assertChatAttachmentSupportedByProvider", () => {
     expect(() => assertChatAttachmentSupportedByProvider("google", "application/pdf", 1))
       .not.toThrow();
     expect(() => assertChatAttachmentSupportedByProvider("google", "application/zip", 1))
-      .toThrow("Unsupported file type");
+      .toThrow("不支持此文件类型");
     expect(() => assertChatAttachmentSupportedByProvider("cloudflare", "application/pdf", 1))
-      .toThrow("Unsupported file type");
+      .toThrow("不支持此文件类型");
     expect(() => assertChatAttachmentSupportedByProvider("ollama", "application/zip", 1))
-      .toThrow("Unsupported file type");
+      .toThrow("不支持此文件类型");
   });
 
   it("enforces the per-file byte limit", () => {
     expect(() => assertChatAttachmentSupportedByProvider(undefined, "text/plain", 1024 * 1024 + 1))
-      .toThrow("Chat attachment is too large.");
+      .toThrow("聊天附件过大。");
   });
 });
 
@@ -62,7 +62,7 @@ describe("validateChatAttachmentUpload", () => {
     // Normalization happens before the support check, so the rejection is for the normalized
     // type (octet-stream, which no provider accepts), left visible on the mutated upload.
     expect(() => validateChatAttachmentUpload(attachment, "google"))
-      .toThrow("Unsupported file type");
+      .toThrow("不支持此文件类型");
     expect(attachment.mimeType).toBe("application/octet-stream");
   });
 
@@ -93,7 +93,7 @@ describe("validateChatAttachmentUpload", () => {
       mimeType: "image/jpeg",
       content: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
       name: "photo.jpg",
-    })).toThrow("Chat attachment content does not match its MIME type.");
+    })).toThrow("聊天附件内容与其 MIME 类型不匹配。");
   });
 
   it("checks the PDF signature for PDF-capable providers", () => {
@@ -108,7 +108,7 @@ describe("validateChatAttachmentUpload", () => {
       mimeType: "application/pdf",
       content: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]),
       name: "report.pdf",
-    }, "anthropic")).toThrow("Chat attachment content does not match its MIME type.");
+    }, "anthropic")).toThrow("聊天附件内容与其 MIME 类型不匹配。");
   });
 
   it("rejects WebP headers with a mismatch at every checked byte", () => {
@@ -122,7 +122,7 @@ describe("validateChatAttachmentUpload", () => {
         mimeType: "image/webp",
         content: invalidWebp,
         name: "photo.webp",
-      })).toThrow("Chat attachment content does not match its MIME type.");
+      })).toThrow("聊天附件内容与其 MIME 类型不匹配。");
     }
   });
 

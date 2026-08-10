@@ -1,6 +1,6 @@
-// This file defines the API that the AI Gadgets Workshop uses to talk to Adapters. Each Adapter
+// This file defines the API that NINT os uses to talk to Adapters. Each Adapter
 // provides connectivity to some external service which AI Gadgets can then manipulate. Each
-// installation of the Gadgets Workshop may have access to different adapters, typically based on
+// NINT os installation may have access to different adapters, typically based on
 // the set of internal services used at the particular company.
 //
 // For instance, there might be adapters for Google Workspace, GitHub, Jira, etc.
@@ -293,16 +293,16 @@ export function resolveRequestedResource(
 
   const available = supportedResources.length > 0
     ? supportedResources.map(r => `  * ${r.title} — urlPattern: ${r.urlPattern}`).join('\n')
-    : '  (this vendor offers no connectable resources)';
+    : '  （此提供商没有可连接资源）';
   const lead = resourceUrl
-    ? `resourceUrl "${resourceUrl}" does not match any resource type this vendor offers, ` +
-      `and the vendor has no whole-instance ("https://*") option.`
-    : `this vendor offers multiple resource types and has no whole-instance ("https://*") ` +
-      `option, so a resourceUrl is required to identify which one.`;
+    ? `resourceUrl“${resourceUrl}”与此提供商提供的任何资源类型都不匹配，` +
+      `并且该提供商没有整实例（“https://*”）选项。`
+    : `此提供商提供多种资源类型，但没有整实例（“https://*”）选项，` +
+      `因此必须提供 resourceUrl 来确定具体资源类型。`;
   return {
     ok: false,
-    reason: `${lead} Call listConnectableResources to see the patterns, then retry with a ` +
-      `resourceUrl matching one of:\n${available}`,
+    reason: `${lead} 请调用 listConnectableResources 查看匹配模式，然后使用符合以下任一` +
+      `模式的 resourceUrl 重试：\n${available}`,
   };
 }
 

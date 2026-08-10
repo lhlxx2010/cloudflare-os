@@ -169,14 +169,14 @@ async function continueConnect(
 export class GatekeeperVendor extends WorkerEntrypoint<Env> implements GatekeeperVendorIface {
   async describe(): Promise<VendorDescription> {
     return {
-      displayName: "MCP Server",
+      displayName: "MCP 服务器",
       url: "https://modelcontextprotocol.io",
       logo: MCP_AVATAR,
       color: "#1a1d21",
-      tagline: "Connect any Model Context Protocol server",
+      tagline: "连接任意 Model Context Protocol 服务器",
       description:
-        "Connect a Model Context Protocol server and use its tools from a Gadget. Reads happen " +
-        "straight away. Anything that writes waits for your approval.",
+        "连接 Model Context Protocol 服务器，并在 Gadget 中使用其工具。读取操作会立即执行，" +
+        "任何写入操作都需要等待你的批准。",
     };
   }
 
@@ -265,7 +265,7 @@ export class GatekeeperUserImpl
     const requested = new URL(url, server.endpoint);
     if (!sameEndpoint(requested.toString(), server.endpoint)) {
       throw new Error(
-        `This connection is for ${server.endpoint}, not ${endpointOfResourceUrl(requested)}.`);
+        `此连接对应 ${server.endpoint}，而不是 ${endpointOfResourceUrl(requested)}。`);
     }
 
     // The fragment records how much of the endpoint this binding may call; see `scope.ts`. A
@@ -274,8 +274,8 @@ export class GatekeeperUserImpl
     const scope = parseToolScope(requested);
     if (scope.serverId !== undefined) {
       throw new Error(
-        `"${url}" scopes the grant to one server behind a gateway, which this connector does not ` +
-        `do. Connect this endpoint through the MCP Server Portals connector instead.`);
+        `“${url}”将授权范围限定为网关后的单个服务器，但此连接器不支持这种方式。` +
+        `请改用 MCP Server Portals 连接器连接此端点。`);
     }
     if (scope.tools !== undefined) {
       validateToolScopeAgainstCatalog(
@@ -359,7 +359,7 @@ class McpServerConfiguratorUI extends RpcTarget implements McpServerConfigurator
         title: tool.title ?? tool.name,
         subtitle: tool.description?.split(/\r?\n/)[0],
         // Surfaced here so the person granting can see, per tool, whether calls will interrupt them.
-        meta: classifyTool(tool, TRUST).mode === "read" ? "read-only" : "needs approval",
+        meta: classifyTool(tool, TRUST).mode === "read" ? "只读" : "需要批准",
       }));
   }
 }
@@ -414,7 +414,7 @@ export class McpGatekeeperImpl
   }
 
   protected get observerName(): string {
-    return `the MCP server ${hostOf(this.ctx.props.endpoint)}`;
+    return `MCP 服务器 ${hostOf(this.ctx.props.endpoint)}`;
   }
 
   get serverName(): string {
@@ -426,12 +426,10 @@ export class McpGatekeeperImpl
     const reads = tools.filter(entry => entry.mode === "read").length;
     const { scope, serverName } = this.ctx.props;
 
-    const counts = `${reads} read-only, ${tools.length - reads} requiring approval`;
-    const plural = tools.length === 1 ? "" : "s";
+    const counts = `${reads} 个只读，${tools.length - reads} 个需要批准`;
     const snippet = scope.tools
-      ? `${scope.tools.length} named MCP tool${scope.tools.length === 1 ? "" : "s"} on ` +
-        `${serverName} \u2014 ${counts}. Other tools are refused.`
-      : `All ${tools.length} MCP tool${plural} on ${serverName} \u2014 ${counts}.`;
+      ? `${serverName} 上指定的 ${scope.tools.length} 个 MCP 工具 \u2014 ${counts}。其他工具将被拒绝。`
+      : `${serverName} 上的全部 ${tools.length} 个 MCP 工具 \u2014 ${counts}。`;
 
     return {
       url: this.resourceUrl,

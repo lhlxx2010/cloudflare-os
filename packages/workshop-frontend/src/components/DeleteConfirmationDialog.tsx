@@ -21,8 +21,8 @@ export default function DeleteConfirmationDialog({
   title,
   description,
   isDeleting = false,
-  confirmLabel = 'Delete',
-  confirmingLabel = 'Deleting...',
+  confirmLabel = '删除',
+  confirmingLabel = '正在删除...',
   onOpenChange,
   onConfirm,
 }: DeleteConfirmationDialogProps) {
@@ -52,7 +52,7 @@ export default function DeleteConfirmationDialog({
                 {...props}
                 className="!h-7 !w-7"
                 disabled={isDeleting}
-                aria-label="Close"
+                aria-label="关闭"
               >
                 <X size={16} />
               </WorkshopIconButton>
@@ -68,7 +68,7 @@ export default function DeleteConfirmationDialog({
                 className="!h-9"
                 disabled={isDeleting}
               >
-                Cancel
+                取消
               </WorkshopButton>
             )}
           />

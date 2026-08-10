@@ -18,7 +18,7 @@ const contexts = new WeakMap<object, Context>();
 
 function ctx(target: object): Context {
   const c = contexts.get(target);
-  if (!c) throw new Error("Confluence configurator is not initialized.");
+  if (!c) throw new Error("Confluence 配置器尚未初始化。");
   return c;
 }
 
@@ -68,8 +68,8 @@ export class ConfluenceConfiguratorUI extends RpcTarget
       const { results } = await apiFor(site, getToken).search(cql, { limit: OPTION_LIMIT });
       return results.map(summary => ({
         value: summary.url,
-        title: summary.title || "Untitled",
-        subtitle: [summary.type === "blogpost" ? "Blog post" : "Page", sites.length > 1 ? site.name : undefined]
+        title: summary.title || "无标题",
+        subtitle: [summary.type === "blogpost" ? "博客文章" : "页面", sites.length > 1 ? site.name : undefined]
           .filter(Boolean)
           .join(" · "),
       }));

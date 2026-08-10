@@ -263,7 +263,7 @@ type HandleArgs = {
 function makeHandle(args: HandleArgs): ModelHandle {
   const streamFn = API_STREAMS[args.model.api];
   if (!streamFn) {
-    throw new Error(`Unsupported model API "${args.model.api}".`);
+    throw new Error(`不支持模型 API“${args.model.api}”。`);
   }
 
   // Per-API extras:
@@ -378,7 +378,7 @@ function getModelViaUserGateway(
   const model = gatewayNativeModel(
       config, `https://gateway.ai.cloudflare.com/v1/${userGateway.accountId}/default`);
   if (!model) {
-    throw new Error(`Provider "${config.provider}" is not supported via unified billing.`);
+    throw new Error(`统一计费不支持提供商“${config.provider}”。`);
   }
   return makeHandle({
     model,
@@ -454,8 +454,8 @@ function getModelViaGateway(
   const model = gatewayNativeModel(config, `${gatewayBase}/${gateway}`);
   if (!model) {
     throw new Error(
-      `Provider "${config.provider}" is not supported through AI Gateway. ` +
-      `Configured providers: ${[...gwConfig.providers].join(", ")}`
+      `AI Gateway 不支持提供商“${config.provider}”。` +
+      `已配置的提供商：${[...gwConfig.providers].join("、")}`
     );
   }
 
@@ -505,8 +505,8 @@ function getModelDirect(config: AiModelConfig, sessionAffinity?: string): ModelH
       // model config. (The REST endpoint is account-scoped, hence the extra accountId field.)
       if (!config.accountId || !config.apiToken) {
         throw new Error(
-            "This Workers AI model has no Cloudflare credentials. Re-add it with your " +
-            "Cloudflare account ID and an API token that permits Workers AI.");
+            "此 Workers AI 模型没有 Cloudflare 凭据。请使用你的 Cloudflare 账户 ID 和" +
+            "允许访问 Workers AI 的 API 令牌重新添加此模型。");
       }
       return makeHandle({
         model: {
@@ -589,7 +589,7 @@ function getModelDirect(config: AiModelConfig, sessionAffinity?: string): ModelH
       });
     default:
       config.provider satisfies never;
-      throw new Error(`Unknown provider "${config.provider}".`);
+      throw new Error(`未知的提供商“${config.provider}”。`);
   }
 }
 

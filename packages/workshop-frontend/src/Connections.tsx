@@ -74,7 +74,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
       // silently render "no connected resources".
       console.error('Failed to load gatekeepers:', err)
       reportIssue('connections.load', err)
-      toasts.add({ title: 'Failed to load connections', variant: 'error' })
+      toasts.add({ title: '加载连接失败', variant: 'error' })
     } finally {
       setLoading(false)
     }
@@ -93,7 +93,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
       await loadGatekeepers()
     } catch (err) {
       console.error('Failed to toggle hook:', err)
-      toasts.add({ title: `Failed to ${enabled ? 'enable' : 'disable'} hook`, variant: 'error' })
+      toasts.add({ title: `${enabled ? '启用' : '停用'}钩子失败`, variant: 'error' })
       // Revert optimistic update.
       setHooks((prev) => prev.map((h) => (h.id === id ? { ...h, enabled: !enabled } : h)))
     } finally {
@@ -112,7 +112,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
       await loadGatekeepers()
     } catch (err) {
       console.error('Failed to delete hook:', err)
-      toasts.add({ title: 'Failed to delete hook', variant: 'error' })
+      toasts.add({ title: '删除钩子失败', variant: 'error' })
     } finally {
       setDeleteHookTarget(null)
     }
@@ -138,7 +138,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
     return [
       {
         target: gadgetInfo.id,
-        targetTitle: `${gadgetInfo.title} (this gadget)`,
+        targetTitle: `${gadgetInfo.title}（此应用）`,
         name: 'GADGET',
       },
       ...bindings.map((b) => ({ target: b.target, targetTitle: b.resourceTitle, name: b.name })),
@@ -153,7 +153,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
   const handleEditSave = async (name: string) => {
     const newName = editValue.trim()
     if (!newName) {
-      toasts.add({ title: 'Binding name cannot be empty', variant: 'error' })
+      toasts.add({ title: '绑定名称不能为空', variant: 'error' })
       return
     }
     if (newName === name) {
@@ -167,7 +167,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
       onConnectionsChange?.()
     } catch (err) {
       console.error('Failed to rename binding:', err)
-      toasts.add({ title: 'Failed to update binding name', variant: 'error' })
+      toasts.add({ title: '更新绑定名称失败', variant: 'error' })
     } finally {
       setEditingBinding(null)
     }
@@ -186,7 +186,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
       onConnectionsChange?.()
     } catch (err) {
       console.error('Failed to remove binding:', err)
-      toasts.add({ title: 'Failed to remove connection', variant: 'error' })
+      toasts.add({ title: '移除连接失败', variant: 'error' })
     } finally {
       setDeleteTarget(null)
     }
@@ -199,10 +199,10 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
           <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <h2 className="m-0 text-[17px] leading-6 font-medium tracking-[-0.35px] text-kumo-default">
-                Connections
+                连接
               </h2>
               <p className="mt-1 text-[13px] leading-[18px] font-normal tracking-[-0.25px] text-kumo-subtle">
-                External resources this gadget can use.
+                此应用可以使用的外部资源。
               </p>
             </div>
             <WorkshopButton
@@ -210,19 +210,19 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
               onClick={() => setIsNewConnectionModalVisible(true)}
               className="self-start"
             >
-              Connect resource
+              连接资源
             </WorkshopButton>
           </div>
 
           {loading ? (
             <div className="rounded-xl border border-kumo-line bg-kumo-base px-4 py-6 text-center text-[13px] leading-[18px] font-normal tracking-[-0.25px] text-kumo-subtle">
-              Loading connections...
+              正在加载连接...
             </div>
           ) : bindings.length === 0 ? (
             <EmptyState
-              title="No connected resources"
-              description="Connect Google Docs, GitHub, Google Sheets, and other services so this gadget can safely use external data."
-              actionLabel="Connect resource"
+              title="尚未连接资源"
+              description="连接 Google Docs、GitHub、Google Sheets 等服务，让此应用能够安全地使用外部数据。"
+              actionLabel="连接资源"
               onAction={() => setIsNewConnectionModalVisible(true)}
             />
           ) : (
@@ -243,10 +243,10 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] leading-[18px] font-medium tracking-[-0.25px] text-kumo-danger">
-                            Delete {gk.resourceTitle}?
+                            删除 {gk.resourceTitle}？
                           </p>
                           <p className="truncate text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-                            The binding <span className="font-mono">{gk.name}</span> will be removed from this gadget.
+                            绑定 <span className="font-mono">{gk.name}</span> 将从此应用中移除。
                           </p>
                         </div>
                         <WorkshopButton
@@ -254,12 +254,12 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                           className="min-w-[68px]"
                           onClick={handleDeleteConfirm}
                         >
-                          Delete
+                          删除
                         </WorkshopButton>
                         <WorkshopButton
                           onClick={() => setDeleteTarget(null)}
                         >
-                          Cancel
+                          取消
                         </WorkshopButton>
                       </div>
                     ) : isEditing ? (
@@ -271,8 +271,8 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                             if (e.key === 'Enter') handleEditSave(gk.name)
                             if (e.key === 'Escape') handleEditCancel()
                           }}
-                          placeholder="Binding name"
-                          aria-label="Binding name"
+                          placeholder="绑定名称"
+                          aria-label="绑定名称"
                           autoFocus
                           className="min-w-0 flex-1 font-mono"
                         />
@@ -282,12 +282,12 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                           onClick={() => handleEditSave(gk.name)}
                           disabled={!editValue.trim()}
                         >
-                          Save
+                          保存
                         </WorkshopButton>
                         <WorkshopButton
                           onClick={handleEditCancel}
                         >
-                          Cancel
+                          取消
                         </WorkshopButton>
                       </div>
                     ) : (
@@ -301,41 +301,41 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                           <p className="flex items-center gap-2 truncate text-[13px] leading-[18px] font-medium tracking-[-0.25px] text-kumo-default">
                             <span className="min-w-0 truncate">{gk.resourceTitle}</span>
                             {isPending && (
-                              <Tooltip content="Added in this chat; kept when you accept the chat's changes" asChild>
+                              <Tooltip content="已在本次对话中添加；接受对话更改后将保留" asChild>
                                 <span className="flex-shrink-0 rounded-full bg-kumo-fill px-1.5 py-0.5 text-[10px] leading-none font-medium text-kumo-subtle">
-                                  Draft
+                                  草稿
                                 </span>
                               </Tooltip>
                             )}
                           </p>
                           <p className="mt-0.5 truncate text-[11px] leading-4 tracking-[-0.1px] text-kumo-inactive">
-                            Referenced in code as: <span className="font-mono text-kumo-subtle">{gk.name}</span>
+                            在代码中引用为：<span className="font-mono text-kumo-subtle">{gk.name}</span>
                           </p>
                         </div>
                         <div className="ml-auto flex shrink-0 items-center gap-1">
-                          <Tooltip content="Edit name used in code" asChild>
+                          <Tooltip content="编辑代码中使用的名称" asChild>
                             <WorkshopIconButton
                               onClick={() => handleEditStart(gk.name)}
-                              aria-label="Edit name used in code"
+                              aria-label="编辑代码中使用的名称"
                             >
                               <Pencil size={14} />
                             </WorkshopIconButton>
                           </Tooltip>
                           {!isPending && (
-                            <Tooltip content="Edit blueprint settings" asChild>
+                            <Tooltip content="编辑蓝图设置" asChild>
                               <WorkshopIconButton
                                 onClick={() => setAnnotationTarget(gk)}
-                                aria-label="Edit blueprint settings"
+                                aria-label="编辑蓝图设置"
                               >
                                 <Blueprint size={14} />
                               </WorkshopIconButton>
                             </Tooltip>
                           )}
-                          <Tooltip content="Delete connection" asChild>
+                          <Tooltip content="删除连接" asChild>
                             <WorkshopIconButton
                               danger
                               onClick={() => setDeleteTarget({ name: gk.name, resourceTitle: gk.resourceTitle })}
-                              aria-label="Delete connection"
+                              aria-label="删除连接"
                             >
                               <Trash size={14} />
                             </WorkshopIconButton>
@@ -354,10 +354,10 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
           <section className="mt-8">
             <div className="mb-3">
               <h2 className="m-0 text-[17px] leading-6 font-medium tracking-[-0.35px] text-kumo-default">
-                Hooks
+                钩子
               </h2>
               <p className="mt-1 text-[13px] leading-[18px] font-normal tracking-[-0.25px] text-kumo-subtle">
-                Callbacks that let connected resources wake up this gadget when events happen.
+                当事件发生时，让已连接资源唤醒此应用的回调。
               </p>
             </div>
 
@@ -375,10 +375,10 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] leading-[18px] font-medium tracking-[-0.25px] text-kumo-danger">
-                            Delete hook "{hook.description.title}"?
+                            删除钩子“{hook.description.title}”？
                           </p>
                           <p className="truncate text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-                            This permanently removes the hook. Future events will stop being delivered.
+                            此操作将永久移除该钩子，后续事件将不再送达。
                           </p>
                         </div>
                         <WorkshopButton
@@ -386,12 +386,12 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                           className="min-w-[68px]"
                           onClick={handleDeleteHookConfirm}
                         >
-                          Delete
+                          删除
                         </WorkshopButton>
                         <WorkshopButton
                           onClick={() => setDeleteHookTarget(null)}
                         >
-                          Cancel
+                          取消
                         </WorkshopButton>
                       </div>
                     ) : (
@@ -422,11 +422,11 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
                             disabled={togglingHooks.has(hook.id)}
                             onToggle={(enabled) => handleToggleHook(hook.id, enabled)}
                           />
-                          <Tooltip content="Delete hook" asChild>
+                          <Tooltip content="删除钩子" asChild>
                             <WorkshopIconButton
                               danger
                               onClick={() => setDeleteHookTarget({ id: hook.id, title: hook.description.title })}
-                              aria-label="Delete hook"
+                              aria-label="删除钩子"
                             >
                               <Trash size={14} />
                             </WorkshopIconButton>
@@ -454,8 +454,8 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
             await gadget.bindWithSuggestedName(gatekeeperId, chatId)
             toasts.add({
               title: chatId === undefined
-                ? 'Connection created successfully'
-                : "Connection created — accept the chat's changes to keep it",
+                ? '连接创建成功'
+                : '连接已创建——接受对话更改后即可保留',
               variant: 'success',
             })
             await loadGatekeepers()
@@ -471,7 +471,7 @@ export default function Connections({ overseer, gadget, chatId, authenticatedApi
         gadget={gadget}
         onClose={() => setAnnotationTarget(null)}
         onSaved={() => {
-          toasts.add({ title: 'Blueprint settings saved.', variant: 'success' })
+          toasts.add({ title: '蓝图设置已保存。', variant: 'success' })
           setAnnotationTarget(null)
         }}
       />
@@ -511,13 +511,13 @@ function BlueprintAnnotationModal({
           if (loaded) {
             setData(loaded)
           } else {
-            setLoadError('Connection not found.')
+            setLoadError('未找到连接。')
           }
         }
       } catch (err: any) {
         if (!cancelled) {
           reportIssue('connections.binding-load', err)
-          setLoadError(err?.message || 'Could not load binding.')
+          setLoadError(err?.message || '无法加载绑定。')
         }
       }
     })()
@@ -535,7 +535,7 @@ function BlueprintAnnotationModal({
       onSaved()
     } catch (err: any) {
       reportIssue('connections.binding-save', err)
-      setSaveError(err?.message || 'Could not save.')
+      setSaveError(err?.message || '无法保存。')
     } finally {
       setSaving(false)
     }
@@ -550,15 +550,15 @@ function BlueprintAnnotationModal({
           <div className="flex items-start justify-between gap-4 border-b border-kumo-line px-4 py-4 sm:px-5">
             <div className="min-w-0">
               <Dialog.Title className="text-[15px] leading-5 font-medium tracking-[-0.3px] text-kumo-default">
-                Blueprint settings
+                蓝图设置
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-                How this connection appears in blueprints.
+                此连接在蓝图中的显示方式。
               </Dialog.Description>
             </div>
             <Dialog.Close
               render={(props) => (
-                <WorkshopIconButton {...props} aria-label="Close">
+                <WorkshopIconButton {...props} aria-label="关闭">
                   <X size={16} />
                 </WorkshopIconButton>
               )}
@@ -569,7 +569,7 @@ function BlueprintAnnotationModal({
             {loadError ? (
               <div className="text-[13px] text-kumo-subtle">{loadError}</div>
             ) : !data ? (
-              <div className="py-2 text-center text-[13px] text-kumo-subtle">Loading...</div>
+              <div className="py-2 text-center text-[13px] text-kumo-subtle">正在加载...</div>
             ) : (
               <>
                 <BlueprintBindingCard
@@ -594,14 +594,14 @@ function BlueprintAnnotationModal({
                 onClick={onClose}
                 disabled={saving}
               >
-                Cancel
+                取消
               </WorkshopButton>
               <WorkshopButton
                 tone="primary"
                 onClick={handleSave}
                 disabled={saving || !data}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? '正在保存...' : '保存'}
               </WorkshopButton>
             </div>
           </div>

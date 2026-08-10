@@ -33,7 +33,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("guardedFetch", () => {
   it("refuses a blocked host outright", async () => {
     stubChain({});
-    await expect(guardedFetch("http://169.254.169.254/", {})).rejects.toThrow(/Refusing to contact/);
+    await expect(guardedFetch("http://169.254.169.254/", {})).rejects.toThrow(/拒绝访问/);
   });
 
   it("does not follow a redirect into a blocked host", async () => {
@@ -158,7 +158,7 @@ describe("sdkFetch", () => {
   it("refuses an OAuth response larger than the shared response limit", async () => {
     vi.stubGlobal("fetch", async () => new Response("x".repeat(2 * 1024 * 1024)));
     await expect(sdkFetch()("https://auth.example.com/metadata"))
-      .rejects.toThrow(/response exceeded/i);
+      .rejects.toThrow(/响应超过/);
   });
 
   it("preserves response metadata after bounding the body", async () => {

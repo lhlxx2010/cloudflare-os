@@ -1,11 +1,11 @@
 import type { SupportedResource } from "@gadgets/workshop-shared/gatekeeper";
 
 const DESCRIPTION =
-  "An MCP endpoint you supply. Tools are discovered automatically, and writes need approval.";
+  "你提供的 MCP 端点。系统会自动发现工具，写入操作需要批准。";
 
 const HTTPS_RESOURCE: SupportedResource = {
   urlPattern: "https://*",
-  title: "Any MCP server",
+  title: "任意 MCP 服务器",
   description: DESCRIPTION,
 };
 

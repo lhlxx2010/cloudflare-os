@@ -156,9 +156,9 @@ export async function selectAccount(
   _env: Cloudflare.Env, userStub: UserStub, accountId: string,
 ): Promise<void> {
   const token = await getUsableAccessToken(userStub);
-  if (!token) throw new Error("No usable Cloudflare connection.");
+  if (!token) throw new Error("没有可用的 Cloudflare 连接。");
   const accounts = await listAccounts(token);
   const found = accounts.find(a => a.accountId === accountId);
-  if (!found) throw new Error("That Cloudflare account was not found in the connected grant.");
+  if (!found) throw new Error("在已连接的授权中未找到该 Cloudflare 账户。");
   await userStub.setCloudflareAccountSelection(found.accountId, found.accountName);
 }

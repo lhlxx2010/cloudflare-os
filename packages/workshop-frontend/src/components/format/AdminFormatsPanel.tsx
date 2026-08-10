@@ -27,6 +27,19 @@ import { FormatGlyph, FormatPreview } from './FormatVisuals'
 // known for the deployment's featured blueprints, unknown for the admin's own published ones.
 type Promotable = { id: string; title: string; declared?: BlueprintOutput }
 
+const ICON_LABELS: Record<OutputIcon, string> = {
+  fileText: '文档',
+  gridNine: '网格',
+  presentation: '演示文稿',
+  appWindow: '应用窗口',
+  flowArrow: '流程',
+  kanban: '看板',
+  chartBar: '图表',
+  table: '表格',
+  notebook: '笔记本',
+  listChecks: '任务清单',
+}
+
 export default function AdminFormatsPanel({
   admin,
   formats,
@@ -78,7 +91,7 @@ export default function AdminFormatsPanel({
       await onChanged()
     } catch (err) {
       console.error('Format update failed:', err)
-      toasts.add({ title: "Couldn't update standard formats", variant: 'error' })
+      toasts.add({ title: '无法更新标准格式', variant: 'error' })
     } finally {
       setBusy(false)
     }
@@ -94,10 +107,10 @@ export default function AdminFormatsPanel({
 
   return (
     <div className="rounded-xl border border-kumo-line bg-kumo-elevated p-6">
-      <h2 className="mb-1 text-lg font-semibold text-kumo-strong">Standard formats</h2>
+      <h2 className="mb-1 text-lg font-semibold text-kumo-strong">标准格式</h2>
       <p className="mb-5 text-sm text-kumo-subtle">
-        A promoted blueprint is offered by name (“New Doc”, “New Slides”) wherever people start
-        something, and the agent is told to prefer it over building the same thing from scratch.
+        提升后的蓝图会在用户开始创作时以名称显示（如“新建文档”“新建幻灯片”），
+        同时会提示智能体优先使用该蓝图，而不是从头构建同类内容。
       </p>
 
       <PreviewStrip formats={offered} />
@@ -130,13 +143,13 @@ export default function AdminFormatsPanel({
           render={
             <Button variant="secondary" disabled={busy || available.length === 0}>
               <Plus size={14} className="mr-1.5" />
-              Promote a blueprint
+              提升蓝图
             </Button>
           }
         />
         <DropdownMenu.Content className={MENU_CONTENT}>
           <p className="px-2 pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-[0.06em] text-kumo-inactive">
-            Offer as a standard format
+            设为标准格式
           </p>
           {available.map((candidate) => (
             <DropdownMenu.Item
@@ -147,12 +160,12 @@ export default function AdminFormatsPanel({
               <FormatGlyph output={candidate.declared} size="lg" className="shrink-0 text-kumo-subtle" />
               <span className="min-w-0">
                 <span className="block truncate text-[13px] text-kumo-default">
-                  {candidate.title || 'Untitled blueprint'}
+                  {candidate.title || '未命名蓝图'}
                 </span>
                 <span className="block truncate text-[11px] text-kumo-inactive">
                   {candidate.declared
-                    ? `Produces ${candidate.declared.plural}`
-                    : 'No declared format. You’ll name it.'}
+                    ? `生成${candidate.declared.plural}`
+                    : '未声明格式，需要由你命名。'}
                 </span>
               </span>
             </DropdownMenu.Item>
@@ -168,11 +181,11 @@ function PreviewStrip({ formats }: { formats: AdminFormat[] }) {
   return (
     <div className="mb-5 rounded-lg border border-dashed border-kumo-line bg-kumo-tint/40 p-4">
       <p className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-kumo-inactive">
-        What people will see
+        用户将看到
       </p>
       {formats.length === 0 ? (
         <p className="text-[13px] italic text-kumo-inactive">
-          Nothing yet. People will only see “New workspace”.
+          暂无内容。用户只会看到“新建工作区”。
         </p>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
@@ -182,13 +195,13 @@ function PreviewStrip({ formats }: { formats: AdminFormat[] }) {
               className="flex items-center gap-2 rounded-full border border-kumo-line bg-kumo-base px-3.5 py-2 text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-default"
             >
               <FormatGlyph output={format.output} size="md" className="text-kumo-subtle" />
-              New {format.output!.noun}
+              新建{format.output!.noun}
             </span>
           ))}
         </div>
       )}
       <p className="mt-2.5 text-[12px] leading-4 text-kumo-subtle">
-        In the composer’s + menu, the command palette, and on an empty Outputs page, in this order.
+        将按此顺序显示在编辑器的“+”菜单、命令面板和空白的“输出”页面中。
       </p>
     </div>
   )
@@ -197,10 +210,10 @@ function PreviewStrip({ formats }: { formats: AdminFormat[] }) {
 function EmptyState() {
   return (
     <div className="mb-5 rounded-lg border border-kumo-line bg-kumo-base px-4 py-5 text-center">
-      <p className="text-sm font-medium text-kumo-default">No standard formats yet</p>
+      <p className="text-sm font-medium text-kumo-default">还没有标准格式</p>
       <p className="mx-auto mt-1 max-w-md text-[13px] leading-[18px] text-kumo-subtle">
-        Promote a blueprint to offer it by name wherever people start something, and to have the
-        agent prefer it over building the same thing from scratch.
+        提升一个蓝图，使其在用户开始创作时按名称显示，并让智能体优先使用该蓝图，
+        而不是从头构建同类内容。
       </p>
     </div>
   )
@@ -241,7 +254,7 @@ function FormatRow({
           {format.missing ? (
             <span
               className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-kumo-tint text-kumo-danger"
-              title="This blueprint no longer exists"
+              title="此蓝图已不存在"
             >
               <Warning size={16} />
             </span>
@@ -254,18 +267,18 @@ function FormatRow({
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
               <span className="truncate text-sm font-medium text-kumo-default">
-                {format.output ? `New ${format.output.noun}` : format.blueprintTitle || format.blueprintId}
+                {format.output ? `新建${format.output.noun}` : format.blueprintTitle || format.blueprintId}
               </span>
-              {format.bundled && <Badge>Bundled</Badge>}
-              {!format.enabled && !format.missing && <Badge>Off</Badge>}
-              {needsNaming && <Badge tone="warn">Needs a name</Badge>}
+              {format.bundled && <Badge>内置</Badge>}
+              {!format.enabled && !format.missing && <Badge>已关闭</Badge>}
+              {needsNaming && <Badge tone="warn">需要命名</Badge>}
             </span>
             <span className="mt-0.5 block truncate text-xs text-kumo-subtle">
               {format.missing
-                ? 'Blueprint deleted. Remove this entry.'
+                ? '蓝图已删除，请移除此条目。'
                 : needsNaming
-                ? 'This blueprint doesn’t declare what it produces. Give it a name to offer it.'
-                : `${format.blueprintTitle} · shown under ${format.output!.plural} on Outputs`}
+                ? '此蓝图未声明生成内容，请先命名再提供给用户。'
+                : `${format.blueprintTitle} · 在“输出”页面的${format.output!.plural}分类下显示`}
             </span>
           </span>
 
@@ -281,10 +294,10 @@ function FormatRow({
             open ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'
           }`}
         >
-          <IconButton label="Move up" disabled={busy || isFirst} onClick={() => onMove(-1)}>
+          <IconButton label="上移" disabled={busy || isFirst} onClick={() => onMove(-1)}>
             <ArrowUp size={13} />
           </IconButton>
-          <IconButton label="Move down" disabled={busy || isLast} onClick={() => onMove(1)}>
+          <IconButton label="下移" disabled={busy || isLast} onClick={() => onMove(1)}>
             <ArrowDown size={13} />
           </IconButton>
         </div>
@@ -300,21 +313,18 @@ function FormatRow({
         <div className="flex flex-col gap-4 border-t border-kumo-line px-3 py-4">
           {format.missing ? (
             <p className="text-[13px] text-kumo-subtle">
-              The blueprint behind this format was deleted, so nobody is offered it. Remove the
-              entry.
+              此格式对应的蓝图已被删除，因此不会再向任何人提供。请移除此条目。
             </p>
           ) : (
             <>
               <Fieldset
-                title="How it’s presented"
+                title="展示方式"
                 detail={
-                  'Leave a field empty to use the name the blueprint declares. ' +
+                  '字段留空时将使用蓝图声明的名称。' +
                   (format.bundled
-                    ? 'A bundled blueprint can change its declared names when this deployment ' +
-                      'updates; a value you type here stays as you set it. '
+                    ? '内置蓝图的声明名称可能随部署更新而变化；你在此输入的值会保持不变。'
                     : '') +
-                  'Applies to outputs made from now on — existing ones keep the name they were ' +
-                  'made with.'
+                  '此设置仅适用于之后生成的输出；现有输出仍保留创建时的名称。'
                 }
               >
                 <div className="flex items-center gap-4">
@@ -331,14 +341,14 @@ function FormatRow({
                       onPick={(icon) => onPatch({ overrides: { icon } })}
                     />
                     <OverrideField
-                      label="Name"
+                      label="名称"
                       value={format.output?.noun ?? format.overrides?.noun ?? ''}
                       declared={format.declared?.noun}
                       disabled={busy}
                       onCommit={(noun) => onPatch({ overrides: { noun } })}
                     />
                     <OverrideField
-                      label="Plural"
+                      label="复数名称"
                       value={format.output?.plural ?? format.overrides?.plural ?? ''}
                       declared={format.declared?.plural}
                       disabled={busy}
@@ -352,19 +362,19 @@ function FormatRow({
                   <figure className="hidden shrink-0 flex-col items-center gap-1.5 sm:flex">
                     <FormatPreview output={format.output} width={112} />
                     <figcaption className="text-[10px] uppercase tracking-[0.06em] text-kumo-inactive">
-                      On Outputs
+                      在“输出”页面
                     </figcaption>
                   </figure>
                 </div>
               </Fieldset>
 
               <Fieldset
-                title="How the agent picks it"
-                detail="Standard formats are listed first in the agent’s catalog, as the entry below — the blueprint’s own description does most of the work. Add a hint only if the agent needs to know when to prefer this format over another one."
+                title="智能体如何选择"
+                detail="标准格式会优先列在智能体目录中，如下方条目所示。蓝图自身的描述会提供主要信息；仅当智能体需要知道何时应优先选择此格式时，才添加提示。"
               >
                 <OverrideField
-                  label="Hint"
-                  placeholder="e.g. prefer for customer-facing decks"
+                  label="提示"
+                  placeholder="例如：面向客户的演示文稿优先使用此格式"
                   value={format.agentHint}
                   disabled={busy}
                   onCommit={(agentHint) => onPatch({ agentHint: agentHint ?? '' })}
@@ -377,7 +387,7 @@ function FormatRow({
                     <Sparkle size={12} className="mt-0.5 shrink-0" />
                     <span className="min-w-0">
                       <span className="block">
-                        “{format.output.noun}” — a standard format on this deployment
+                        “{format.output.noun}”——此部署中的标准格式
                         {format.agentHint ? ` -- ${format.agentHint}` : ''}
                       </span>
                       {format.blueprintDescription && (
@@ -397,16 +407,16 @@ function FormatRow({
               <div className="flex items-end justify-between gap-4 border-t border-kumo-line pt-3">
                 <p className="text-[12px] leading-4 text-kumo-subtle">
                   {(format.enabled
-                    ? 'Turning this off removes it from the menus above and from the agent’s catalog. Outputs already made from it keep working. '
-                    : 'Currently hidden from the menus above and from the agent’s catalog. ') +
+                    ? '关闭后，此格式将从上述菜单和智能体目录中移除。已用它生成的输出仍可正常使用。'
+                    : '当前已从上述菜单和智能体目录中隐藏。') +
                     (format.bundled
-                      ? 'It ships with the deployment, so it stays in this list either way.'
+                      ? '它随部署提供，因此无论是否启用都会保留在此列表中。'
                       : '')}
                 </p>
                 {!format.bundled && (
                   <Button variant="secondary" disabled={busy} onClick={onRemove}>
                     <Trash size={13} className="mr-1.5" />
-                    Stop offering
+                    停止提供
                   </Button>
                 )}
               </div>
@@ -417,7 +427,7 @@ function FormatRow({
             <div className="flex justify-end">
               <Button variant="secondary" disabled={busy} onClick={onRemove}>
                 <Trash size={13} className="mr-1.5" />
-                Remove
+                移除
               </Button>
             </div>
           )}
@@ -491,7 +501,7 @@ function OverrideField({
       <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-kumo-inactive">
         {label}
         {overridden && (
-          <span className="ml-1 normal-case tracking-normal text-kumo-subtle">(overridden)</span>
+          <span className="ml-1 normal-case tracking-normal text-kumo-subtle">（已覆盖）</span>
         )}
       </span>
       <Input
@@ -525,7 +535,7 @@ function IconPicker({
   return (
     <label className="flex flex-col gap-1">
       <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-kumo-inactive">
-        Icon
+        图标
       </span>
       <DropdownMenu>
         <DropdownMenu.Trigger
@@ -533,7 +543,7 @@ function IconPicker({
             <button
               type="button"
               disabled={disabled}
-              aria-label="Choose icon"
+              aria-label="选择图标"
               className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border border-kumo-line bg-kumo-base text-kumo-subtle transition-colors hover:text-kumo-default disabled:cursor-default"
             >
               <FormatGlyph output={selected && { ...GENERIC_OUTPUT, icon: selected }} size="lg" />
@@ -549,7 +559,7 @@ function IconPicker({
                 <button
                   key={icon}
                   type="button"
-                  aria-label={icon}
+                  aria-label={ICON_LABELS[icon]}
                   onClick={() => onPick(icon === declaredIcon ? null : icon)}
                   className={`grid h-8 w-8 cursor-pointer place-items-center rounded-md transition-colors ${
                     active ? 'bg-kumo-fill text-kumo-strong' : 'text-kumo-subtle hover:bg-kumo-tint'

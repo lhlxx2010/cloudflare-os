@@ -144,8 +144,8 @@ export class ScheduleSessionImpl extends RpcTarget implements ScheduleSession {
   async list(): Promise<ScheduleSummary[]> {
     const schedules = await this.#driver.listWorkspace(this.#workspaceId);
     await this.#approvalQueue.authorizeObservation({
-      title: "List scheduled tasks",
-      description: "List enabled schedules for this workspace.",
+      title: "列出定时任务",
+      description: "列出此工作区中已启用的计划。",
     });
     return schedules;
   }
@@ -234,8 +234,8 @@ export class SchedulerGatekeeper
   async describe(): Promise<ResourceDescription> {
     return {
       url: "scheduler://tasks",
-      title: "Scheduled Tasks",
-      snippet: "Run workspace callbacks on recurring and one-shot schedules.",
+      title: "定时任务",
+      snippet: "按周期计划或单次计划运行工作区回调。",
       suggestedBindingName: "SCHEDULER",
       tsType: "ScheduleSession",
       hookTsType: "ScheduledTaskHook",
@@ -318,10 +318,10 @@ type ScheduleAccountProps = { accountId: string };
 /** Describes the account's ambient capability and generic management app. */
 export function describeScheduleAccount(): AccountDescription {
   return {
-    displayName: "Scheduled Tasks",
+    displayName: "定时任务",
     avatar: SCHEDULER_ICON,
     singleton: { tsType: "ScheduleSession" },
-    providesUi: { title: "Scheduled", icon: SCHEDULER_ICON },
+    providesUi: { title: "定时任务", icon: SCHEDULER_ICON },
   };
 }
 
@@ -405,11 +405,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Cloudflare.Env> {
   /** Describes the auto-provisioned Scheduled Tasks vendor. */
   async describe(): Promise<VendorDescription> {
     return {
-      displayName: "Scheduled Tasks",
+      displayName: "定时任务",
       url: "https://workers.cloudflare.com/",
       logo: SCHEDULER_ICON,
-      tagline: "Run workspace tasks on a schedule",
-      description: "Register recurring and one-shot workspace tasks.",
+      tagline: "按计划运行工作区任务",
+      description: "注册周期性或单次执行的工作区任务。",
       autoProvisionsAccount: true,
       providesAuth: false,
     };

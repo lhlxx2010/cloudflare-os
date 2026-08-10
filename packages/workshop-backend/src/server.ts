@@ -162,13 +162,13 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   async setAvatar(data: Uint8Array | null): Promise<void> {
     if (data) {
       if (data.byteLength > 100 * 1024) {
-        throw new Error("Avatar too large (max 100 KB)");
+        throw new Error("头像文件过大（最大 100 KB）");
       }
       // Verify the data starts with a known image magic-byte header.
       let isJpeg = data[0] === 0xFF && data[1] === 0xD8 && data[2] === 0xFF;
       let isPng = data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4E && data[3] === 0x47;
       if (!isJpeg && !isPng) {
-        throw new Error("Avatar must be a JPEG or PNG image");
+        throw new Error("头像必须是 JPEG 或 PNG 图片");
       }
     }
     // Avatar data lives in KV (global), not the user's DO storage, so we
@@ -271,7 +271,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
 
   async newGadget(): Promise<RpcStub<Overseer>> {
     let id = this.overseers.newUniqueId().toString();
-    await this.user.newGadget(id, "Untitled Workspace");
+    await this.user.newGadget(id, "未命名工作区");
     recordAnalytics(this.ctx, this.env, {
       event_name: "gadget_created",
       user_id: this.user.id.toString(),
@@ -425,11 +425,11 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   ): Promise<RpcStub<Overseer>> {
     // 1. Read blueprint from KV.
     let kvRecord = await readBlueprintKvRecord(this.env, blueprintId);
-    if (!kvRecord) throw new Error("Blueprint not found.");
+    if (!kvRecord) throw new Error("未找到蓝图。");
 
     // 2. Read gzip-compressed Yjs doc from R2 and decompress.
     let codeBytes = await readBlueprintContent(this.env, blueprintId, kvRecord.metadata.version);
-    if (!codeBytes) throw new Error("Blueprint content not found in R2.");
+    if (!codeBytes) throw new Error("在 R2 中未找到蓝图内容。");
 
     // 3. Create new Overseer DO (same as newGadget()).
     let id = this.overseers.newUniqueId().toString();
@@ -461,7 +461,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
     for (let [bindingName, assignment] of Object.entries(bindings)) {
       let blueprintBinding = blueprintBindings.get(bindingName);
       if (!blueprintBinding) {
-        throw new Error(`Unknown binding name: ${bindingName}`);
+        throw new Error(`未知的绑定名称：${bindingName}`);
       }
 
       gkPromises.push((async () => {
@@ -469,7 +469,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
         if (assignment.type === "gatekeeper") {
           gk = await overseerResult.newGatekeeper(assignment.accountId, assignment.resourceUrl);
           if (!gk) {
-            throw new Error(`Failed to create gatekeeper for binding "${bindingName}".`);
+            throw new Error(`无法为绑定“${bindingName}”创建 Gatekeeper。`);
           }
         } else if (assignment.type === "aiModel") {
           gk = await overseerResult.newAiModelGatekeeper(assignment.modelId);
@@ -499,7 +499,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
       if (assignment.type !== "agentSpawner") continue;
       let blueprintBinding = blueprintBindings.get(bindingName);
       if (blueprintBinding?.type !== "agentSpawner") {
-        throw new Error(`Binding "${bindingName}" type mismatch.`);
+        throw new Error(`绑定“${bindingName}”的类型不匹配。`);
       }
 
       let env: Record<string, WorkpieceId> = {};
@@ -509,8 +509,8 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
         } else {
           let id = createdIds.get(target.name);
           if (id === undefined) {
-            throw new Error(`Agent spawner binding "${bindingName}" references binding ` +
-                `"${target.name}", which was not assigned.`);
+            throw new Error(`Agent 启动器绑定“${bindingName}”引用了未分配的绑定` +
+                `“${target.name}”。`);
           }
           env[envName] = id;
         }
@@ -590,7 +590,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
 
 async function serveBlueprintScreenshot(env: Env, blueprintId: string): Promise<Response> {
   let object = await env.BLUEPRINT_CONTENT.get(`${BLUEPRINT_SCREENSHOT_R2_PREFIX}${blueprintId}`);
-  if (!object) return new Response("Not Found", {status: 404});
+  if (!object) return new Response("未找到", {status: 404});
 
   let contentType = object.httpMetadata?.contentType;
   if (contentType !== "image/jpeg" && contentType !== "image/png") {
@@ -637,12 +637,12 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
 
   async startGatekeeperLogin(vendorId: string): Promise<{ url: string; attempt: RpcStub<LoginAttempt> }> {
     if (!getAuthGatekeeperAllowlist(this.env).includes(vendorId)) {
-      throw new Error(`Sign-in via "${vendorId}" is not enabled on this deployment.`);
+      throw new Error(`此部署未启用通过“${vendorId}”登录。`);
     }
     const vendor = getAuthVendorBinding(this.env, vendorId);
-    if (!vendor) throw new Error(`No such auth gatekeeper: ${vendorId}`);
+    if (!vendor) throw new Error(`未找到认证 Gatekeeper：${vendorId}`);
     const desc = await vendor.describe();
-    if (!desc.providesAuth) throw new Error(`"${vendorId}" does not provide authentication.`);
+    if (!desc.providesAuth) throw new Error(`“${vendorId}”不提供认证功能。`);
 
     // The PendingLogin DO is the rendezvous between this request and the (separate) OAuth-callback
     // invocation. The client never sees its id — we hand back an `attempt` stub instead.
@@ -705,10 +705,10 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
 
   async login(username: string, passwordHash: Uint8Array): Promise<string | null> {
     if (this.env.CF_ACCESS_AUD) {
-      throw new Error("This deployment requires Cloudflare Access authentication.");
+      throw new Error("此部署要求使用 Cloudflare Access 认证。");
     }
     if (!isPasswordAuthEnabled(this.env)) {
-      throw new Error("Password login is disabled on this deployment. Use a sign-in option.");
+      throw new Error("此部署已禁用密码登录，请使用其他登录方式。");
     }
 
     username = normalizeUsername(username);
@@ -731,13 +731,13 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
   async createAccount(username: string, displayName: string, passwordHash: Uint8Array)
       : Promise<string | null> {
     if (this.env.CF_ACCESS_AUD) {
-      throw new Error("This deployment requires Cloudflare Access authentication.");
+      throw new Error("此部署要求使用 Cloudflare Access 认证。");
     }
     if (!isPasswordAuthEnabled(this.env)) {
-      throw new Error("Password signup is disabled on this deployment. Use a sign-in option.");
+      throw new Error("此部署已禁用密码注册，请使用其他登录方式。");
     }
     if (!(await readAdminConfig(this.env)).signupsEnabled) {
-      throw new Error("New signups are currently disabled on this deployment.");
+      throw new Error("此部署目前已关闭新用户注册。");
     }
 
     username = normalizeUsername(username);
@@ -766,10 +766,10 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
 
   async downloadBlueprint(id: string): Promise<ReadableStream<Uint8Array>> {
     let kvRecord = await readBlueprintKvRecord(this.env, id);
-    if (!kvRecord) throw new Error("Blueprint not found.");
+    if (!kvRecord) throw new Error("未找到蓝图。");
 
     let r2Object = await this.env.BLUEPRINT_CONTENT.get(`${id}/${kvRecord.metadata.version}`);
-    if (!r2Object) throw new Error("Blueprint content not found in R2.");
+    if (!r2Object) throw new Error("在 R2 中未找到蓝图内容。");
 
     let metadata = { ...kvRecord.metadata };
     delete metadata.screenshot;
@@ -828,14 +828,14 @@ export default {
 
       if (env.CF_ACCESS_AUD) {
         if (req.headers.get("Origin") !== url.origin) {
-          return new Response("Cross-origin API access not allowed.", { status: 403 });
+          return new Response("不允许跨域访问 API。", { status: 403 });
         }
 
         const payload = await verifyCfAccessJwt(req, env);
-        if (!payload) return new Response("Invalid CF access JWT.", { status: 403 });
+        if (!payload) return new Response("CF Access JWT 无效。", { status: 403 });
 
         if (!payload.email) {
-          return new Response("Access JWT didn't specify email address.", { status: 403 });
+          return new Response("Access JWT 未指定电子邮箱地址。", { status: 403 });
         }
 
         accessPayload = payload;
@@ -862,6 +862,6 @@ export default {
       return resp;
     }
 
-    return new Response("Not Found", {status: 404});
+    return new Response("未找到", {status: 404});
   }
 } satisfies ExportedHandler<Env>;

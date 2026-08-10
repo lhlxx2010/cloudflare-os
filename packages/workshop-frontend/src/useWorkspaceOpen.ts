@@ -94,7 +94,7 @@ export function useWorkspaceOpen({
 
         const configureObserversTarget = new (class extends RpcTarget implements ObserverConfigCallback {
           configure(needs: ObserverBindingNeed[]): Promise<ObserverAccountChoice[]> {
-            if (cancelled) return Promise.reject(new Error('Cancelled'))
+            if (cancelled) return Promise.reject(new Error('已取消'))
             return new Promise<ObserverAccountChoice[]>((resolve, reject) => {
               pendingObserverRejectRef.current = reject
               setObserverConfig({
@@ -145,11 +145,19 @@ export function useWorkspaceOpen({
         if (message.includes(OBSERVER_CANCELLED)) {
           showTerminalError({
             kind: 'message',
-            message: 'To open this workspace, you must choose connected accounts for the services it uses.',
+            message: '要打开此工作区，你必须为其使用的服务选择已连接的账户。',
           })
         } else if (message.includes('permitted to observe') ||
                    message.includes('no longer connected') ||
                    message.includes('connect an account for every service')) {
+          // Older backends sent only English text and no stable code. Keep recognizing those
+          // rolling-upgrade fallbacks without leaking the old English message into the Chinese UI.
+          showTerminalError({
+            kind: 'message',
+            message: '你无法查看此工作区，因为所需服务账户未连接或没有访问权限。请检查连接后重试。',
+          })
+        } else if (message.includes('有权查看') || message.includes('不再连接') ||
+                   message.includes('每项服务连接账户')) {
           showTerminalError({ kind: 'message', message })
         } else {
           const failure = classifyWorkspaceOpenFailure(caught)
@@ -169,7 +177,7 @@ export function useWorkspaceOpen({
     return () => {
       cancelled = true
       if (pendingObserverRejectRef.current) {
-        pendingObserverRejectRef.current(new Error('Cancelled'))
+        pendingObserverRejectRef.current(new Error('已取消'))
         pendingObserverRejectRef.current = null
       }
       setObserverConfig(null)

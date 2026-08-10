@@ -150,18 +150,18 @@ const CONFLUENCE_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(CONFLUENCE_
 
 const SITE_RESOURCE: SupportedResource = {
   urlPattern: "https://*.atlassian.net/wiki",
-  title: "Confluence Site",
-  description: "Search, browse, and edit any space or page on a Confluence site.",
+  title: "Confluence 站点",
+  description: "搜索、浏览和编辑 Confluence 站点中的任何空间或页面。",
 };
 const SPACE_RESOURCE: SupportedResource = {
   urlPattern: "https://*.atlassian.net/wiki/spaces/:spaceKey",
-  title: "Confluence Space",
-  description: "Read and edit the pages and blog posts in a single Confluence space.",
+  title: "Confluence 空间",
+  description: "读取和编辑单个 Confluence 空间中的页面及博客文章。",
 };
 const PAGE_RESOURCE: SupportedResource = {
   urlPattern: "https://*.atlassian.net/wiki/spaces/:spaceKey/pages/:pageId/*?",
-  title: "Confluence Page or Blog Post",
-  description: "Read and edit a specific Confluence page or blog post (and its child pages).",
+  title: "Confluence 页面或博客文章",
+  description: "读取和编辑指定的 Confluence 页面或博客文章（及其子页面）。",
 };
 const SUPPORTED_RESOURCES = [SITE_RESOURCE, SPACE_RESOURCE, PAGE_RESOURCE];
 
@@ -169,20 +169,20 @@ const htmlResponse = (body: string): Response =>
   new Response(body, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en"><body><script>window.close();</script>
-<p>Authorization complete. You may close this tab and return to Cloudflare OS.</p></body></html>`;
+<html lang="zh-CN"><body><script>window.close();</script>
+<p>授权完成。你可以关闭此标签页并返回 NINT os。</p></body></html>`;
 
 const page = (title: string, color: string, message: string): string => `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>${title}</title></head>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>${title}</title></head>
 <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
 <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
 <h1 style="color: ${color}; font-size: 1.5rem;">${title}</h1>
 <p style="color: #555; line-height: 1.6;">${message}</p></div></body></html>`;
 
-const INVALID_LINK_HTML = page("Authorization Link Expired", "#d97706",
-  "This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.");
-const NOT_CONFIGURED_HTML = page("Confluence Gatekeeper Not Configured", "#d97706",
-  "Please configure an Atlassian OAuth client ID and secret for this gatekeeper.");
+const INVALID_LINK_HTML = page("授权链接已过期", "#1d4ed8",
+  "此授权链接无效或已过期。请返回 NINT os 后重试。");
+const NOT_CONFIGURED_HTML = page("Confluence Gatekeeper 尚未配置", "#1d4ed8",
+  "请为此 Gatekeeper 配置 Atlassian OAuth 客户端 ID 和密钥。");
 
 // ---------------------------------------------------------------------------------------------
 // HTTP handler — OAuth initiation + completion.
@@ -192,7 +192,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     const relPath = url.pathname.slice(basePath.length);
     const path = relPath.slice(1).split("/");
@@ -215,20 +215,20 @@ export default {
       return Response.redirect(authUrl.toString(), 302);
     } else if (relPath === "/oauth") {
       const error = url.searchParams.get("error");
-      if (error) return new Response(`Authorization failed: ${error}`,
+      if (error) return new Response(`授权失败：${error}`,
         { headers: { "content-type": "text/plain; charset=utf-8" } });
       const state = url.searchParams.get("state");
       const code = url.searchParams.get("code");
-      if (!state || !code) return new Response("Error: missing 'state' or 'code'",
+      if (!state || !code) return new Response("错误：缺少“state”或“code”",
         { headers: { "content-type": "text/plain; charset=utf-8" } });
       const colonIdx = state.indexOf(":");
-      if (colonIdx < 0) return new Response("Error: malformed state",
+      if (colonIdx < 0) return new Response("错误：“state”格式不正确",
         { headers: { "content-type": "text/plain; charset=utf-8" } });
       const stub = ctx.exports.UserAccount.get(ctx.exports.UserAccount.idFromString(state.slice(0, colonIdx)));
       if (!await stub.acceptAuthCode(code, state.slice(colonIdx + 1))) return htmlResponse(INVALID_LINK_HTML);
       return htmlResponse(SELF_CLOSING_HTML);
     }
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -243,11 +243,10 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://www.atlassian.com/software/confluence",
       logo: { url: CONFLUENCE_LOGO_URL },
       color: "#deebff",
-      tagline: "Read and write your Confluence pages and spaces",
+      tagline: "读取和编辑你的 Confluence 页面与空间",
       description:
-        "Connect your Atlassian Confluence site to let Cloudflare OS search, read, and edit the pages, " +
-        "blog posts, and spaces you share. Build agents that draft documentation, organize " +
-        "knowledge bases, or keep pages up to date.",
+        "连接你的 Atlassian Confluence 站点，让 NINT os 搜索、读取和编辑你共享的页面、" +
+        "博客文章及空间。你可以构建用于起草文档、整理知识库或保持页面更新的智能体。",
     };
   }
 
@@ -312,10 +311,10 @@ export class UserAccount extends DurableObject<Env> {
     this.ctx.storage.kv.delete("nonce");
 
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("The Confluence Gatekeeper is not configured.");
+      throw new Error("Confluence Gatekeeper 尚未配置。");
     }
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
-    if (!callback) throw new Error("Took too long to complete the authorization. Please try again.");
+    if (!callback) throw new Error("完成授权所用时间过长，请重试。");
 
     const grant = await exchangeAuthCode(
       code, this.env.CLIENT_ID, this.env.CLIENT_SECRET, getBaseUrl(this.env) + "/oauth");
@@ -360,7 +359,7 @@ export class UserAccount extends DurableObject<Env> {
 
   async refreshCredentials(): Promise<string> {
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("The Confluence Gatekeeper is not configured.");
+      throw new Error("Confluence Gatekeeper 尚未配置。");
     }
     const grant = this.ctx.storage.kv.get<StoredGrant>("grant");
     if (!grant?.refreshToken) {
@@ -425,7 +424,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     });
     if (!site) {
       throw new ConfluenceApiError(404,
-        `This connection has no access to a Confluence site at ${host}.`);
+        `此连接无权访问位于 ${host} 的 Confluence 站点。`);
     }
     return site;
   }
@@ -486,7 +485,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       : resourceUrlPattern === SPACE_RESOURCE.urlPattern ? SPACE_CONFIGURATOR_HTML
       : resourceUrlPattern === PAGE_RESOURCE.urlPattern ? PAGE_CONFIGURATOR_HTML
       : null;
-    if (!html) throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+    if (!html) throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
     return { iframeHtml: html, ui: new RpcStub(ui) };
   }
 
@@ -576,8 +575,8 @@ export class ConfluenceSiteGatekeeperImpl extends DurableObject<Env, SiteGatekee
     const site = sites.find(s => s.id === this.ctx.props.cloudId);
     return {
       url: this.ctx.props.webBase,
-      title: site ? `${site.name} (Confluence)` : "Confluence site",
-      snippet: "Search, browse, and edit content across a Confluence site.",
+      title: site ? `${site.name}（Confluence）` : "Confluence 站点",
+      snippet: "搜索、浏览和编辑 Confluence 站点中的内容。",
       suggestedBindingName: "CONFLUENCE_SITE",
       tsType: "ConfluenceSite",
     };
@@ -600,7 +599,7 @@ export class ConfluenceSiteGatekeeperImpl extends DurableObject<Env, SiteGatekee
   async addObserver(id: string, user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
     const verifier = user as unknown as Fetcher<ConfluenceVerifierApi>;
     if (!(await verifier.hasSiteAccess(this.ctx.props.cloudId))) {
-      throw new Error("This collaborator does not have access to the bound Confluence site.");
+      throw new Error("此协作者无权访问已绑定的 Confluence 站点。");
     }
     await this.#tracker().addObserver(id, verifier);
   }
@@ -622,8 +621,8 @@ export class ConfluenceSpaceGatekeeperImpl extends DurableObject<Env, SpaceGatek
     const space = await this.#store().api.getSpaceByKey(this.ctx.props.spaceKey);
     return {
       url: `${this.ctx.props.webBase}/spaces/${this.ctx.props.spaceKey}`,
-      title: `${space.name} (Confluence space)`,
-      snippet: "A single Confluence space.",
+      title: `${space.name}（Confluence 空间）`,
+      snippet: "单个 Confluence 空间。",
       suggestedBindingName: "CONFLUENCE_SPACE",
       tsType: "ConfluenceSpace",
     };
@@ -644,7 +643,7 @@ export class ConfluenceSpaceGatekeeperImpl extends DurableObject<Env, SpaceGatek
   async addObserver(id: string, user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
     const verifier = user as unknown as Fetcher<ConfluenceVerifierApi>;
     if (!(await verifier.hasSpaceAccess(this.ctx.props.cloudId, this.ctx.props.spaceKey))) {
-      throw new Error("This collaborator does not have access to the bound Confluence space.");
+      throw new Error("此协作者无权访问已绑定的 Confluence 空间。");
     }
     await this.#tracker().addObserver(id, verifier);
   }
@@ -667,8 +666,8 @@ export class ConfluenceContentGatekeeperImpl extends DurableObject<Env, ContentG
     const meta = contentToMetadata(content, this.ctx.props.webBase);
     return {
       url: meta.url,
-      title: meta.title || "Untitled",
-      snippet: meta.type === "blogpost" ? "Confluence blog post" : "Confluence page",
+      title: meta.title || "无标题",
+      snippet: meta.type === "blogpost" ? "Confluence 博客文章" : "Confluence 页面",
       suggestedBindingName: meta.type === "blogpost" ? "CONFLUENCE_BLOG_POST" : "CONFLUENCE_PAGE",
       tsType: "ConfluenceContent",
     };
@@ -689,7 +688,7 @@ export class ConfluenceContentGatekeeperImpl extends DurableObject<Env, ContentG
   async addObserver(id: string, user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
     const verifier = user as unknown as Fetcher<ConfluenceVerifierApi>;
     if (!(await verifier.hasContentAccess(this.ctx.props.cloudId, this.ctx.props.contentId))) {
-      throw new Error("This collaborator does not have access to the bound Confluence content.");
+      throw new Error("此协作者无权访问已绑定的 Confluence 内容。");
     }
     await this.#tracker().addObserver(id, verifier);
   }

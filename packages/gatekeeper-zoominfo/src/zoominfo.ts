@@ -140,10 +140,10 @@ const ZOOMINFO_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(ZOOMINFO_LOGO
 // Whole-account catch-all resource (matches any URL), like other single-tenant gatekeepers.
 const ACCOUNT_RESOURCE: SupportedResource = {
   urlPattern: "https://*",
-  title: "ZoomInfo Account",
+  title: "ZoomInfo 账户",
   description:
-    "Whole-account access: lookup, company/contact/intent/scoop/news search, record enrichment " +
-    "(consumes credits), recommendations, and account intelligence — subject to entitlements.",
+    "账户级访问：查找、公司/联系人/意向/Scoop/新闻搜索、记录丰富（消耗额度）、推荐和账户情报；" +
+    "具体范围取决于你的权益。",
   icon: { url: ZOOMINFO_LOGO_URL },
 };
 
@@ -154,32 +154,32 @@ const SUPPORTED_RESOURCES: SupportedResource[] = [ACCOUNT_RESOURCE];
 const ACCOUNT_URL = "https://app.zoominfo.com/";
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #EE3524; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #EE3524; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #EE3524; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #EE3524; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #EE3524; font-size: 1.5rem; margin: 0 0 1rem 0;">ZoomInfo Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0;">Please configure a ZoomInfo OAuth app client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #EE3524; font-size: 1.5rem; margin: 0 0 1rem 0;">ZoomInfo Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0;">请为此 Gatekeeper 配置 ZoomInfo OAuth 应用客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -215,7 +215,7 @@ function getBasePath(env: Env): string {
 
 function ensureConfigured(env: Env): asserts env is Env & { CLIENT_ID: string; CLIENT_SECRET: string } {
   if (!env.CLIENT_ID || !env.CLIENT_SECRET) {
-    throw new Error("The ZoomInfo gatekeeper is not configured.");
+    throw new Error("ZoomInfo Gatekeeper 尚未配置。");
   }
 }
 
@@ -250,7 +250,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
 
     const relPath = url.pathname.slice(basePath.length);
@@ -287,20 +287,20 @@ export default {
       const error = url.searchParams.get("error");
       if (error) {
         return new Response(
-          "ZoomInfo authorization failed or was denied. Please restart the connection flow from Cloudflare OS.",
+          "ZoomInfo 授权失败或被拒绝。请从 NINT os 重新开始连接流程。",
           { status: 400, headers: { "Content-Type": "text/plain; charset=utf-8" } },
         );
       }
 
       const state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       const colonIndex = state.indexOf(":");
-      if (colonIndex < 0) return new Response("Error: malformed state");
+      if (colonIndex < 0) return new Response("错误：“state”格式不正确");
 
       const doId = state.slice(0, colonIndex);
       const oauthNonce = state.slice(colonIndex + 1);
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       const stub: DurableObjectStub<UserAccount> = ctx.exports.UserAccount.get(
         ctx.exports.UserAccount.idFromString(doId),
@@ -313,7 +313,7 @@ export default {
       return new Response(SELF_CLOSING_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -328,12 +328,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://www.zoominfo.com",
       logo: { url: ZOOMINFO_LOGO_URL },
       color: "#EE3524",
-      tagline: "Search and enrich B2B company & contact intelligence",
+      tagline: "搜索并丰富 B2B 公司与联系人情报",
       description:
-        "Connect your ZoomInfo account so Cloudflare OS can resolve filter values, search companies, " +
-        "contacts, intent signals, scoops, and news, and enrich matched records into full detail. " +
-        "Search is free; enrichment consumes ZoomInfo credits. Build agents that assemble target " +
-        "account lists, research accounts, and prioritize outreach on buying signals.",
+        "连接你的 ZoomInfo 账户，让 NINT os 解析筛选值，搜索公司、联系人、意向信号、Scoop 和新闻，" +
+        "并将匹配记录丰富为完整详情。搜索免费，丰富记录会消耗 ZoomInfo 额度。你可以构建智能体来整理" +
+        "目标账户列表、研究账户，并依据购买信号确定拓展优先级。",
     };
   }
 
@@ -419,7 +418,7 @@ export class UserAccount extends DurableObject<Env> {
     ensureConfigured(this.env);
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const oauth = resolveOAuthConfig(this.env);
@@ -432,7 +431,7 @@ export class UserAccount extends DurableObject<Env> {
       oauth.tokenUrl,
     );
     if (!grant.refreshToken) {
-      throw new Error("ZoomInfo did not return a refresh token.");
+      throw new Error("ZoomInfo 未返回刷新令牌。");
     }
 
     this.ctx.storage.kv.put("refreshToken", grant.refreshToken);
@@ -470,7 +469,7 @@ export class UserAccount extends DurableObject<Env> {
 
     const refreshToken = this.ctx.storage.kv.get<string>("refreshToken");
     if (!refreshToken) {
-      throw new Error("ZoomInfo credentials have not been configured for this account.");
+      throw new Error("尚未为此账户配置 ZoomInfo 凭据。");
     }
     ensureConfigured(this.env);
     const oauth = resolveOAuthConfig(this.env);
@@ -534,7 +533,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
   async describe(): Promise<AccountDescription> {
     const identity = await this.#userAccount().getIdentity();
     return {
-      displayName: identity.displayName ?? identity.uniqueName ?? "ZoomInfo Account",
+      displayName: identity.displayName ?? identity.uniqueName ?? "ZoomInfo 账户",
       uniqueName: identity.uniqueName,
       avatar: { url: ZOOMINFO_LOGO_URL },
     };
@@ -563,7 +562,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
 
   async startResourceConfigurator(resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
     if (resourceUrlPattern !== ACCOUNT_RESOURCE.urlPattern) {
-      throw new Error(`Unsupported ZoomInfo resource configurator type: ${resourceUrlPattern}`);
+      throw new Error(`不支持的 ZoomInfo 资源配置器类型：${resourceUrlPattern}`);
     }
     return {
       iframeHtml: ZOOMINFO_ACCOUNT_CONFIGURATOR_HTML,
@@ -617,13 +616,13 @@ export class ZoomInfoGatekeeperImpl extends DurableObject<Env, ZoomInfoGatekeepe
 
   async describe(): Promise<ResourceDescription> {
     const identity = await this.#userAccount().getIdentity();
-    const title = identity.displayName ? `${identity.displayName}'s ZoomInfo` : "ZoomInfo Account";
+    const title = identity.displayName ? `${identity.displayName} 的 ZoomInfo` : "ZoomInfo 账户";
     return {
       url: ACCOUNT_URL,
       title,
       snippet:
-        "Whole-account access: lookup, search (companies, contacts, intent, scoops, news), " +
-        "enrichment (consumes credits), recommendations, and account intelligence.",
+        "账户级访问：查找、搜索（公司、联系人、意向、Scoop、新闻）、记录丰富（消耗额度）、" +
+        "推荐和账户情报。",
       suggestedBindingName: "ZOOMINFO",
       tsType: "ZoomInfoSession",
     };
@@ -654,7 +653,7 @@ export class ZoomInfoGatekeeperImpl extends DurableObject<Env, ZoomInfoGatekeepe
     const store = new EnrichmentStore(this.ctx.storage.kv);
     const pending = store.getPending(action);
     if (!pending) {
-      throw new Error(`Unknown pending ZoomInfo enrichment: ${action}`);
+      throw new Error(`未知的待处理 ZoomInfo 丰富任务：${action}`);
     }
     const account = this.#userAccount();
     try {
@@ -682,8 +681,7 @@ export class ZoomInfoGatekeeperImpl extends DurableObject<Env, ZoomInfoGatekeepe
     new EnrichmentStore(this.ctx.storage.kv).removeResult(action);
     return {
       message:
-          "Enrichment can't be reverted: any ZoomInfo credits spent are not refundable. The " +
-          "retrieved data has been discarded from this Gadget.",
+          "丰富操作无法撤销：已消耗的 ZoomInfo 额度不可退还。检索到的数据已从此 Gadget 中丢弃。",
     };
   }
 
@@ -692,8 +690,7 @@ export class ZoomInfoGatekeeperImpl extends DurableObject<Env, ZoomInfoGatekeepe
   // oracle that can prove another account could read every historical result.
   async addObserver(_id: string, _user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
     throw new Error(
-      "ZoomInfo data cannot be shared with other users: this workspace's ZoomInfo account may only " +
-      "be observed by its owner.",
+      "ZoomInfo 数据不能与其他用户共享：此工作区的 ZoomInfo 账户只能由其所有者查看。",
     );
   }
 
@@ -762,9 +759,8 @@ function assertNoCompanyIdentity(
   const offending = SIGNAL_COMPANY_IDENTITY_FIELDS.filter(f => company?.[f] !== undefined);
   if (offending.length > 0) {
     throw new Error(
-      `${offending.join(", ")} ${offending.length === 1 ? "is" : "are"} not supported by ` +
-        `${searchMethod} — it filters by firmographics only, not company identity. Use ` +
-        `${enrichMethod} to retrieve signals for a specific company.`,
+      `${searchMethod} 不支持 ${offending.join(", ")}；它只能按企业特征筛选，不能按公司身份筛选。` +
+        `请使用 ${enrichMethod} 检索特定公司的信号。`,
     );
   }
 }
@@ -777,9 +773,8 @@ function assertNoCompanyIdentity(
 function assertCompatibleLocation(company: Record<string, unknown> | undefined, method: string): void {
   if (company?.state !== undefined && company?.country !== undefined) {
     throw new Error(
-      `${method}: \`state\` and \`country\` cannot be combined — ZoomInfo ignores \`state\` when ` +
-        `\`country\` is also set and returns the whole country. Pass just \`state\` (it already ` +
-        `scopes to the US/Canada) or just \`country\`.`,
+      `${method}：不能同时使用 \`state\` 和 \`country\`。同时设置时，ZoomInfo 会忽略 \`state\` 并返回整个国家/地区。` +
+        `请只传入 \`state\`（它已限定在美国/加拿大）或只传入 \`country\`。`,
     );
   }
 }
@@ -834,7 +829,7 @@ async function callZoomInfo<T>(account: DurableObjectStub<UserAccount>, fn: () =
   } catch (error) {
     if (error instanceof ZoomInfoApiError && error.isAuthError) {
       await account.noteCredentialsExpired();
-      throw new Error("ZoomInfo credentials have expired or been revoked. Please reconnect the account.", {
+      throw new Error("ZoomInfo 凭据已过期或被撤销，请重新连接账户。", {
         cause: error,
       });
     }
@@ -1047,9 +1042,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       await this.#approvalQueue.submitAction(id, {
         title: `ZoomInfo: ${summary}`,
         description:
-            `${summary}\n\n**Credit cost:** up to **${worstCaseCredits}** ZoomInfo bulk-data ` +
-            `credit${worstCaseCredits === 1 ? "" : "s"} (fewer if records are already under ` +
-            `management; none for no-match/error results). Charged only on approval.`,
+            `${summary}\n\n**额度成本：**最多消耗 **${worstCaseCredits}** 个 ZoomInfo 批量数据额度` +
+            `（记录已纳入管理时消耗更少；无匹配或错误结果不消耗）。仅在批准后扣除。`,
         // Spent credits can't be refunded, so there is no automatic revert.
         implementsRevert: false,
         // No simulation: suspend the agent until the user decides rather than letting it read back
@@ -1086,8 +1080,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       this.#cachePut(cacheKey, results);
     }
     await this.#observe(
-      `Lookup ${fieldName}`,
-      `Resolved ${results.length} value(s) for the \`${fieldName}\` taxonomy${fromCache ? " (cached)" : ""}.`,
+      `查找 ${fieldName}`,
+      `解析 \`${fieldName}\` 分类体系中的 ${results.length} 个值${fromCache ? "（来自缓存）" : ""}。`,
     );
     return results;
   }
@@ -1111,8 +1105,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       this.#cachePut(cacheKey, results);
     }
     await this.#observe(
-      `Lookup ${entity} enrich ${fieldType} fields`,
-      `Returned ${results.length} ${fieldType} field(s) for ${entity} enrichment${fromCache ? " (cached)" : ""}.`,
+      `查找 ${entity} 丰富操作的 ${fieldType} 字段`,
+      `返回 ${results.length} 个用于 ${entity} 丰富操作的 ${fieldType} 字段${fromCache ? "（来自缓存）" : ""}。`,
     );
     return results;
   }
@@ -1126,8 +1120,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       api.post("/data/v1/companies/search", "CompanySearch", clean({ ...criteria }), pageQuery(page)));
     const result = toSearchPage(doc, mapCompanyMatch, page);
     await this.#observe(
-      "Search ZoomInfo companies",
-      `Company search returned ${result.results.length} of ${result.totalResults} match(es).`,
+      "搜索 ZoomInfo 公司",
+      `公司搜索共找到 ${result.totalResults} 条匹配，本次返回 ${result.results.length} 条。`,
     );
     return result;
   }
@@ -1139,8 +1133,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     const matchCompanyInput = inputs.map(input => clean({ ...input, companyId: idValue(input.companyId) }));
     return this.#submitEnrichment(
       "companies",
-      `Enrich ${inputs.length} compan${inputs.length === 1 ? "y" : "ies"} with fields: ` +
-        `${outputFields.join(", ") || "(none)"}`,
+      `丰富 ${inputs.length} 家公司的以下字段：${outputFields.join(", ") || "（无）"}`,
       { matchCompanyInput, outputFields },
       inputs.length,
     );
@@ -1153,7 +1146,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     const matchCompanyInput = inputs.map(input => clean({ ...input, companyId: idValue(input.companyId) }));
     return this.#submitEnrichment(
       "corporateHierarchy",
-      `Enrich corporate hierarchy for ${inputs.length} compan${inputs.length === 1 ? "y" : "ies"}`,
+      `丰富 ${inputs.length} 家公司的企业层级结构`,
       { matchCompanyInput, outputFields },
       inputs.length,
     );
@@ -1162,7 +1155,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
   async enrichHashtags(companyId: string): Promise<EnrichmentTicket> {
     return this.#submitEnrichment(
       "hashtags",
-      `Fetch hashtags for company \`${companyId}\``,
+      `获取公司 \`${companyId}\` 的标签`,
       clean({ companyId: idValue(companyId) }),
       1,
     );
@@ -1179,8 +1172,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       api.post("/data/v1/contacts/search", "ContactSearch", attributes, pageQuery(page)));
     const result = toSearchPage(doc, mapContactMatch, page);
     await this.#observe(
-      "Search ZoomInfo contacts",
-      `Contact search returned ${result.results.length} of ${result.totalResults} match(es).`,
+      "搜索 ZoomInfo 联系人",
+      `联系人搜索共找到 ${result.totalResults} 条匹配，本次返回 ${result.results.length} 条。`,
     );
     return result;
   }
@@ -1197,9 +1190,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     }));
     return this.#submitEnrichment(
       "contacts",
-      `Enrich ${inputs.length} contact${inputs.length === 1 ? "" : "s"} with fields: ` +
-        `${outputFields.join(", ") || "(none)"}` +
-        `${requiredFields?.length ? `; required: ${requiredFields.join(", ")}` : ""}`,
+      `丰富 ${inputs.length} 位联系人的以下字段：${outputFields.join(", ") || "（无）"}` +
+        `${requiredFields?.length ? `；必需字段：${requiredFields.join(", ")}` : ""}`,
       clean({ matchPersonInput, outputFields, requiredFields }),
       inputs.length,
     );
@@ -1217,9 +1209,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       api.post("/data/v1/intent/search", "IntentSearch", attributes, pageQuery(page)));
     const result = toSearchPage(doc, mapIntentSignal, page);
     await this.#observe(
-      "Search ZoomInfo intent signals",
-      `Intent search for topics [${criteria.topics.join(", ")}] returned ${result.results.length} ` +
-        `of ${result.totalResults} signal(s).`,
+      "搜索 ZoomInfo 意向信号",
+      `主题 [${criteria.topics.join(", ")}] 的意向搜索共找到 ${result.totalResults} 条信号，本次返回 ${result.results.length} 条。`,
     );
     return result;
   }
@@ -1230,8 +1221,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
   ): Promise<EnrichmentTicket> {
     return this.#submitEnrichment(
       "intent",
-      `Fetch intent signals for company \`${criteria.companyId}\` across topics ` +
-        `[${criteria.topics.join(", ")}]`,
+      `获取公司 \`${criteria.companyId}\` 在主题 [${criteria.topics.join(", ")}] 下的意向信号`,
       clean({ ...criteria, companyId: idValue(criteria.companyId) }),
       1,
       page,
@@ -1250,8 +1240,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       api.post("/data/v1/scoops/search", "ScoopSearch", attributes, pageQuery(page)));
     const result = toSearchPage(doc, mapScoop, page);
     await this.#observe(
-      "Search ZoomInfo scoops",
-      `Scoop search returned ${result.results.length} of ${result.totalResults} scoop(s).`,
+      "搜索 ZoomInfo Scoop",
+      `Scoop 搜索共找到 ${result.totalResults} 条结果，本次返回 ${result.results.length} 条。`,
     );
     return result;
   }
@@ -1262,7 +1252,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
   ): Promise<EnrichmentTicket> {
     return this.#submitEnrichment(
       "scoops",
-      `Fetch scoops for company \`${criteria.companyId}\``,
+      `获取公司 \`${criteria.companyId}\` 的 Scoop`,
       clean({ ...criteria, companyId: idValue(criteria.companyId) }),
       1,
       page,
@@ -1277,8 +1267,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       api.post("/data/v1/news/search", "NewsSearch", clean({ ...criteria }), pageQuery(page)));
     const result = toSearchPage(doc, mapNewsArticle, page);
     await this.#observe(
-      "Search ZoomInfo news",
-      `News search returned ${result.results.length} of ${result.totalResults} article(s).`,
+      "搜索 ZoomInfo 新闻",
+      `新闻搜索共找到 ${result.totalResults} 篇文章，本次返回 ${result.results.length} 篇。`,
     );
     return result;
   }
@@ -1289,7 +1279,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
   ): Promise<EnrichmentTicket> {
     return this.#submitEnrichment(
       "news",
-      `Fetch news articles for company \`${criteria.companyId}\``,
+      `获取公司 \`${criteria.companyId}\` 的新闻文章`,
       clean({ ...criteria, companyId: idValue(criteria.companyId) }),
       1,
       page,
@@ -1313,11 +1303,11 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     } else if (store.getPending(ticket.id)) {
       outcome = { status: "pending" };
     } else {
-      throw new Error(`Unknown ZoomInfo enrichment ticket: ${ticket.id}`);
+      throw new Error(`未知的 ZoomInfo 丰富任务：${ticket.id}`);
     }
     await this.#observe(
-      `Read ZoomInfo enrichment result #${ticket.id}`,
-      `Enrichment \`${ticket.kind}\` (${ticket.summary}): **${outcome.status}**.`,
+      `读取 ZoomInfo 丰富结果 #${ticket.id}`,
+      `丰富任务 \`${ticket.kind}\`（${ticket.summary}）：**${outcome.status}**。`,
     );
     return outcome;
   }
@@ -1349,7 +1339,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
         country: str(a.country),
       } satisfies CompanyLookalike;
     });
-    await this.#observe("Find similar ZoomInfo companies", `Returned ${results.length} lookalike compan(ies).`);
+    await this.#observe("查找相似的 ZoomInfo 公司", `返回 ${results.length} 家相似公司。`);
     return results;
   }
 
@@ -1372,7 +1362,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
         referencePersonBrief: str(meta.referencePersonBrief),
       } satisfies ContactLookalike;
     });
-    await this.#observe("Find ZoomInfo contact lookalikes", `Returned ${results.length} lookalike contact(s).`);
+    await this.#observe("查找相似的 ZoomInfo 联系人", `返回 ${results.length} 位相似联系人。`);
     return results;
   }
 
@@ -1400,9 +1390,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       } satisfies ContactRecommendation;
     });
     await this.#observe(
-      "Get ZoomInfo contact recommendations",
-      `Returned ${results.length} recommended contact(s) for ${criteria.useCaseType} at company ` +
-        `\`${criteria.companyId}\`.`,
+      "获取 ZoomInfo 联系人推荐",
+      `为公司 \`${criteria.companyId}\` 的 ${criteria.useCaseType} 用例返回 ${results.length} 位推荐联系人。`,
     );
     return results;
   }
@@ -1416,8 +1405,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     const resource = firstResource(doc);
     const markdown = str(attrs(resource ?? {}).markdown) ?? "";
     await this.#observe(
-      "Get ZoomInfo account summary",
-      `Retrieved the account summary for company \`${companyId}\` (${markdown.length} chars).`,
+      "获取 ZoomInfo 账户摘要",
+      `已获取公司 \`${companyId}\` 的账户摘要（${markdown.length} 个字符）。`,
     );
     return { companyId, markdown };
   }
@@ -1431,8 +1420,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       ));
     const answer = str(attrs(firstResource(doc) ?? {}).answer) ?? "";
     await this.#observe(
-      "Ask ZoomInfo account summary",
-      `Asked about company \`${companyId}\`: "${question}".`,
+      "询问 ZoomInfo 账户摘要",
+      `就公司 \`${companyId}\` 提问：“${question}”。`,
     );
     return answer;
   }
@@ -1458,8 +1447,8 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
     });
     const total = results.reduce((sum, c) => sum + c.insights.length, 0);
     await this.#observe(
-      "Get ZoomInfo company insights",
-      `Returned ${total} insight signal(s) across ${results.length} compan(ies).`,
+      "获取 ZoomInfo 公司洞察",
+      `共为 ${results.length} 家公司返回 ${total} 条洞察信号。`,
     );
     return results;
   }
@@ -1477,7 +1466,7 @@ class ZoomInfoSessionImpl extends RpcTarget implements ZoomInfoSession {
       currentUsage: num(u.currentUsage),
       usageRemaining: num(u.usageRemaining),
     }));
-    await this.#observe("Get ZoomInfo usage", `Retrieved ${usage.length} usage/limit counter(s).`);
+    await this.#observe("获取 ZoomInfo 用量", `获取了 ${usage.length} 个用量或限额计数器。`);
     return { usage };
   }
 }

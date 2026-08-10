@@ -76,6 +76,6 @@ describe("revokeToken", () => {
     expect(String(request?.body)).toBe(
       "token=refresh-token&token_type_hint=refresh_token&client_id=client-id");
     await expect(revokeToken(discovery, client, "refresh-token", "refresh_token",
-      async () => new Response(null, { status: 400 }))).rejects.toThrow(/HTTP 400/);
+      async () => new Response(null, { status: 400 }))).rejects.toThrow(/HTTP 状态码为 400/);
   });
 });

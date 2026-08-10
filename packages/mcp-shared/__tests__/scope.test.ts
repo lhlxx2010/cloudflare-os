@@ -165,7 +165,7 @@ describe("validateToolScopeAgainstCatalog", () => {
 
   it("rejects a named tool absent from a complete catalog", () => {
     expect(() => validateToolScopeAgainstCatalog({ tools: ["missing"] }, catalog))
-      .toThrow(/missing.*current tool catalog/i);
+      .toThrow(/当前工具目录.*工具.*missing/);
   });
 
   it("accepts named tools present in a complete catalog", () => {
@@ -176,7 +176,7 @@ describe("validateToolScopeAgainstCatalog", () => {
   it("refuses to validate named tools from a truncated catalog", () => {
     expect(() => validateToolScopeAgainstCatalog(
       { tools: ["gh_list_issues"] }, { ...catalog, truncated: true }))
-      .toThrow(/truncated/i);
+      .toThrow(/截断/);
   });
 
   it("accepts a reported server-wide grant despite a truncated tool catalog", () => {
@@ -187,7 +187,7 @@ describe("validateToolScopeAgainstCatalog", () => {
 
   it("rejects a portal server absent from both the catalog and reported server list", () => {
     expect(() => validateToolScopeAgainstCatalog({ serverId: "jira" }, catalog, []))
-      .toThrow(/jira.*current portal catalog/i);
+      .toThrow(/Portal 目录.*jira/);
   });
 
   it("accepts an all-tools grant for a currently reported server with no tools", () => {
@@ -206,17 +206,17 @@ describe("validateToolScopeAgainstCatalog", () => {
   it("rejects named tools outside or absent from the selected portal server", () => {
     expect(() => validateToolScopeAgainstCatalog(
       { serverId: "gh", tools: ["linear_list_comments"] }, catalog))
-      .toThrow(/does not belong.*gh/i);
+      .toThrow(/不属于.*gh/);
     expect(() => validateToolScopeAgainstCatalog(
       { serverId: "gh", tools: ["gh_missing"] }, catalog))
-      .toThrow(/gh_missing.*current tool catalog/i);
+      .toThrow(/当前工具目录.*工具.*gh_missing/);
   });
 });
 
 describe("requireCompleteCatalogForToolSelection", () => {
   it("refuses individual selection from a truncated catalog", () => {
     expect(() => requireCompleteCatalogForToolSelection(true))
-      .toThrow(/too large.*individual tools/i);
+      .toThrow(/过大.*单个工具/);
     expect(() => requireCompleteCatalogForToolSelection(false)).not.toThrow();
   });
 });

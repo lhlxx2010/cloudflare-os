@@ -2,19 +2,19 @@
   {
     "name": "CLIENT_ID",
     "kind": "secret",
-    "label": "OAuth client ID",
+    "label": "OAuth 客户端 ID",
     "consoleUrl": "https://www.notion.so/my-integrations",
     "setupSteps": [
-      "Create a Notion integration and set its type to Public.",
-      "Add the redirect URI below to the integration's OAuth settings.",
-      "Enable the capabilities gadgets uses: read/insert/update content, read/insert comments, and read user information (no email needed).",
-      "Copy the OAuth client ID and client secret here."
+      "创建 Notion 集成，并将其类型设置为 Public。",
+      "在集成的 OAuth 设置中添加下方的重定向 URI。",
+      "启用小程序所需的能力：读取/插入/更新内容、读取/插入评论，以及读取用户信息（无需电子邮件）。",
+      "将 OAuth 客户端 ID 和客户端密钥复制到此处。"
     ],
     "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/notion/oauth"
   },
   {
     "name": "CLIENT_SECRET",
     "kind": "secret",
-    "label": "OAuth client secret"
+    "label": "OAuth 客户端密钥"
   }
 ]

@@ -132,10 +132,10 @@ export class ContextAccount
 
   async describe(): Promise<AccountDescription> {
     return {
-      displayName: "Context",
+      displayName: "上下文库",
       avatar: LIBRARY_ICON,
       singleton: { tsType: "ContextLibrary" },
-      providesUi: { title: "Context & Skills", icon: LIBRARY_ICON },
+      providesUi: { title: "上下文与技能", icon: LIBRARY_ICON },
     };
   }
 
@@ -255,8 +255,8 @@ export class ContextGatekeeper
   async describe(): Promise<ResourceDescription> {
     return {
       url: "context://library",
-      title: "Context",
-      snippet: "Search and read your team's shared context collections.",
+      title: "上下文",
+      snippet: "搜索和阅读团队共享的上下文集合。",
       suggestedBindingName: "CONTEXT",
       tsType: "ContextLibrary",
       hasSlashCommands: true,
@@ -307,7 +307,7 @@ export class ContextGatekeeper
       Promise<SlashCommandResult> {
     using session = this.#newReadSession(authorizer);
     let document = await session.read(id);
-    if (!document?.path) throw new Error("The selected Agent Skill is no longer available.");
+    if (!document?.path) throw new Error("所选 Agent Skill 已不可用。");
     let manifest = parseSkillManifest(document.path, document.content);
     return {
       skillName: manifest.name,
@@ -342,8 +342,8 @@ export class ContextGatekeeper
       }))];
       let check = await this.#observers().prepareObservation(collectionIds);
       await authorizer.authorizeObservation({
-        title: "Context catalog",
-        description: `Listed ${catalog.entries.length} available Context item(s).`,
+        title: "上下文目录",
+        description: `列出了 ${catalog.entries.length} 个可用的上下文项目。`,
         excludeObservers: check.excludeObservers,
       });
       check.commit();
@@ -390,14 +390,13 @@ type GatekeeperVendorProps = {
 export class GatekeeperVendor extends WorkerEntrypoint<Cloudflare.Env, GatekeeperVendorProps> {
   async describe(): Promise<VendorDescription> {
     return {
-      displayName: "Context",
+      displayName: "上下文库",
       url: "https://workers.cloudflare.com/",
       logo: LIBRARY_ICON,
-      tagline: "Author and consult shared context collections",
+      tagline: "编写和查阅共享上下文集合",
       description:
-        "The Context Library lets you and your team author collections of context documents " +
-        "that agents can consult to learn how to perform tasks. It is always available — no " +
-        "connection needed.",
+        "上下文库支持你和团队编写上下文文档集合，供智能体查阅并学习如何执行任务。" +
+        "它始终可用，无需连接。",
       autoProvisionsAccount: true,
       providesAuth: false,
     };

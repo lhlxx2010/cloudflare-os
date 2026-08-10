@@ -34,7 +34,7 @@ export const PAGE_STYLE = `
     --text: #1c1a18;
     --strong: #100f0d;
     --subtle: oklch(52% 0.006 60);
-    --brand: #ff4801;
+    --brand: #1d4ed8;
     --danger: oklch(63.7% 0.237 25.331);
     /* Kumo's primary button is "contrast": near-black in light mode, the accent in dark. */
     --contrast: #14110f;
@@ -48,9 +48,9 @@ export const PAGE_STYLE = `
       --text: oklch(0.92 0.01 285);
       --strong: oklch(0.92 0.01 285);
       --subtle: oklch(0.66 0.02 285);
-      --brand: #b84e00;
+      --brand: #2563eb;
       --danger: oklch(70.4% 0.191 22.216);
-      --contrast: #b84e00;
+      --contrast: #2563eb;
     }
   }
 
@@ -65,18 +65,18 @@ export const PAGE_STYLE = `
 `;
 
 export const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Connected</title></head>
-<body><p>Connected. You can close this window.</p><script>window.close();</script></body></html>`;
+<html lang="zh-CN"><head><meta charset="utf-8"><title>连接成功</title></head>
+<body><p>连接成功。你可以关闭此窗口。</p><script>window.close();</script></body></html>`;
 
 export const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Link expired</title><style>${PAGE_STYLE}</style></head>
-<body><main><h1>This link has expired</h1>
-<p class="sub">Start the connection again.</p></main></body></html>`;
+<html lang="zh-CN"><head><meta charset="utf-8"><title>链接已过期</title><style>${PAGE_STYLE}</style></head>
+<body><main><h1>此链接已过期</h1>
+<p class="sub">请重新开始连接。</p></main></body></html>`;
 
 // A minimal page reporting that connecting failed, with a reason the user can act on.
 export function errorPageHtml(title: string, detail: string): string {
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)}</title><style>${PAGE_STYLE}</style></head>
 <body><main><h1>${escapeHtml(title)}</h1>
 <p class="sub">${escapeHtml(detail)}</p></main></body></html>`;

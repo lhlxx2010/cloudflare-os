@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Label" description="Choose a Home Assistant label. The binding grants access to every entity carrying this label.">
+      <Field label="标签" description="选择一个 Home Assistant 标签。此绑定将授予对带有该标签的所有实体的访问权限。">
         <Autocomplete
           name="labelId"
           value={values.labelId}
-          placeholder="Search labels..."
+          placeholder="搜索标签…"
           loadOptions={query => ui.listLabels(query)}
           onChange={labelId => setValues({ labelId })}
         />

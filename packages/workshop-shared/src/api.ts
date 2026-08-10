@@ -1,4 +1,4 @@
-// This file defines the API spoken between the Gadgets Workshop service and the front-end UI.
+// This file defines the API spoken between the NINT os service and the front-end UI.
 //
 // The UI is a good old "fat client" SPA. Why not use SSR? Because:
 // - Users of this UI are likely to have it open often, maybe even all the time. Startup time is
@@ -177,15 +177,15 @@ const RESERVED_WORDS = new Set([
 export function validateBindingName(name: string): void {
   if (!IDENTIFIER_REGEX.test(name)) {
     throw new Error(
-        `Invalid binding name "${name}": binding names must be JavaScript identifiers ` +
-        `(letters, digits, and '_', not starting with a digit).`);
+        `绑定名称“${name}”无效：绑定名称必须是 JavaScript 标识符` +
+        `（只能包含字母、数字和“_”，且不能以数字开头）。`);
   }
   if (RESERVED_WORDS.has(name)) {
-    throw new Error(`Invalid binding name "${name}": this is a reserved word in JavaScript.`);
+    throw new Error(`绑定名称“${name}”无效：这是 JavaScript 保留字。`);
   }
   if (name === "prototype" || name in Object.prototype) {
     throw new Error(
-        `Invalid binding name "${name}": this name collides with a built-in object property.`);
+        `绑定名称“${name}”无效：此名称与内置对象属性冲突。`);
   }
 }
 
@@ -278,8 +278,8 @@ export type OpenGadgetErrorCode =
     typeof OPEN_GADGET_ERROR_CODES[keyof typeof OPEN_GADGET_ERROR_CODES];
 
 const openGadgetErrors = codedErrorFamily<OpenGadgetErrorCode>({
-  [OPEN_GADGET_ERROR_CODES.workspaceNotFound]: "Workspace not found.",
-  [OPEN_GADGET_ERROR_CODES.workspaceAccessDenied]: "You don't have access to this workspace.",
+  [OPEN_GADGET_ERROR_CODES.workspaceNotFound]: "未找到工作区。",
+  [OPEN_GADGET_ERROR_CODES.workspaceAccessDenied]: "你无权访问此工作区。",
 });
 
 /** Creates an expected `openGadget()` error with a machine-readable code. */
@@ -300,8 +300,8 @@ export type AuthErrorCode = typeof AUTH_ERROR_CODES[keyof typeof AUTH_ERROR_CODE
 /** Messages for auth failures thrown without a surviving code; clients match these only as a
  * classification fallback. */
 export const AUTH_ERROR_MESSAGES: Record<AuthErrorCode, string> = {
-  [AUTH_ERROR_CODES.invalidSessionToken]: "invalid session token",
-  [AUTH_ERROR_CODES.notAuthenticatedWithAccess]: "Not authenticated with Access.",
+  [AUTH_ERROR_CODES.invalidSessionToken]: "会话令牌无效",
+  [AUTH_ERROR_CODES.notAuthenticatedWithAccess]: "尚未通过 Access 认证。",
 };
 
 const authErrors = codedErrorFamily(AUTH_ERROR_MESSAGES);
@@ -698,7 +698,7 @@ export const MAX_SITE_NAME_LENGTH = 40;
 
 // What this deployment calls itself when the admin has not set a custom `siteName`. Also the
 // product's own name, so it appears in prose the server and UI address to the user.
-export const DEFAULT_SITE_NAME = "Cloudflare OS";
+export const DEFAULT_SITE_NAME = "NINT os";
 
 // The name to display for this deployment. Accepts an unset or not-yet-loaded `siteName` so both
 // the server (reading admin config) and the client (reading ServerConfig) resolve it identically.
@@ -718,7 +718,7 @@ export type AdminSettingsView = {
   signupsEnabled: boolean;
   // Site name shown next to the top-bar logo ("" falls back to DEFAULT_SITE_NAME).
   siteName: string;
-  /** Custom deployment logo, or undefined to use the default Cloudflare OS mark. */
+  /** Custom deployment logo, or undefined to use the default NINT os mark. */
   siteLogo?: AvatarImage;
   // Agent system-prompt instructions ("" when unset).
   instanceInstructions: string;
@@ -786,7 +786,7 @@ export interface AdminApi {
   setSiteName(name: string): Promise<void>;
 
   /** Set the deployment logo from browser-rasterized PNG bytes and return its canonical public
-   * image, or undefined after reset. Pass null to restore the default Cloudflare OS mark. The
+   * image, or undefined after reset. Pass null to restore the default NINT os mark. The
    * caller must supply decodable PNG data; the server enforces its header, size, and dimensions. */
   setSiteLogo(data: Uint8Array | null): Promise<AvatarImage | undefined>;
 
@@ -896,7 +896,7 @@ export type ServerConfig = {
   // DEFAULT_SITE_NAME.
   siteName: string;
 
-  /** Custom deployment logo, or undefined to use the default Cloudflare OS mark. */
+  /** Custom deployment logo, or undefined to use the default NINT os mark. */
   siteLogo?: AvatarImage;
 
   // Deployment-wide top-bar notice (centered text in the top navigation bar). Empty when none is set.

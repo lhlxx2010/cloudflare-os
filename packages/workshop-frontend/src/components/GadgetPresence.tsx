@@ -7,8 +7,8 @@ import { PersonAvatar } from './PersonAvatar'
 const MAX_VISIBLE = 3
 
 const ROLE_LABELS: Record<PresenceParticipant['role'], string> = {
-  build: 'Workspace',
-  use: 'App only',
+  build: '工作区',
+  use: '仅应用',
 }
 
 export function GadgetPresence({
@@ -182,8 +182,8 @@ export function GadgetPresence({
   const visible = display.slice(0, MAX_VISIBLE)
   const overflow = display.length - visible.length
   const count = display.length
-  const label = `${count} ${count === 1 ? 'person' : 'people'} here now`
-  const ariaLabel = `${count} ${count === 1 ? 'person' : 'people'} viewing this workspace`
+  const label = `当前有 ${count} 人在线`
+  const ariaLabel = `${count} 人正在查看此工作区`
 
   return (
     <Popover>

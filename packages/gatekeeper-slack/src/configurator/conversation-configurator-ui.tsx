@@ -24,13 +24,13 @@ export default {
   render({ values, setValues, ui }) {
     return <Section>
       <Field
-        label="Conversation"
-        description="Choose a channel or direct message this connection can read."
+        label="会话"
+        description="选择此连接可以读取的频道或私信。"
       >
         <Autocomplete
           name="conversationId"
           value={values.conversationId}
-          placeholder="Search channels and DMs..."
+          placeholder="搜索频道和私信…"
           loadOptions={query => ui.listConversations(query)}
           onChange={conversationId => setValues({ conversationId })}
         />

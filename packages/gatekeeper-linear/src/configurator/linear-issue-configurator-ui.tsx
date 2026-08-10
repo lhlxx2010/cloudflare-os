@@ -25,11 +25,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Issue" description="Search issues, or type an identifier like ENG-123.">
+      <Field label="议题" description="搜索议题，或输入类似 ENG-123 的标识符。">
         <Autocomplete
           name="issueIdentifier"
           value={values.issueIdentifier}
-          placeholder="Search issues..."
+          placeholder="搜索议题…"
           loadOptions={query => ui.listIssues(query)}
           onChange={issueIdentifier => setValues({ issueIdentifier })}
         />

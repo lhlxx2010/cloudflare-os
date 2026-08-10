@@ -12,21 +12,21 @@ export function parseGatekeeperAppWorkspaceTarget(
   gadgetId: unknown,
 ): GatekeeperAppWorkspaceTarget {
   if (typeof workspaceId !== "string" || !WORKSPACE_ID_PATTERN.test(workspaceId)) {
-    throw new TypeError("Invalid gatekeeper app workspace target.");
+    throw new TypeError("Gatekeeper 应用的工作区目标无效。");
   }
   if (gadgetId === undefined) return { workspaceId };
   if (typeof gadgetId !== "number" || !Number.isSafeInteger(gadgetId) || gadgetId < 0) {
-    throw new TypeError("Invalid gatekeeper app workspace target.");
+    throw new TypeError("Gatekeeper 应用的工作区目标无效。");
   }
   return { workspaceId, gadgetId };
 }
 
 export function normalizeGatekeeperAppPrompt(value: string): string {
-  if (typeof value !== "string") throw new TypeError("Gatekeeper app prompt must be text.");
+  if (typeof value !== "string") throw new TypeError("Gatekeeper 应用提示词必须是文本。");
   const prompt = value.trim();
-  if (!prompt) throw new TypeError("Gatekeeper app prompt cannot be empty.");
+  if (!prompt) throw new TypeError("Gatekeeper 应用提示词不能为空。");
   if (prompt.length > MAX_GATEKEEPER_APP_PROMPT_LENGTH) {
-    throw new RangeError("Gatekeeper app prompt is too long.");
+    throw new RangeError("Gatekeeper 应用提示词过长。");
   }
   return prompt;
 }

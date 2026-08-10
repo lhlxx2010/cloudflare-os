@@ -53,11 +53,11 @@ export default function AccountSelectionModal() {
     setSaving(true)
     try {
       await auth.authenticatedApi.selectCloudflareAccount(chosen)
-      toasts.add({ title: 'Cloudflare account selected', variant: 'success' })
+      toasts.add({ title: '已选择 Cloudflare 账户', variant: 'success' })
       setNeedsSelection(false)
       setAccounts(null)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to select account'
+      const msg = err instanceof Error ? err.message : '选择账户失败'
       toasts.add({ title: msg, variant: 'error' })
     } finally {
       setSaving(false)
@@ -71,19 +71,18 @@ export default function AccountSelectionModal() {
       <Dialog className="p-6 sm:w-[480px]" size="base">
         <Dialog.Title className="text-lg font-semibold mb-2 flex items-center gap-2">
           <Warning size={22} weight="bold" className="text-kumo-warning" />
-          Choose a Cloudflare account
+          选择 Cloudflare 账户
         </Dialog.Title>
 
         <div className="space-y-4">
           <p className="text-sm text-kumo-subtle">
-            Your Cloudflare connection has access to multiple accounts. Select the one whose credits
-            should be billed for usage beyond the free tier.
+            你的 Cloudflare 连接可以访问多个账户。请选择一个账户，用其额度结算超出免费用量的部分。
           </p>
 
           {accounts === null ? (
             <div className="flex justify-center py-6"><Loader size="base" /></div>
           ) : accounts.length === 0 ? (
-            <p className="text-sm text-kumo-subtle">No accounts available on this connection.</p>
+            <p className="text-sm text-kumo-subtle">此连接没有可用账户。</p>
           ) : (
             <Radio.Group
               appearance="card"
@@ -91,7 +90,7 @@ export default function AccountSelectionModal() {
               onValueChange={setChosen}
               disabled={saving}
             >
-              <Radio.Legend className="sr-only">Cloudflare account</Radio.Legend>
+              <Radio.Legend className="sr-only">Cloudflare 账户</Radio.Legend>
               {accounts.map((a) => (
                 <Radio.Item key={a.accountId} value={a.accountId} label={a.accountName} />
               ))}
@@ -105,10 +104,10 @@ export default function AccountSelectionModal() {
               // un-actionable modal — let them retry or dismiss (it re-checks on focus).
               <>
                 <Button variant="ghost" onClick={() => setNeedsSelection(false)}>
-                  Dismiss
+                  暂时关闭
                 </Button>
                 <Button variant="secondary" onClick={() => setAccounts(null)}>
-                  Try again
+                  重试
                 </Button>
               </>
             ) : (
@@ -118,7 +117,7 @@ export default function AccountSelectionModal() {
                 loading={saving}
                 disabled={!chosen || saving}
               >
-                Save
+                保存
               </Button>
             )}
           </div>

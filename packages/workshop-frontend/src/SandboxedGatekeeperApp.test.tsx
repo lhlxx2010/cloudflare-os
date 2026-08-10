@@ -124,7 +124,7 @@ describe("SandboxedGatekeeperApp navigation", () => {
     expect(listGadgets).toHaveBeenCalledTimes(2);
 
     await expect(host.openWorkspace("../evil")).rejects.toThrow(
-      "Invalid gatekeeper app workspace target",
+      "Gatekeeper 应用的工作区目标无效",
     );
     expect(router.state.location.pathname).toBe(`/workspace/${WORKSPACE_ID}`);
 

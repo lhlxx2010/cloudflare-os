@@ -26,28 +26,28 @@ describe("assertIssueSearchResultsInRepo", () => {
   it("rejects results from another repository", () => {
     expect(() => assertIssueSearchResultsInRepo("cloudflare", "workerd", [
       issueAt("https://github.com/cloudflare/quiche/issues/1"),
-    ])).toThrow("outside the connected repository");
+    ])).toThrow("已连接仓库之外");
   });
 
   it("does not accept repository names that only share a prefix", () => {
     expect(() => assertIssueSearchResultsInRepo("cloudflare", "workerd", [
       issueAt("https://github.com/cloudflare/workerd-private/issues/1"),
-    ])).toThrow("outside the connected repository");
+    ])).toThrow("已连接仓库之外");
   });
 
   it("rejects pull requests returned by an injected search expression", () => {
     expect(() => assertIssueSearchResultsInRepo("cloudflare", "workerd", [
       issueAt("https://github.com/cloudflare/workerd/pull/1"),
-    ])).toThrow("non-issue result");
+    ])).toThrow("非议题结果");
   });
 
   it("rejects malformed and non-GitHub result URLs", () => {
     expect(() => assertIssueSearchResultsInRepo("cloudflare", "workerd", [
       issueAt("not a URL"),
-    ])).toThrow("outside the connected repository");
+    ])).toThrow("已连接仓库之外");
     expect(() => assertIssueSearchResultsInRepo("cloudflare", "workerd", [
       issueAt("https://example.com/cloudflare/workerd/issues/1"),
-    ])).toThrow("outside the connected repository");
+    ])).toThrow("已连接仓库之外");
   });
 });
 

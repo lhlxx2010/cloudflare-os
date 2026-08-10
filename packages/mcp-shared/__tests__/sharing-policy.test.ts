@@ -8,7 +8,7 @@ describe("observerRefusalMessage", () => {
     // what to do next -- otherwise the owner's only recourse looks like "give up".
     const message = observerRefusalMessage("the MCP server mcp.linear.app");
     expect(message).toContain("mcp.linear.app");
-    expect(message).toContain("only be opened by its owner");
-    expect(message).toContain("blueprint");
+    expect(message).toContain("只能由其所有者打开");
+    expect(message).toContain("蓝图");
   });
 });

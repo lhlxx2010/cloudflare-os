@@ -93,15 +93,15 @@ export async function handleClientErrorRequest(
     ctx: WaitUntilContext,
     verifyAccess: AccessVerifier = verifyCfAccessJwt): Promise<Response> {
   if (request.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405, headers: { allow: "POST" } });
+    return new Response("不允许使用此请求方法", { status: 405, headers: { allow: "POST" } });
   }
   const url = new URL(request.url);
   if (request.headers.get("origin") !== url.origin) {
-    return new Response("Cross-origin API access not allowed.", { status: 403 });
+    return new Response("不允许跨域访问 API。", { status: 403 });
   }
   const contentType = request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
   if (contentType !== "application/json") {
-    return new Response("Expected application/json.", { status: 415 });
+    return new Response("请求必须使用 application/json。", { status: 415 });
   }
 
   const reporter = env.FRONTEND_ERROR_REPORTER;
@@ -112,10 +112,10 @@ export async function handleClientErrorRequest(
     let key: string;
     if (env.CF_ACCESS_AUD) {
       const payload = await verifyAccess(request, env);
-      if (!payload) return new Response("Invalid CF access JWT.", { status: 403 });
+      if (!payload) return new Response("CF Access JWT 无效。", { status: 403 });
       const accessKey = await accessRateLimitKey(payload);
       if (!accessKey) {
-        return new Response("Access JWT didn't specify a user identity.", { status: 403 });
+        return new Response("Access JWT 未指定用户身份。", { status: 403 });
       }
       key = accessKey;
     } else {
@@ -131,10 +131,10 @@ export async function handleClientErrorRequest(
   }
 
   const input = await readBoundedJson(request);
-  if (input === "too-large") return new Response("Payload Too Large", { status: 413 });
-  if (input === "invalid") return new Response("Invalid JSON", { status: 400 });
+  if (input === "too-large") return new Response("请求内容过大", { status: 413 });
+  if (input === "invalid") return new Response("JSON 无效", { status: 400 });
   const report = normalizeFrontendErrorReport(input);
-  if (!report) return new Response("Invalid frontend error report", { status: 400 });
+  if (!report) return new Response("前端错误报告无效", { status: 400 });
 
   try {
     const dispatch = reporter.report(toReporterEvent(report));

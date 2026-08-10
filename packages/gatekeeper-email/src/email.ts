@@ -76,8 +76,8 @@ function getBasePath(env: Env) {
 function getEmailMailboxResource(env: Env): SupportedResource {
   return {
     urlPattern: `${getBaseUrl(env)}/mailbox/:user`,
-    title: "Email Mailbox",
-    description: "Send and receive emails.",
+    title: "电子邮箱",
+    description: "发送和接收电子邮件。",
   };
 }
 
@@ -98,12 +98,12 @@ function getEmailHost(env: Env) {
 
 function validateEmailName(value: string | undefined): { ok: true, emailName: string } | { ok: false, message: string } {
   let emailName = value?.trim().toLowerCase();
-  if (!emailName) return { ok: false, message: "Choose an email address." };
+  if (!emailName) return { ok: false, message: "请选择电子邮件地址。" };
   if (!/^[a-z0-9._+-]{1,64}$/.test(emailName)) {
-    return { ok: false, message: "Use letters, numbers, dots, underscores, plus signs, or hyphens." };
+    return { ok: false, message: "请使用字母、数字、点、下划线、加号或连字符。" };
   }
   if (emailName.startsWith(".") || emailName.endsWith(".") || emailName.includes("..")) {
-    return { ok: false, message: "Email names cannot start or end with a dot or contain consecutive dots." };
+    return { ok: false, message: "邮箱名称不能以点开头或结尾，也不能包含连续的点。" };
   }
   return { ok: true, emailName };
 }
@@ -124,7 +124,7 @@ class EmailMailboxConfiguratorUI extends RpcTarget implements EmailMailboxConfig
     let validated = validateEmailName(emailName ?? undefined);
     if (!validated.ok) throw new Error(validated.message);
     let env = emailConfiguratorEnvs.get(this);
-    if (!env) throw new Error("Email configurator is not initialized.");
+    if (!env) throw new Error("邮箱配置器尚未初始化。");
     return `${getBaseUrl(env)}/mailbox/${encodeURIComponent(validated.emailName)}`;
   }
 }
@@ -132,25 +132,25 @@ class EmailMailboxConfiguratorUI extends RpcTarget implements EmailMailboxConfig
 // =======================================================================================
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization Link Expired</title>
+    <title>授权链接已过期</title>
   </head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #d97706; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1d4ed8; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
@@ -163,7 +163,7 @@ export default {
     let url = new URL(req.url);
     let basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     let relPath = url.pathname.slice(basePath.length);
     let path = relPath.slice(1).split("/");
@@ -183,7 +183,7 @@ export default {
         }
       });
     } else {
-      return new Response("Not Found", { status: 404 });
+      return new Response("未找到", { status: 404 });
     }
   },
 
@@ -260,14 +260,14 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
 
   async describe(): Promise<VendorDescription> {
     return {
-      displayName: "Email",
+      displayName: "电子邮件",
       url: getBaseUrl(this.env),
       logo: { url: EMAIL_LOGO_URL },
-      color: "#fff5df",
-      tagline: "Trigger gadgets from incoming email",
+      color: "#dbeafe",
+      tagline: "通过收到的电子邮件触发小程序",
       description:
-          "Give Cloudflare OS an email address it can receive messages from. Useful for triage " +
-          "agents, ticket-from-email workflows, or anything driven by mail.",
+          "为 NINT os 提供一个可以接收消息的电子邮件地址，适用于分流智能体、" +
+          "从邮件创建工单的工作流，以及任何由邮件驱动的场景。",
     };
   }
 
@@ -358,7 +358,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
                                 implements GatekeeperUser {
   async describe(): Promise<AccountDescription> {
     return {
-      displayName: "Email Receiver",
+      displayName: "邮件接收器",
       avatar: { url: "" },  // TODO: email icon
     };
   }
@@ -375,7 +375,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
   async startResourceConfigurator(resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
     let resource = getEmailMailboxResource(this.env);
     if (resourceUrlPattern !== resource.urlPattern) {
-      throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+      throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
     }
     return {
       iframeHtml: EMAIL_CONFIGURATOR_HTML,
@@ -393,29 +393,29 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     let parsed = new URL(url);
     let baseUrl = new URL(getBaseUrl(this.env));
     if (parsed.origin !== baseUrl.origin) {
-      throw new Error(`URL origin ${parsed.origin} does not match email gatekeeper origin ${baseUrl.origin}`);
+      throw new Error(`URL 源 ${parsed.origin} 与电子邮件 Gatekeeper 源 ${baseUrl.origin} 不匹配`);
     }
     let basePath = getBasePath(this.env);
     if (!parsed.pathname.startsWith(basePath + "/") && parsed.pathname !== basePath) {
-      throw new Error(`URL path ${parsed.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`URL 路径 ${parsed.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     let relPath = parsed.pathname.slice(basePath.length);
     let emailNameSegment = relPath.slice("/mailbox/".length);
     if (!relPath.startsWith("/mailbox/") || !emailNameSegment) {
-      throw new Error(`Invalid email URL: ${url}`);
+      throw new Error(`电子邮件 URL 无效：${url}`);
     }
 
     let decodedEmailName: string;
     try {
       decodedEmailName = decodeURIComponent(emailNameSegment);
     } catch {
-      throw new Error(`Invalid email URL encoding: ${url}`);
+      throw new Error(`电子邮件 URL 编码无效：${url}`);
     }
 
     let validated = validateEmailName(decodedEmailName);
     if (!validated.ok) throw new Error(validated.message);
     if (emailNameSegment !== encodeURIComponent(validated.emailName)) {
-      throw new Error(`Email URL is not canonical: ${url}`);
+      throw new Error(`电子邮件 URL 不是规范格式：${url}`);
     }
     let emailName = validated.emailName;
 
@@ -450,7 +450,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
 
   async reconnect(): Promise<{url: string}> {
     // Email connections do not use OAuth and never expire.
-    throw new Error("Email connections do not require re-authentication.");
+    throw new Error("电子邮件连接无需重新授权。");
   }
 
   async ensureResources(_resourceUrlPatterns: string[]): Promise<{url?: string}> {
@@ -509,8 +509,8 @@ class EmailSessionImpl extends RpcTarget implements EmailSession {
 
     // @ts-ignore TS insists hookController is the wrong type... why? It looks identical to me.
     await this.#approvalQueue.bindHook(hookController, callback, {
-      title: `Receive email`,
-      description: `Receive emails sent to ${this.#emailName}@${this.#emailHost}`,
+      title: `接收电子邮件`,
+      description: `接收发送到 ${this.#emailName}@${this.#emailHost} 的电子邮件`,
     });
   }
 }
@@ -536,7 +536,7 @@ export class EmailGatekeeperImpl extends DurableObject<Env, EmailGatekeeperImplP
     return {
       url: `${getBaseUrl(this.env)}/mailbox/${encodeURIComponent(emailName)}`,
       title: `${emailName}@${host}`,
-      snippet: `Receive emails sent to ${emailName}@${host}`,
+      snippet: `接收发送到 ${emailName}@${host} 的电子邮件`,
       suggestedBindingName: "EMAIL",
       tsType: "EmailSession",
       hookTsType: "EmailHook",
@@ -560,7 +560,7 @@ export class EmailGatekeeperImpl extends DurableObject<Env, EmailGatekeeperImplP
   // ---------------------------------------------------------------------------
 
   async applyAction(action: number): Promise<void> {
-    throw new Error("Email gatekeeper has no actions");
+    throw new Error("电子邮件 Gatekeeper 没有可执行操作");
   }
 
   async rejectAction(action: number): Promise<void> {
@@ -569,7 +569,7 @@ export class EmailGatekeeperImpl extends DurableObject<Env, EmailGatekeeperImplP
 
   revertAction(action: number):
       Promise<void | {message?: string, canRetry?: boolean, restart?: boolean}> {
-    throw new Error("Email gatekeeper has no actions to revert");
+    throw new Error("电子邮件 Gatekeeper 没有可撤销操作");
   }
 
   // Observer tracking: the email gatekeeper uses the "low-stakes" strategy. Each mailbox is a fresh
@@ -618,7 +618,7 @@ export class EmailAddress extends DurableObject<Env> {
   async claim(userAccountId: string): Promise<boolean> {
     let owner = this.ctx.storage.kv.get<string>("owner");
     if (owner && owner !== userAccountId) {
-      throw new Error("This email address is claimed by another user");
+      throw new Error("此电子邮件地址已被其他用户占用");
     }
     if (!owner) {
       this.ctx.storage.kv.put("owner", userAccountId);
@@ -640,7 +640,7 @@ export class EmailAddress extends DurableObject<Env> {
       userAccountId: string): Promise<void> {
     let owner = this.ctx.storage.kv.get<string>("owner");
     if (owner !== userAccountId) {
-      throw new Error("This email address is not owned by this user account");
+      throw new Error("此电子邮件地址不属于当前用户账户");
     }
 
     if (hook) {
@@ -654,7 +654,7 @@ export class EmailAddress extends DurableObject<Env> {
     let hookInitiator =
         this.ctx.storage.kv.get<Fetcher<HookInitiator<EmailHookTarget>>>("hook");
     if (!hookInitiator) {
-      throw new Error("No hook configured for this email address");
+      throw new Error("此电子邮件地址尚未配置 Hook");
     }
 
     // The stored Fetcher is a HookInitiator. Call startHook() to get the actual hook entrypoint
@@ -668,9 +668,9 @@ export class EmailAddress extends DurableObject<Env> {
         ? `${email.from.name} <${email.from.address}>`
         : email.from.address;
     await startHookResult.approvalQueue.authorizeObservation({
-      title: `Email from ${email.from.address}: ${email.subject}`,
-      description: `Received email from ${sender}\n\n`
-          + `**Subject:** ${email.subject}\n`
+      title: `来自 ${email.from.address} 的电子邮件：${email.subject}`,
+      description: `收到来自 ${sender} 的电子邮件\n\n`
+          + `**主题：** ${email.subject}\n`
           + `**Date:** ${email.date}\n`
           + (email.to.length > 0
               ? `**To:** ${email.to.map(a => a.address).join(", ")}\n`

@@ -79,7 +79,7 @@ describe("paginateManagementSchedules", () => {
     ).toHaveLength(1);
     expect(() =>
       paginateManagementSchedules(schedules, { statuses: ["paused" as "active"] }),
-    ).toThrow("Invalid schedule status");
+    ).toThrow("计划状态无效");
   });
 
   it("returns fixed-size pages and binds an opaque cursor to normalized filters", () => {
@@ -102,18 +102,18 @@ describe("paginateManagementSchedules", () => {
     ).toHaveLength(1);
     expect(() =>
       paginateManagementSchedules(schedules, { cursor: first.cursor, statuses: ["active"] }),
-    ).toThrow("Cursor does not match");
+    ).toThrow("游标与当前筛选条件不匹配");
   });
 
   it("rejects oversized queries and malformed cursors", () => {
     expect(() => paginateManagementSchedules([], { query: "x".repeat(201) })).toThrow(
-      "at most 200",
+      "最多为 200 个字符",
     );
     expect(() => paginateManagementSchedules([], { cursor: "not-a-cursor" })).toThrow(
-      "Invalid management cursor",
+      "管理游标无效",
     );
     expect(() => paginateManagementSchedules([], { cursor: "x".repeat(1_025) })).toThrow(
-      "Invalid management cursor",
+      "管理游标无效",
     );
   });
 });

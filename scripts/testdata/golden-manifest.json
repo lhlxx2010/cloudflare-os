@@ -259,19 +259,19 @@
         {
           "consoleUrl": "https://github.com/settings/developers",
           "kind": "secret",
-          "label": "OAuth client ID",
+          "label": "OAuth 客户端 ID",
           "name": "CLIENT_ID",
           "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/github/oauth",
           "setupSteps": [
-            "In GitHub Developer settings, create a new OAuth App (an OAuth App, not a GitHub App — GitHub Apps ignore OAuth scopes).",
-            "Set the Homepage URL to your instance URL, and the Authorization callback URL to the redirect URI below.",
-            "Register the application, then generate a new client secret.",
-            "Copy the Client ID and client secret here."
+            "在 GitHub Developer settings 中创建一个新的 OAuth App（请选择 OAuth App，而不是 GitHub App；GitHub App 会忽略 OAuth scopes）。",
+            "将 Homepage URL 设置为你的实例 URL，并将 Authorization callback URL 设置为下方的重定向 URI。",
+            "注册应用，然后生成新的客户端密钥。",
+            "将 Client ID 和客户端密钥复制到此处。"
           ]
         },
         {
           "kind": "secret",
-          "label": "OAuth client secret",
+          "label": "OAuth 客户端密钥",
           "name": "CLIENT_SECRET"
         }
       ],
@@ -330,20 +330,20 @@
         {
           "consoleUrl": "https://console.cloud.google.com/apis/credentials",
           "kind": "secret",
-          "label": "OAuth client ID",
+          "label": "OAuth 客户端 ID",
           "name": "CLIENT_ID",
           "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/google/oauth",
           "setupSteps": [
-            "In the Google Cloud Console, create a project (or pick an existing one).",
-            "Enable the APIs gadgets should reach: Gmail, Google Docs, Google Drive, Google Sheets, Google Calendar, and BigQuery (APIs & Services > Library).",
-            "Configure the OAuth consent screen (External) and add yourself as a test user while the app is unverified.",
-            "Create an OAuth client ID of type \"Web application\" and add the redirect URI below.",
-            "Copy the client ID and client secret here."
+            "在 Google Cloud Console 中创建项目（或选择现有项目）。",
+            "启用小程序需要访问的 API：Gmail、Google Docs、Google Drive、Google Sheets、Google Calendar 和 BigQuery（APIs & Services > Library）。",
+            "配置 OAuth consent screen（External）；应用未经验证时，请将自己添加为测试用户。",
+            "创建类型为“Web application”的 OAuth 客户端 ID，并添加下方的重定向 URI。",
+            "将客户端 ID 和客户端密钥复制到此处。"
           ]
         },
         {
           "kind": "secret",
-          "label": "OAuth client secret",
+          "label": "OAuth 客户端密钥",
           "name": "CLIENT_SECRET"
         }
       ],
@@ -613,19 +613,19 @@
         {
           "consoleUrl": "https://www.notion.so/my-integrations",
           "kind": "secret",
-          "label": "OAuth client ID",
+          "label": "OAuth 客户端 ID",
           "name": "CLIENT_ID",
           "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/notion/oauth",
           "setupSteps": [
-            "Create a Notion integration and set its type to Public.",
-            "Add the redirect URI below to the integration's OAuth settings.",
-            "Enable the capabilities gadgets uses: read/insert/update content, read/insert comments, and read user information (no email needed).",
-            "Copy the OAuth client ID and client secret here."
+            "创建 Notion 集成，并将其类型设置为 Public。",
+            "在集成的 OAuth 设置中添加下方的重定向 URI。",
+            "启用小程序所需的能力：读取/插入/更新内容、读取/插入评论，以及读取用户信息（无需电子邮件）。",
+            "将 OAuth 客户端 ID 和客户端密钥复制到此处。"
           ]
         },
         {
           "kind": "secret",
-          "label": "OAuth client secret",
+          "label": "OAuth 客户端密钥",
           "name": "CLIENT_SECRET"
         }
       ],
@@ -727,19 +727,19 @@
         {
           "consoleUrl": "https://api.slack.com/apps",
           "kind": "secret",
-          "label": "OAuth client ID",
+          "label": "OAuth 客户端 ID",
           "name": "CLIENT_ID",
           "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/slack/oauth",
           "setupSteps": [
-            "Create a Slack app (from scratch) in the workspace you want gadgets to read.",
-            "Under OAuth & Permissions, add the redirect URL below.",
-            "Enable token rotation (OAuth & Permissions > Token Rotation) — tokens are then short-lived and refreshed automatically.",
-            "Copy the app's Client ID and Client Secret (Basic Information > App Credentials) here."
+            "在希望小程序读取的工作区中从头创建一个 Slack 应用。",
+            "在 OAuth & Permissions 中添加下方的重定向 URL。",
+            "启用令牌轮换（OAuth & Permissions > Token Rotation），令牌随后会变为短期令牌并自动刷新。",
+            "将应用的 Client ID 和 Client Secret（Basic Information > App Credentials）复制到此处。"
           ]
         },
         {
           "kind": "secret",
-          "label": "OAuth client secret",
+          "label": "OAuth 客户端密钥",
           "name": "CLIENT_SECRET"
         }
       ],

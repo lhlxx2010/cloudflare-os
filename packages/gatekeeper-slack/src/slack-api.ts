@@ -136,7 +136,7 @@ export async function exchangeAuthCode(
   let authedUser = data.authed_user;
   if (!authedUser?.access_token) {
     throw new Error(
-        "Slack did not return a user token. Make sure the app requests user scopes (user_scope).");
+        "Slack 未返回用户令牌。请确认应用请求了用户作用域（user_scope）。");
   }
 
   return {
@@ -175,12 +175,12 @@ export async function refreshAccessToken(
         data.error === "invalid_grant" || data.error === "token_revoked") {
       return null;
     }
-    throw new Error(`Slack token refresh failed: ${data.error ?? response.status}`);
+    throw new Error(`Slack 令牌刷新失败：${data.error ?? response.status}`);
   }
 
   // On refresh, the user-token fields come back at the top level (token_type "user").
   if (!data.access_token) {
-    throw new Error("Slack token refresh returned no access token.");
+    throw new Error("Slack 令牌刷新未返回访问令牌。");
   }
 
   return {
@@ -213,7 +213,7 @@ async function postToken(body: URLSearchParams): Promise<any> {
   });
   let data = await response.json<any>();
   if (!data.ok) {
-    throw new Error(`Slack OAuth exchange failed: ${data.error ?? response.status}`);
+    throw new Error(`Slack OAuth 交换失败：${data.error ?? response.status}`);
   }
   return data;
 }
@@ -397,7 +397,7 @@ export class SlackApi {
     if (cached) return cached;
     let data = await this.#call<SlackApiEnvelope & { user?: RawUser }>(
         "users.info", { user: userId });
-    if (!data.user) throw new Error(`Slack user not found: ${userId}`);
+    if (!data.user) throw new Error(`未找到 Slack 用户：${userId}`);
     let user = toUser(data.user);
     this.#userCache.set(userId, user);
     return user;
@@ -446,7 +446,7 @@ export class SlackApi {
   async getConversationInfo(conversationId: string): Promise<SlackConversationInfo> {
     let data = await this.#call<SlackApiEnvelope & { channel?: RawConversation }>(
         "conversations.info", { channel: conversationId });
-    if (!data.channel) throw new Error(`Slack conversation not found: ${conversationId}`);
+    if (!data.channel) throw new Error(`未找到 Slack 会话：${conversationId}`);
     let info = toConversationInfo(data.channel);
     if (data.channel.is_im && data.channel.user) {
       info.peer = await this.getUser(data.channel.user).catch(() => undefined);

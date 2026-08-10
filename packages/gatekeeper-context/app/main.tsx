@@ -32,7 +32,7 @@ interface HostCapability extends RpcTarget {
 
 function main() {
   const root = document.getElementById('root')
-  if (!root) throw new Error('missing #root')
+  if (!root) throw new Error('缺少 #root 根元素。')
 
   const { port1, port2 } = new MessageChannel()
   // Opaque-origin iframes can't name their parent origin. The parent accepts this handshake only from

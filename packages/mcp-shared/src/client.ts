@@ -120,7 +120,7 @@ export class McpAuthRequiredError extends Error {
 // Thrown when the server dropped our transport session; the caller should re-initialize.
 export class McpSessionExpiredError extends Error {
   constructor() {
-    super("The MCP server no longer recognizes this session.");
+    super("MCP 服务器已无法识别此会话。");
     this.name = "McpSessionExpiredError";
   }
 }
@@ -184,10 +184,10 @@ function extractResponse(bodyText: string, id: number): JsonRpcResponse {
   try {
     parsed = JSON.parse(bodyText) as JsonRpcResponse;
   } catch {
-    throw new McpProtocolError("MCP server returned a non-JSON response.");
+    throw new McpProtocolError("MCP 服务器返回了非 JSON 响应。");
   }
   if (parsed.id !== id && parsed.id !== null && parsed.id !== undefined) {
-    throw new McpProtocolError("MCP server answered a different request.");
+    throw new McpProtocolError("MCP 服务器响应了另一个请求。");
   }
   return parsed;
 }
@@ -196,7 +196,7 @@ function extractResponse(bodyText: string, id: number): JsonRpcResponse {
 // keep the stream open after responding, so waiting for EOF would hang an otherwise-complete call.
 async function readSseResponse(response: Response, id: number): Promise<JsonRpcResponse> {
   if (!response.body) {
-    throw new McpProtocolError("MCP server's event stream contained no response to the request.");
+    throw new McpProtocolError("MCP 服务器的事件流中没有对此请求的响应。");
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -231,13 +231,13 @@ async function readSseResponse(response: Response, id: number): Promise<JsonRpcR
         const parsed = consume();
         if (parsed) return parsed;
         throw new McpProtocolError(
-          "MCP server's event stream contained no response to the request.");
+          "MCP 服务器的事件流中没有对此请求的响应。");
       }
       total += value.byteLength;
       if (total > MAX_RESPONSE_BYTES) {
         await reader.cancel().catch(() => undefined);
         throw new McpProtocolError(
-          `MCP server's event stream exceeded ${MAX_RESPONSE_BYTES} bytes.`);
+          `MCP 服务器的事件流超过了 ${MAX_RESPONSE_BYTES} 字节。`);
       }
       buffered += decoder.decode(value, { stream: true });
       const parsed = consume();
@@ -339,12 +339,12 @@ export class McpClient {
     // reconnect that cannot help.
     if (response.status === 401) {
       throw new McpAuthRequiredError(
-        "The MCP server requires authorization.",
+        "MCP 服务器需要授权。",
         parseResourceMetadataUrl(response.headers.get("WWW-Authenticate")));
     }
     if (response.status === 403) {
       throw new McpProtocolError(
-        "The MCP server refused this request. The connected account may not have access to it.",
+        "MCP 服务器拒绝了此请求。已连接的账户可能无权访问。",
         undefined, "declined");
     }
     if (response.status === 404 && this.sessionId) throw new McpSessionExpiredError();
@@ -357,7 +357,7 @@ export class McpClient {
 
     if (!response.ok) {
       throw new McpProtocolError(
-        `MCP server returned HTTP ${response.status} for "${method}".`);
+        `MCP 服务器为“${method}”返回了 HTTP ${response.status}。`);
     }
 
     const sessionId = response.headers.get("Mcp-Session-Id");
@@ -375,7 +375,7 @@ export class McpClient {
         bodyText = await readTextCapped(response);
       } catch (err) {
         throw new McpProtocolError(
-          `MCP server's response to "${method}" was too large to read: ` +
+          `MCP 服务器对“${method}”的响应过大，无法读取：` +
           `${err instanceof Error ? err.message : String(err)}`);
       }
       parsed = extractResponse(bodyText, id);
@@ -383,7 +383,7 @@ export class McpClient {
 
     if (parsed.error) {
       throw new McpProtocolError(
-        `MCP server rejected "${method}": ${this.#quoteServerText(parsed.error.message)}`,
+        `MCP 服务器拒绝了“${method}”：${this.#quoteServerText(parsed.error.message)}`,
         parsed.error.code, method === "tools/call" ? "unknown" : "declined");
     }
     return parsed.result as T;
@@ -451,7 +451,7 @@ export class McpClient {
       if (!cursor) return { tools, truncated: false };
     }
     throw new McpProtocolError(
-      `MCP server kept paginating "tools/list" past ${MAX_TOOL_PAGES} pages.`);
+      `MCP 服务器对“tools/list”的分页超过了 ${MAX_TOOL_PAGES} 页。`);
   }
 
   // Invokes one tool. A tool-level failure arrives as `isError`, not as a thrown error.

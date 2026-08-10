@@ -41,33 +41,32 @@ export default {
     const selectedCount = (values.tools ?? "").split(",").filter(Boolean).length;
 
     return <Section>
-      <Field label="Tools" description="Choose how much of this server this connection may call.">
+      <Field label="工具" description="选择此连接可以调用该服务器上的哪些工具。">
         <RadioCards
           value={mode}
           options={[
             {
               value: "all",
-              title: "All tools",
-              description: "Every tool this server offers, including ones it adds later.",
+              title: "所有工具",
+              description: "此服务器提供的每个工具，包括日后新增的工具。",
             },
             {
               value: "choose",
-              title: "Choose tools",
+              title: "选择工具",
               description:
-                "Only the tools you tick. Anything else is refused, including tools added later.",
+                "仅允许你勾选的工具，其他工具（包括日后新增的工具）都将被拒绝。",
             },
           ]}
           onChange={next => setValues({ mode: next })}
         />
       </Field>
       <Field
-        label="Allowed tools"
+        label="允许的工具"
         description={mode === "all"
-          ? "Read-only tools return data straight away; the rest queue for your approval."
+          ? "只读工具会立即返回数据，其余工具将排队等待你的批准。"
           : selectedCount > 0
-            ? `${selectedCount} selected. Read-only tools return data straight away; the rest `
-              + "queue for your approval."
-            : "Tick at least one tool to grant anything."}>
+            ? `已选择 ${selectedCount} 个。只读工具会立即返回数据，其余工具将排队等待你的批准。`
+            : "请至少勾选一个工具以授予权限。"}>
         <CheckboxList
           name="tools"
           value={values.tools}

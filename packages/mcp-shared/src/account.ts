@@ -197,7 +197,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
 
   protected requireServer(): ConnectedServer {
     const server = this.server();
-    if (!server) throw new Error("This MCP account is not connected to a server yet.");
+    if (!server) throw new Error("此 MCP 账户尚未连接到服务器。");
     return server;
   }
 
@@ -316,8 +316,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     if (server.auth === "token" && this.staticToken(server) === null) {
       this.restoreSelection(initiationNonce);
       throw new Error(
-        `No preissued token is configured for "${server.serverName}" on this deployment, so it ` +
-        `cannot be connected. Set one and try again.`);
+        `此部署未为“${server.serverName}”配置预颁发令牌，因此无法连接。请设置令牌后重试。`);
     }
 
     // A first-connect server record is written only once the endpoint has answered, below. Storing
@@ -326,7 +325,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     try {
       const info = await this.probe(server, null, generation);
       if (generation !== this.connectionGeneration()) {
-        throw new Error("This connection attempt was replaced by a newer one.");
+        throw new Error("此次连接尝试已被更新的连接尝试取代。");
       }
       // A `"token"` endpoint is probed *with* its preissued bearer (see `probe`), so completing the
       // handshake says nothing about whether it is public; recording `"none"` here would drop that
@@ -348,7 +347,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
         // without forcing the user to start a new connect flow.
         this.restoreSelection(initiationNonce);
         throw new Error(
-          `The MCP server "${server.serverName}" rejected this deployment's configured token.`,
+          `MCP 服务器“${server.serverName}”拒绝了此部署配置的令牌。`,
           { cause: err });
       }
       // The endpoint answered with an authorization challenge, so OAuth is now the observed auth
@@ -385,12 +384,12 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     server: ConnectedServer,
     generation: number,
     redirect: (url: URL) => void = () => {
-      throw new Error("The authorization server unexpectedly requested a redirect.");
+      throw new Error("授权服务器意外请求了重定向。");
     },
   ): OAuthClientProvider {
     const current = () => {
       if (!this.isCurrentConnection(server, generation)) {
-        throw new Error("This authorization attempt was replaced by a newer connection.");
+        throw new Error("此次授权尝试已被更新的连接取代。");
       }
     };
     const matchesIssuer = (value: { issuer?: string } | undefined, issuer?: string) =>
@@ -451,7 +450,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
       codeVerifier: () => {
         current();
         const verifier = this.ctx.storage.kv.get<string>("oauthVerifier");
-        if (!verifier) throw new Error("This authorization attempt has expired. Please try again.");
+        if (!verifier) throw new Error("此次授权尝试已过期，请重试。");
         return verifier;
       },
       state: () => {
@@ -513,22 +512,22 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
           this.ctx.storage.kv.get<StoredOAuthClientInformation>("oauthClient"));
       }
       if (!this.isCurrentConnection(server, generation)) {
-        throw new Error("This authorization attempt was replaced by a newer connection.");
+        throw new Error("此次授权尝试已被更新的连接取代。");
       }
       if (result === "REDIRECT" && redirectUrl) {
         if (!isAllowedUrl(redirectUrl.toString(), this.fetchOptions())) {
-          throw new Error("The authorization server returned an unsafe authorization URL.");
+          throw new Error("授权服务器返回了不安全的授权 URL。");
         }
         return { kind: "redirect", url: redirectUrl.toString() };
       }
       if (result === "AUTHORIZED") {
         const tokens = this.ctx.storage.kv.get<OAuthTokens>("tokens");
-        if (!tokens) throw new Error("The authorization server returned no access token.");
+        if (!tokens) throw new Error("授权服务器未返回访问令牌。");
         const info = await this.probe(server, tokens.access_token, generation);
         await this.complete(server, info, generation);
         return { kind: "done" };
       }
-      throw new Error("The authorization server returned no redirect.");
+      throw new Error("授权服务器未返回重定向。");
     } catch (err) {
       const nonce = this.ctx.storage.kv.get<StoredNonce>("nonce");
       const pending = this.ctx.storage.kv.get<PendingAuthorization>("pendingAuth");
@@ -577,10 +576,10 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
       ],
         this.ctx.storage.kv.get<StoredOAuthClientInformation>("oauthClient"));
     }
-    if (result !== "AUTHORIZED") throw new Error("The authorization server requested another redirect.");
+    if (result !== "AUTHORIZED") throw new Error("授权服务器请求了另一次重定向。");
     if (!this.isCurrentConnection(server, pending.generation)) return false;
     const tokens = this.ctx.storage.kv.get<OAuthTokens>("tokens");
-    if (!tokens) throw new Error("The authorization server returned no access token.");
+    if (!tokens) throw new Error("授权服务器未返回访问令牌。");
     this.ctx.storage.kv.delete("oauthVerifier");
 
     const info = await this.probe(server, tokens.access_token, pending.generation);
@@ -594,10 +593,10 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     server: ConnectedServer, info: McpServerInfo, generation: number,
   ): Promise<void> {
     if (!this.isCurrentConnection(server, generation)) {
-      throw new Error("This connection attempt was replaced by a newer one.");
+      throw new Error("此次连接尝试已被更新的连接尝试取代。");
     }
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
-    if (!callback) throw new Error("Took too long to complete the connection. Please try again.");
+    if (!callback) throw new Error("完成连接所用时间过长，请重试。");
 
     // Prefer the server's own name over the host once we have spoken to it, but only for an endpoint
     // the user chose. A deployment-configured endpoint has an administrator's name on it, and letting
@@ -639,14 +638,14 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     // moved. Otherwise a bearer token minted for the new portal would be sent to the old endpoint.
     if (!sameEndpoint(endpoint, server.endpoint)) {
       throw new Error(
-        `This binding is for ${hostOf(endpoint)}, but the account is now connected to ` +
-        `${hostOf(server.endpoint)}. Replace the binding before using it again.`);
+        `此绑定对应 ${hostOf(endpoint)}，但账户现已连接到 ${hostOf(server.endpoint)}。` +
+        `请替换绑定后再使用。`);
     }
     const authorization = await this.#getAuthorization(server, generation);
     // `#getAuthorization` may await a token refresh. A reconnect can interleave there, so recheck
     // before returning the credential to a caller that still intends to contact the old endpoint.
     if (!this.isCurrentConnection(server, generation)) {
-      throw new Error("This MCP connection changed while credentials were being prepared. Try again.");
+      throw new Error("准备凭据期间此 MCP 连接发生了变化，请重试。");
     }
     return {
       authorization,
@@ -668,8 +667,8 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
       const token = this.staticToken(server);
       if (!token) {
         throw new Error(
-          `This deployment has no preissued token for "${server.serverName}" at ` +
-          `${hostOf(server.endpoint)}. If the portal was repointed, reconnect the account.`);
+          `此部署没有为 ${hostOf(server.endpoint)} 上的“${server.serverName}”配置预颁发令牌。` +
+          `如果 Portal 已重新指向其他地址，请重新连接账户。`);
       }
       return token;
     }
@@ -678,7 +677,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     if (!tokens || typeof tokens.access_token !== "string" ||
         typeof tokens.token_type !== "string") {
       await this.noteCredentialsExpired(server.endpoint, generation);
-      throw new Error("This MCP connection is not authorized. Please reconnect the account.");
+      throw new Error("此 MCP 连接尚未授权，请重新连接账户。");
     }
     // An absent expiry is a token stored before one was always recorded: refresh it rather than
     // trusting it forever.
@@ -687,14 +686,14 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
     }
     if (!tokens.refresh_token) {
       await this.noteCredentialsExpired(server.endpoint, generation);
-      throw new Error("This MCP connection has expired. Please reconnect the account.");
+      throw new Error("此 MCP 连接已过期，请重新连接账户。");
     }
 
     const discovery = this.ctx.storage.kv.get<OAuthDiscoveryState>("oauthDiscovery");
     const client = this.ctx.storage.kv.get<StoredOAuthClientInformation>("oauthClient");
     if (!discovery || !client) {
       await this.noteCredentialsExpired(server.endpoint, generation);
-      throw new Error("This MCP connection has expired. Please reconnect the account.");
+      throw new Error("此 MCP 连接已过期，请重新连接账户。");
     }
 
     return this.#refresh(server, generation, tokens.refresh_token, discovery, client);
@@ -740,7 +739,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
         fetchFn: sdkFetch(this.fetchOptions()),
       });
       if (!this.isCurrentConnection(server, generation)) {
-        throw new Error("Discarded credentials refreshed for a previous MCP connection.");
+        throw new Error("已丢弃为先前 MCP 连接刷新的凭据。");
       }
       // Servers may or may not rotate the refresh token; keep the old one when they don't.
       this.ctx.storage.kv.put<OAuthTokens>("tokens", {
@@ -756,7 +755,7 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
       // wrapping it as a transient current failure or notifying the Workshop that credentials died.
       if (!this.isCurrentConnection(server, generation)) {
         // oxlint-disable-next-line eslint/preserve-caught-error -- OAuth errors may contain credentials.
-        throw new Error("Ignored a token refresh from a previous MCP connection.", { cause: safeError });
+        throw new Error("已忽略来自先前 MCP 连接的令牌刷新。", { cause: safeError });
       }
       // Only a verdict on the credential latches the account as expired. Marking it on any failure
       // meant one 5xx or dropped connection at the token endpoint demanded a reconnect for an
@@ -765,13 +764,13 @@ export abstract class McpAccountBase<E extends AccountEnv, P = unknown>
       if (!isCredentialRejection(err)) {
         // oxlint-disable-next-line eslint/preserve-caught-error -- OAuth errors may contain credentials.
         throw new Error(
-          "This MCP connection could not be refreshed just now. Please try again.",
+          "目前无法刷新此 MCP 连接，请重试。",
           { cause: safeError });
       }
       await this.noteCredentialsExpired(server.endpoint, generation);
       // oxlint-disable-next-line eslint/preserve-caught-error -- OAuth errors may contain credentials.
       throw new Error(
-        "This MCP connection could not be refreshed. Please reconnect the account.",
+        "无法刷新此 MCP 连接，请重新连接账户。",
         { cause: safeError });
     }
   }

@@ -37,12 +37,12 @@ export default function AutoApproveConfirmDialog({
         <div className="flex items-start justify-between gap-4 border-b border-kumo-line px-5 py-4">
           <div className="min-w-0">
             <Dialog.Title className="text-[15px] leading-5 font-medium tracking-[-0.3px] text-kumo-default">
-              Always approve “{actionLabel}”?
+              始终批准“{actionLabel}”？
             </Dialog.Title>
             <Dialog.Description className="mt-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-              Future <span className="font-medium text-kumo-default">{actionLabel}</span> actions on{' '}
-              <span className="font-medium text-kumo-default">{resourceTitle}</span> will be applied
-              automatically, without asking for approval. This action will be applied now too.
+              今后对 <span className="font-medium text-kumo-default">{resourceTitle}</span> 执行的{' '}
+              <span className="font-medium text-kumo-default">{actionLabel}</span> 操作将自动应用，
+              不再请求批准。当前操作也会立即应用。
             </Dialog.Description>
           </div>
           <Dialog.Close
@@ -51,7 +51,7 @@ export default function AutoApproveConfirmDialog({
                 {...props}
                 className="!h-7 !w-7"
                 disabled={isProcessing}
-                aria-label="Close"
+                aria-label="关闭"
               >
                 <X size={16} />
               </WorkshopIconButton>
@@ -63,7 +63,7 @@ export default function AutoApproveConfirmDialog({
           <Dialog.Close
             render={(props) => (
               <WorkshopButton {...props} className="!h-9" disabled={isProcessing}>
-                Cancel
+                取消
               </WorkshopButton>
             )}
           />
@@ -73,7 +73,7 @@ export default function AutoApproveConfirmDialog({
             disabled={isProcessing}
             className="!h-9 min-w-[64px]"
           >
-            {isProcessing ? 'Enabling...' : 'Always approve'}
+            {isProcessing ? '正在启用…' : '始终批准'}
           </WorkshopButton>
         </div>
       </Dialog>

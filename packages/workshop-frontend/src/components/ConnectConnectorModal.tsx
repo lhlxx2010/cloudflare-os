@@ -146,11 +146,11 @@ export default function ConnectConnectorModal({
   const accountDisplayName =
     accountDescription?.displayName ??
     accountDescription?.uniqueName ??
-    'Connected'
+    '已连接'
 
   const headerTitle = isManage
     ? vendorDescription.displayName
-    : `Connect ${vendorDescription.displayName}`
+    : `连接 ${vendorDescription.displayName}`
 
   const headerSubline = isManage ? (
     <div className="mt-0.5 flex items-center gap-1.5 text-[13px] leading-[18px] font-normal tracking-[-0.25px] text-kumo-subtle">
@@ -165,7 +165,7 @@ export default function ConnectConnectorModal({
           ? accountDescription?.uniqueName
             ? `${accountDisplayName} / ${accountDescription.uniqueName}`
             : accountDisplayName
-          : 'Credentials expired; reconnect from the Gatekeepers page'}
+          : '凭据已过期；请在 Gatekeeper 页面重新连接'}
       </span>
     </div>
   ) : (
@@ -230,7 +230,7 @@ export default function ConnectConnectorModal({
           </div>
           <Dialog.Close
             render={(props) => (
-              <WorkshopIconButton {...props} disabled={busy} aria-label="Close">
+              <WorkshopIconButton {...props} disabled={busy} aria-label="关闭">
                 <X size={16} />
               </WorkshopIconButton>
             )}
@@ -249,9 +249,9 @@ export default function ConnectConnectorModal({
               <h3 className="mb-2 text-[12px] leading-4 font-semibold uppercase tracking-[0.6px] text-kumo-inactive">
                 {granular
                   ? isManage
-                    ? 'Resources'
-                    : 'Resources to enable'
-                  : 'What this gatekeeper can do'}
+                    ? '资源'
+                    : '要启用的资源'
+                  : '此 Gatekeeper 可以执行的操作'}
               </h3>
               <ul className="space-y-2">
                 {supportedResources.map((resource) => {
@@ -284,8 +284,8 @@ export default function ConnectConnectorModal({
                           className="shrink-0"
                           aria-label={
                             isManage
-                              ? `Grant ${resource.title}`
-                              : `Enable ${resource.title}`
+                              ? `授权访问 ${resource.title}`
+                              : `启用 ${resource.title}`
                           }
                           checked={checked}
                           disabled={disabled}
@@ -306,7 +306,7 @@ export default function ConnectConnectorModal({
               className="relative mt-5 overflow-hidden rounded-lg border border-kumo-line px-4 py-3"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(255, 72, 1, 0.04) 0%, rgba(255, 72, 1, 0.02) 100%)',
+                  'linear-gradient(180deg, rgba(29, 78, 216, 0.06) 0%, rgba(29, 78, 216, 0.03) 100%)',
               }}
             >
               <div className="flex items-start gap-3">
@@ -317,12 +317,11 @@ export default function ConnectConnectorModal({
                 />
                 <div className="text-[12px] leading-[17px] font-normal tracking-[-0.2px] text-kumo-default">
                   <span className="font-medium">
-                    Gatekeeper sits between {vendorDescription.displayName} and your Gadgets.
+                    Gatekeeper 位于 {vendorDescription.displayName} 与你的应用之间。
                   </span>{' '}
                   <span className="text-kumo-subtle">
-                    Each Gadget only sees the resources you connect. If the workspace is shared,
-                    Gatekeeper verifies other users have the required permissions before they can
-                    access those resources.
+                    每个应用只能看到你连接的资源。如果工作区已共享，Gatekeeper 会在其他用户
+                    访问这些资源前验证其是否具备所需权限。
                   </span>
                 </div>
               </div>
@@ -331,8 +330,7 @@ export default function ConnectConnectorModal({
 
           {isManage && (
             <div className="mt-5 rounded-lg border border-kumo-line bg-kumo-elevated px-4 py-3 text-[12px] leading-[17px] font-normal tracking-[-0.2px] text-kumo-subtle">
-              This account can be used by Gadgets you connect it to. Shared users must have the
-              required permissions before they can access those connected resources.
+              此账户可供与其连接的应用使用。共享用户必须具备所需权限，才能访问这些已连接资源。
             </div>
           )}
         </div>
@@ -340,15 +338,15 @@ export default function ConnectConnectorModal({
         <div className="shrink-0 flex items-center justify-between gap-3 border-t border-kumo-line bg-kumo-base px-5 py-3">
           {isManage && confirmingDisconnect ? (
             <p className="m-0 min-w-0 flex-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-default">
-              Disconnect {vendorDescription.displayName}? Gadgets using this will lose access.
+              要断开 {vendorDescription.displayName} 吗？使用此连接的应用将失去访问权限。
             </p>
           ) : isManage && hasPending ? (
             <p className="m-0 min-w-0 flex-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-              {pendingPatterns.length} resource{pendingPatterns.length === 1 ? '' : 's'} to add
+              待添加 {pendingPatterns.length} 个资源
             </p>
           ) : !isManage && granular && noneSelected ? (
             <p className="m-0 min-w-0 flex-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-              Select at least one resource to continue.
+              请至少选择一个资源以继续。
             </p>
           ) : (
             <span aria-hidden />
@@ -363,7 +361,7 @@ export default function ConnectConnectorModal({
                       disabled={disconnecting}
                       className="!h-9"
                     >
-                      Cancel
+                      取消
                     </WorkshopButton>
                     <WorkshopButton
                       tone="danger"
@@ -371,13 +369,13 @@ export default function ConnectConnectorModal({
                       disabled={disconnecting}
                       className="!h-9 min-w-[140px]"
                     >
-                      {disconnecting ? 'Disconnecting...' : 'Yes, disconnect'}
+                      {disconnecting ? '正在断开...' : '确认断开'}
                     </WorkshopButton>
                   </>
                 ) : hasPending ? (
                   <>
                     <WorkshopButton onClick={discardPending} disabled={ensuringBusy} className="!h-9">
-                      Cancel
+                      取消
                     </WorkshopButton>
                     <WorkshopButton
                       tone="primary"
@@ -386,8 +384,8 @@ export default function ConnectConnectorModal({
                       className="min-w-[140px]"
                     >
                       {ensuringBusy
-                        ? 'Opening...'
-                        : `Continue to ${vendorDescription.displayName}`}
+                        ? '正在打开...'
+                        : `前往 ${vendorDescription.displayName}`}
                     </WorkshopButton>
                   </>
                 ) : (
@@ -395,7 +393,7 @@ export default function ConnectConnectorModal({
                     <Dialog.Close
                       render={(props) => (
                         <WorkshopButton {...props} className="!h-9">
-                          Close
+                          关闭
                         </WorkshopButton>
                       )}
                     />
@@ -405,7 +403,7 @@ export default function ConnectConnectorModal({
                       disabled={disconnecting}
                       className="!h-9"
                     >
-                      Disconnect
+                      断开连接
                     </WorkshopButton>
                   </>
                 )}
@@ -415,7 +413,7 @@ export default function ConnectConnectorModal({
                 <Dialog.Close
                   render={(props) => (
                     <WorkshopButton {...props} disabled={connecting} className="!h-9">
-                      Cancel
+                      取消
                     </WorkshopButton>
                   )}
                 />
@@ -427,11 +425,11 @@ export default function ConnectConnectorModal({
                 >
                   {autoProvisions
                     ? connecting
-                      ? 'Adding...'
-                      : `Add ${vendorDescription.displayName}`
+                      ? '正在添加...'
+                      : `添加 ${vendorDescription.displayName}`
                     : connecting
-                    ? 'Opening...'
-                    : `Continue to ${vendorDescription.displayName}`}
+                    ? '正在打开...'
+                    : `前往 ${vendorDescription.displayName}`}
                 </WorkshopButton>
               </>
             )}

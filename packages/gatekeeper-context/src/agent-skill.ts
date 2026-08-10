@@ -71,15 +71,15 @@ export function buildAgentSkillMessage(content: string, args: string): string {
 
 const SkillFrontmatterSchema = z.object({
   name: z.string()
-      .min(1, "Skill name is required.")
-      .max(AGENT_SKILL_NAME_MAX_LENGTH, "Skill name must be at most 64 characters.")
+      .min(1, "Skill 名称为必填项。")
+      .max(AGENT_SKILL_NAME_MAX_LENGTH, "Skill 名称最多 64 个字符。")
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-          "Skill name must use lowercase letters, numbers, and single hyphens."),
+          "Skill 名称只能使用小写字母、数字和单个连字符。"),
   description: z.string()
       .transform(value => value.trim())
       .pipe(z.string()
-          .min(1, "Skill description is required.")
-          .max(1024, "Skill description must be at most 1024 characters.")),
+          .min(1, "Skill 描述为必填项。")
+          .max(1024, "Skill 描述最多 1024 个字符。")),
 }).passthrough();
 
 // Check whether the last path segment is exactly SKILL.md.
@@ -95,12 +95,12 @@ function readFrontmatterYaml(source: string): string {
   let text = source.startsWith("\uFEFF") ? source.slice(1) : source;
   let lines = text.split(/\r?\n/);
   if (!isFrontmatterFence(lines[0] ?? "")) {
-    throw new Error("Skill manifest must start with YAML frontmatter.");
+    throw new Error("Skill 清单必须以 YAML frontmatter 开头。");
   }
 
   let end = lines.findIndex((line, index) => index > 0 && isFrontmatterFence(line));
   if (end < 0) {
-    throw new Error("Skill manifest frontmatter is not closed.");
+    throw new Error("Skill 清单的 frontmatter 未闭合。");
   }
   return lines.slice(1, end).join("\n");
 }
@@ -110,26 +110,26 @@ function parseFrontmatter(source: string): unknown {
   try {
     return parseYaml(yaml);
   } catch {
-    throw new Error("Skill frontmatter is not valid YAML.");
+    throw new Error("Skill 的 frontmatter 不是有效的 YAML。");
   }
 }
 
 function formatFrontmatterError(error: z.ZodError): string {
   let issue = error.issues[0];
-  if (issue?.path[0] === "name" && issue.code === "invalid_type") return "Skill name is required.";
+  if (issue?.path[0] === "name" && issue.code === "invalid_type") return "Skill 名称为必填项。";
   if (issue?.path[0] === "description" && issue.code === "invalid_type") {
-    return "Skill description is required.";
+    return "Skill 描述为必填项。";
   }
   if (issue?.path.length === 0 && issue.code === "invalid_type") {
-    return "Skill frontmatter must be a mapping.";
+    return "Skill 的 frontmatter 必须是映射。";
   }
-  return issue?.message ?? "Skill frontmatter is invalid.";
+  return issue?.message ?? "Skill 的 frontmatter 无效。";
 }
 
 // Read and validate the skill frontmatter.
 export function parseSkillManifest(path: string, source: string): SkillManifestMetadata {
   if (!isSkillManifestPath(path)) {
-    throw new Error("Skill manifest filename must be SKILL.md.");
+    throw new Error("Skill 清单文件名必须是 SKILL.md。");
   }
   let result = SkillFrontmatterSchema.safeParse(parseFrontmatter(source));
   if (!result.success) throw new Error(formatFrontmatterError(result.error));

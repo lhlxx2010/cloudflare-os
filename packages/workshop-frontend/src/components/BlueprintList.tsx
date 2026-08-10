@@ -35,12 +35,12 @@ const ACTION_BUTTON =
 function formatRelativeTime(date: Date): string {
   const diff = Date.now() - date.getTime()
   const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes} 分钟前`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours} 小时前`
   const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return `${days} 天前`
 }
 
 function sortItems(items: BlueprintItem[]): BlueprintItem[] {
@@ -75,7 +75,7 @@ function BlueprintRow({
         <div className="flex items-center gap-2">
           {item.pinned && <Star size={12} weight="fill" className="flex-shrink-0 text-kumo-brand" />}
           <h3 className="truncate text-sm font-medium text-kumo-default">
-            {item.title || 'Untitled blueprint'}
+            {item.title || '未命名蓝图'}
           </h3>
         </div>
         {item.description && (
@@ -105,12 +105,12 @@ function BlueprintRow({
           <DropdownMenu.Content className={MENU_CONTENT}>
             <DropdownMenu.Item onClick={() => onTogglePin(item)} className={MENU_ITEM}>
               <Star size={13} className="mr-2" weight={item.pinned ? 'fill' : 'regular'} />
-              {item.pinned ? 'Unfavorite' : 'Favorite'}
+              {item.pinned ? '取消收藏' : '收藏'}
             </DropdownMenu.Item>
             {item.inLibrary && (
               <DropdownMenu.Item variant="danger" onClick={() => onRemoveFromLibrary(item)} className={MENU_ITEM_DANGER}>
                 <Trash size={13} className="mr-2" />
-                Remove from library
+                从蓝图库中移除
               </DropdownMenu.Item>
             )}
           </DropdownMenu.Content>
@@ -146,7 +146,7 @@ export default function BlueprintList() {
         const ensure = (id: string): BlueprintItem => {
           let it = map.get(id)
           if (!it) {
-            it = { id, title: 'Untitled blueprint', description: '', recency: 0, pinned: false, inLibrary: false, isOwn: false }
+            it = { id, title: '未命名蓝图', description: '', recency: 0, pinned: false, inLibrary: false, isOwn: false }
             map.set(id, it)
           }
           return it
@@ -193,11 +193,11 @@ export default function BlueprintList() {
     setUploading(true)
     try {
       await authenticatedApi.importBlueprint(file.stream() as ReadableStream<Uint8Array>)
-      toasts.add({ title: 'Blueprint uploaded', variant: 'success' })
+      toasts.add({ title: '蓝图已上传', variant: 'success' })
       load()
     } catch (err) {
       console.error('Failed to upload blueprint:', err)
-      toasts.add({ title: 'Failed to upload blueprint', variant: 'error' })
+      toasts.add({ title: '上传蓝图失败', variant: 'error' })
     } finally {
       setUploading(false)
     }
@@ -211,7 +211,7 @@ export default function BlueprintList() {
     } catch (err) {
       console.error('Failed to update blueprint pin:', err)
       setItems((prev) => sortItems(prev.map((b) => (b.id === item.id ? { ...b, pinned: item.pinned } : b))))
-      toasts.add({ title: 'Failed to update favorite', variant: 'error' })
+      toasts.add({ title: '更新收藏状态失败', variant: 'error' })
     }
   }
 
@@ -225,10 +225,10 @@ export default function BlueprintList() {
           .map((b) => (b.id === item.id ? { ...b, inLibrary: false } : b))
           .filter((b) => b.inLibrary || b.isOwn),
       )
-      toasts.add({ title: 'Removed from library', variant: 'success' })
+      toasts.add({ title: '已从蓝图库中移除', variant: 'success' })
     } catch (err) {
       console.error('Failed to remove blueprint from library:', err)
-      toasts.add({ title: 'Failed to remove blueprint', variant: 'error' })
+      toasts.add({ title: '移除蓝图失败', variant: 'error' })
     }
   }
 
@@ -259,7 +259,7 @@ export default function BlueprintList() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search blueprints…"
+              placeholder="搜索蓝图…"
               className="h-9 w-full rounded-lg border border-kumo-line bg-kumo-base pl-9 pr-4 text-[13px] tracking-[-0.25px] text-kumo-default placeholder:text-kumo-inactive transition-[border-color,box-shadow] duration-150 ease-out focus:border-kumo-ring focus:outline-none focus:ring-[3px] focus:ring-kumo-ring/15"
             />
           </div>
@@ -268,17 +268,17 @@ export default function BlueprintList() {
           <div className="grid shrink-0 grid-cols-2 gap-2">
             <Link to="/explore" className={ACTION_BUTTON}>
               <Compass size={14} />
-              Explore
+              探索
             </Link>
             <button
               type="button"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading}
-              title="Upload a .gadget archive"
+              title="上传 .gadget 归档文件"
               className={ACTION_BUTTON}
             >
               <UploadSimple size={14} weight="bold" />
-              {uploading ? 'Uploading…' : 'Upload'}
+              {uploading ? '正在上传…' : '上传'}
             </button>
           </div>
         </div>
@@ -295,27 +295,27 @@ export default function BlueprintList() {
           </div>
         ) : loadError ? (
           <div className="py-12 text-center text-sm">
-            <p className="text-kumo-danger">Something went wrong loading your blueprints.</p>
-            <button type="button" onClick={load} className="mt-1 text-kumo-brand underline">Try again</button>
+            <p className="text-kumo-danger">加载蓝图时出现问题。</p>
+            <button type="button" onClick={load} className="mt-1 text-kumo-brand underline">重试</button>
           </div>
         ) : filtered.length === 0 ? (
           search ? (
-            <div className="py-12 text-center text-sm text-kumo-inactive">No blueprints found</div>
+            <div className="py-12 text-center text-sm text-kumo-inactive">未找到蓝图</div>
           ) : (
             <div className="flex flex-col items-center gap-3 px-3 py-16 text-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kumo-fill text-kumo-subtle">
                 <BlueprintIcon size={18} />
               </div>
               <div>
-                <p className="text-sm font-medium text-kumo-default">No blueprints yet</p>
+                <p className="text-sm font-medium text-kumo-default">还没有蓝图</p>
                 <p className="mt-1 text-[13px] leading-[18px] text-kumo-subtle">
-                  Publish a workspace as a blueprint, or add one from Explore.
+                  将工作区发布为蓝图，或从“探索”中添加一个蓝图。
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Link to="/explore" className={ACTION_BUTTON}>
                   <Compass size={14} />
-                  Explore blueprints
+                  探索蓝图
                 </Link>
                 <button
                   type="button"
@@ -324,7 +324,7 @@ export default function BlueprintList() {
                   className={ACTION_BUTTON}
                 >
                   <UploadSimple size={14} weight="bold" />
-                  {uploading ? 'Uploading…' : 'Upload .gadget'}
+                  {uploading ? '正在上传…' : '上传 .gadget'}
                 </button>
               </div>
             </div>

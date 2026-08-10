@@ -31,10 +31,10 @@ export function assertIssueSearchResultsInRepo(
     const [resultOwner, resultRepo, resultKind] = url?.pathname.split("/").filter(Boolean) ?? [];
     if (url?.protocol !== "https:" || url.hostname.toLowerCase() !== "github.com"
         || resultOwner?.toLowerCase() !== expectedOwner || resultRepo?.toLowerCase() !== expectedRepo) {
-      throw new Error("GitHub returned an issue outside the connected repository.");
+      throw new Error("GitHub 返回了已连接仓库之外的议题。");
     }
     if (resultKind !== "issues") {
-      throw new Error("GitHub returned a non-issue result for an issue search.");
+      throw new Error("GitHub 在议题搜索中返回了非议题结果。");
     }
   }
 }

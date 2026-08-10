@@ -430,8 +430,8 @@ export class ScheduleDriver extends DurableObject {
       };
       try {
         await hookResult.approvalQueue.authorizeObservation({
-          title: `Run scheduled task: ${admitted.title}`,
-          description: `Deliver scheduled task ${prepared.scheduleId} for its planned occurrence at ${prepared.scheduledTime}.`,
+          title: `运行定时任务：${admitted.title}`,
+          description: `交付定时任务 ${prepared.scheduleId}，计划执行时间为 ${prepared.scheduledTime}。`,
         });
       } catch {
         this.#failPending(prepared, "authorization_failed", Date.now());

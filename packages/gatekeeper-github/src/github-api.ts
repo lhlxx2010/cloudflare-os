@@ -233,12 +233,12 @@ async function request<T>(
   const authMode = options.auth ?? "bearer";
   if (authMode === "bearer") {
     if (!getToken) {
-      throw new Error("Bearer auth requested without a token callback");
+      throw new Error("请求 Bearer 认证时未提供令牌回调");
     }
     headers.set("Authorization", `Bearer ${await getToken()}`);
   } else if (authMode === "basic") {
     if (!options.basicAuth) {
-      throw new Error("Basic auth requested without credentials");
+      throw new Error("请求 Basic 认证时未提供凭据");
     }
     headers.set(
       "Authorization",
@@ -401,7 +401,7 @@ export class GitHubApi {
   async getViewer(): Promise<{ user: GitHubSimpleUser; scopes: string[] }> {
     const result = await this.getViewerConditional();
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional viewer request.");
+      throw new Error("GitHub 对无条件当前用户请求意外返回了 304。");
     }
     const user = result.data;
     const scopes = result.headers
@@ -437,7 +437,7 @@ export class GitHubApi {
   async getRepo(owner: string, repo: string): Promise<GitHubRepoResponse> {
     const result = await this.getRepoConditional(owner, repo);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional repo request.");
+      throw new Error("GitHub 对无条件仓库请求意外返回了 304。");
     }
     return result.data;
   }
@@ -482,7 +482,7 @@ export class GitHubApi {
   async getIssue(owner: string, repo: string, issueNumber: number): Promise<GitHubIssueResponse> {
     const result = await this.getIssueConditional(owner, repo, issueNumber);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional issue request.");
+      throw new Error("GitHub 对无条件议题请求意外返回了 304。");
     }
     return result.data;
   }
@@ -507,7 +507,7 @@ export class GitHubApi {
   ): Promise<GitHubPullRequestResponse> {
     const result = await this.getPullRequestConditional(owner, repo, pullNumber);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional pull request request.");
+      throw new Error("GitHub 对无条件拉取请求查询意外返回了 304。");
     }
     return result.data;
   }
@@ -541,7 +541,7 @@ export class GitHubApi {
   ): Promise<GitHubIssueResponse[]> {
     const result = await this.listIssuesConditional(owner, repo, options);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional issue list request.");
+      throw new Error("GitHub 对无条件议题列表请求意外返回了 304。");
     }
     return result.data;
   }
@@ -577,7 +577,7 @@ export class GitHubApi {
   ): Promise<GitHubIssueResponse[]> {
     const result = await this.searchIssuesConditional(query, page, perPage, sort, order);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional issue search request.");
+      throw new Error("GitHub 对无条件议题搜索请求意外返回了 304。");
     }
     return result.data.items;
   }
@@ -619,7 +619,7 @@ export class GitHubApi {
   ): Promise<GitHubPullRequestResponse[]> {
     const result = await this.listPullRequestsConditional(owner, repo, options);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional pull request list request.");
+      throw new Error("GitHub 对无条件拉取请求列表查询意外返回了 304。");
     }
     return result.data;
   }
@@ -807,7 +807,7 @@ export class GitHubApi {
   ): Promise<GitHubPullRequestReviewResponse[]> {
     const result = await this.listPullRequestReviewsConditional(owner, repo, pullNumber, page, perPage);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional pull request review list request.");
+      throw new Error("GitHub 对无条件拉取请求审查列表查询意外返回了 304。");
     }
     return result.data;
   }
@@ -868,7 +868,7 @@ export class GitHubApi {
       perPage,
     );
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional review comment list request.");
+      throw new Error("GitHub 对无条件审查评论列表查询意外返回了 304。");
     }
     return result.data;
   }
@@ -899,7 +899,7 @@ export class GitHubApi {
   ): Promise<GitHubPullRequestReviewCommentResponse> {
     const result = await this.getPullRequestReviewCommentConditional(owner, repo, commentId);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional review comment request.");
+      throw new Error("GitHub 对无条件审查评论查询意外返回了 304。");
     }
     return result.data;
   }
@@ -1012,7 +1012,7 @@ export class GitHubApi {
   ): Promise<GitHubPullFileResponse[]> {
     const result = await this.listPullRequestFilesConditional(owner, repo, pullNumber, page, perPage);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional pull request files request.");
+      throw new Error("GitHub 对无条件拉取请求文件查询意外返回了 304。");
     }
     return result.data;
   }
@@ -1063,7 +1063,7 @@ export class GitHubApi {
   ): Promise<GitHubCompareResponse> {
     const result = await this.compareBranchesConditional(owner, repo, base, head);
     if (result.status === 304) {
-      throw new Error("GitHub unexpectedly returned 304 for an unconditional branch compare request.");
+      throw new Error("GitHub 对无条件分支比较请求意外返回了 304。");
     }
     return result.data;
   }

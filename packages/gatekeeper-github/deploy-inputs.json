@@ -2,19 +2,19 @@
   {
     "name": "CLIENT_ID",
     "kind": "secret",
-    "label": "OAuth client ID",
+    "label": "OAuth 客户端 ID",
     "consoleUrl": "https://github.com/settings/developers",
     "setupSteps": [
-      "In GitHub Developer settings, create a new OAuth App (an OAuth App, not a GitHub App — GitHub Apps ignore OAuth scopes).",
-      "Set the Homepage URL to your instance URL, and the Authorization callback URL to the redirect URI below.",
-      "Register the application, then generate a new client secret.",
-      "Copy the Client ID and client secret here."
+      "在 GitHub Developer settings 中创建一个新的 OAuth App（请选择 OAuth App，而不是 GitHub App；GitHub App 会忽略 OAuth scopes）。",
+      "将 Homepage URL 设置为你的实例 URL，并将 Authorization callback URL 设置为下方的重定向 URI。",
+      "注册应用，然后生成新的客户端密钥。",
+      "将 Client ID 和客户端密钥复制到此处。"
     ],
     "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/github/oauth"
   },
   {
     "name": "CLIENT_SECRET",
     "kind": "secret",
-    "label": "OAuth client secret"
+    "label": "OAuth 客户端密钥"
   }
 ]

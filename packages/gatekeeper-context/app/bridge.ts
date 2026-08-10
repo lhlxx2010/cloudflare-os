@@ -28,7 +28,7 @@ export const ContextApiProvider = ContextApiContext.Provider
 
 export function useContextApi(): RpcStub<ContextApi> {
   const api = useContext(ContextApiContext)
-  if (!api) throw new Error('useContextApi() used outside ContextApiProvider')
+  if (!api) throw new Error('useContextApi() 不能在 ContextApiProvider 外部使用。')
   return api
 }
 

@@ -78,9 +78,9 @@ export class McpSessionBase extends RpcTarget {
   async listTools(): Promise<McpToolInfo[]> {
     const tools = await this.#host.tools();
     await this.#queue.authorizeObservation({
-      title: `${this.#host.serverName}: list tools`,
+      title: `${this.#host.serverName}：列出工具`,
       description:
-        `Read the tool catalog of the MCP server **${this.#host.serverName}** ` +
+        `读取 MCP 服务器 **${this.#host.serverName}** 的工具目录 ` +
         `(\`${this.#host.endpoint}\`).`,
     });
     return tools.map(toolInfo);
@@ -88,11 +88,11 @@ export class McpSessionBase extends RpcTarget {
 
   async callTool(name: string, args?: Record<string, unknown>): Promise<McpCallResult> {
     if (typeof name !== "string" || name.length === 0) {
-      throw new Error("callTool() requires a tool name.");
+      throw new Error("callTool() 需要工具名称。");
     }
     const toolArgs = args ?? {};
     if (typeof toolArgs !== "object" || Array.isArray(toolArgs)) {
-      throw new Error("callTool() arguments must be an object.");
+      throw new Error("callTool() 参数必须是对象。");
     }
 
     const host = this.#host;
@@ -103,8 +103,8 @@ export class McpSessionBase extends RpcTarget {
       // and "no such tool" would send an agent looking for a typo.
       const available = tools.map(candidate => candidate.tool.name).join(", ");
       throw new Error(isWholeEndpoint(host.scope)
-        ? `The MCP server "${host.serverName}" has no tool named "${name}". Available: ${available}`
-        : `This binding grants only these tools: ${available}.`);
+        ? `MCP 服务器“${host.serverName}”没有名为“${name}”的工具。可用工具：${available}`
+        : `此绑定仅授权以下工具：${available}。`);
     }
 
     const described = describeCall({
@@ -146,16 +146,16 @@ export class McpSessionBase extends RpcTarget {
       status: "pending",
       actionId: staged.id,
       message:
-        `Calling "${name}" on ${host.serverName} needs approval. Poll getActionResult(` +
-        `${staged.id}) for the outcome.`,
+        `在 ${host.serverName} 上调用“${name}”需要批准。请轮询 getActionResult(` +
+        `${staged.id}) 获取结果。`,
     };
   }
 
   async getActionResult(actionId: number): Promise<McpCallResult> {
-    if (!Number.isInteger(actionId)) throw new Error("getActionResult() requires an action id.");
+    if (!Number.isInteger(actionId)) throw new Error("getActionResult() 需要操作 ID。");
     const host = this.#host;
     const stored = host.lookupAction(actionId);
-    if (!stored) throw new Error(`No MCP action with id ${actionId}.`);
+    if (!stored) throw new Error(`没有 ID 为 ${actionId} 的 MCP 操作。`);
 
     switch (stored.state) {
       case "pending":
@@ -164,19 +164,19 @@ export class McpSessionBase extends RpcTarget {
           status: "pending",
           actionId,
           message: stored.state === "applying"
-            ? `Calling "${stored.toolName}" on ${host.serverName} was approved and is running.`
-            : `Calling "${stored.toolName}" on ${host.serverName} is awaiting approval.`,
+            ? `已批准在 ${host.serverName} 上调用“${stored.toolName}”，正在运行。`
+            : `在 ${host.serverName} 上调用“${stored.toolName}”正在等待批准。`,
         };
       case "rejected":
         return {
           status: "rejected",
-          message: `Calling "${stored.toolName}" on ${host.serverName} was not approved.`,
+          message: `未批准在 ${host.serverName} 上调用“${stored.toolName}”。`,
         };
       case "failed":
         return {
           status: "failed",
           message: stored.error
-            ?? `Calling "${stored.toolName}" on ${host.serverName} failed.`,
+            ?? `在 ${host.serverName} 上调用“${stored.toolName}”失败。`,
         };
       case "applied": {
         const result = stored.result
@@ -184,10 +184,9 @@ export class McpSessionBase extends RpcTarget {
         // The result was produced while the Gadget was not looking, so it becomes an observation at
         // the moment it is handed over rather than when the call was applied.
         await this.#queue.authorizeObservation({
-          title: `${host.serverName}: result of ${stored.toolName}`,
+          title: `${host.serverName}：${stored.toolName} 的结果`,
           description:
-            `Read the response from the approved call to \`${stored.toolName}\` on ` +
-            `**${host.serverName}**.`,
+            `读取已批准在 **${host.serverName}** 上调用 \`${stored.toolName}\` 所返回的响应。`,
         });
         return result;
       }

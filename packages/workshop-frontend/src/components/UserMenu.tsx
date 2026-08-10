@@ -20,8 +20,8 @@ export default function UserMenu() {
         render={
           <button
             className="w-7 h-7 cursor-pointer rounded-full flex items-center justify-center bg-kumo-tint hover:bg-kumo-fill transition-colors overflow-hidden"
-            title="Open profile menu"
-            aria-label="Open profile menu"
+            title="打开个人资料菜单"
+            aria-label="打开个人资料菜单"
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -36,20 +36,20 @@ export default function UserMenu() {
           onClick={() => navigate({ to: '/profile' })}
           className={MENU_ITEM}
         >
-          Profile
+          个人资料
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => navigate({ to: '/providers' })}
           className={MENU_ITEM}
         >
-          Providers
+          模型提供商
         </DropdownMenu.Item>
         {isAdmin && (
           <DropdownMenu.Item
             onClick={() => navigate({ to: '/admin' })}
             className={MENU_ITEM}
           >
-            Admin
+            管理后台
           </DropdownMenu.Item>
         )}
         <DropdownMenu.Separator />
@@ -58,7 +58,7 @@ export default function UserMenu() {
           onClick={logout}
           className={MENU_ITEM_DANGER}
         >
-          Sign out
+          退出登录
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu>

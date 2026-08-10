@@ -1,13 +1,13 @@
 {
   "blueprintId": "format.slides",
-  "title": "Workspace Slides",
-  "description": "Use to build slide decks with your corporate style interactively or with natural language. Once you create your own slides, add connections to build slides with text and charts powered by real data.",
+  "title": "工作区幻灯片",
+  "description": "通过交互操作或自然语言，按照企业风格制作幻灯片。创建自己的幻灯片后，还可以添加连接，使用真实数据生成文字和图表。",
   "output": {
     "id": "presentation",
-    "noun": "Slides",
-    "plural": "Slides",
+    "noun": "幻灯片",
+    "plural": "幻灯片",
     "icon": "presentation"
   },
-  "author": { "type": "user", "name": "Cloudflare", "id": "agent@cloudflare.com" },
+  "author": { "type": "user", "name": "NINT", "id": "agent@cloudflare.com" },
   "revision": 3
 }

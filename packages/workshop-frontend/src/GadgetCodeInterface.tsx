@@ -659,7 +659,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
         console.error('Failed to subscribe to code updates:', error)
         // Only show error if we've never successfully loaded (never reached ready state)
         if (!isReadyRef.current) {
-          toasts.add({ title: 'Failed to load code files', variant: 'error' })
+          toasts.add({ title: '加载代码文件失败', variant: 'error' })
           setLoading(false)
         }
         // For reconnection failures after we've loaded, don't show toast - user can keep editing
@@ -718,14 +718,14 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
 
     // Check if file already exists
     if (filesMap.has(filename)) {
-      toasts.add({ title: `File already exists: ${filename}`, variant: 'error' })
+      toasts.add({ title: `文件已存在：${filename}`, variant: 'error' })
       return
     }
 
     // Create new Y.Text for the file
     filesMap.set(filename, new Y.Text())
     setActiveFile(filename)
-    toasts.add({ title: `Created file: ${filename}`, variant: 'success' })
+    toasts.add({ title: `已创建文件：${filename}`, variant: 'success' })
   }
 
   // Handle file deletion
@@ -736,7 +736,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
     }
 
     if (!filesMap.has(filename)) {
-      toasts.add({ title: 'File not found', variant: 'error' })
+      toasts.add({ title: '未找到文件', variant: 'error' })
       return
     }
 
@@ -749,7 +749,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
       setActiveFile(remainingFiles.length > 0 ? remainingFiles[0] : null)
     }
 
-    toasts.add({ title: `Deleted file: ${filename}`, variant: 'success' })
+    toasts.add({ title: `已删除文件：${filename}`, variant: 'success' })
   }
 
   // Handle file renaming
@@ -762,13 +762,13 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
     // Check if old file exists
     const ytext = filesMap.get(oldName)
     if (!ytext) {
-      toasts.add({ title: 'File not found', variant: 'error' })
+      toasts.add({ title: '未找到文件', variant: 'error' })
       return
     }
 
     // Check if new name already exists
     if (filesMap.has(newName)) {
-      toasts.add({ title: `File already exists: ${newName}`, variant: 'error' })
+      toasts.add({ title: `文件已存在：${newName}`, variant: 'error' })
       return
     }
 
@@ -783,7 +783,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
       setActiveFile(newName)
     }
 
-    toasts.add({ title: `Renamed file: ${oldName} \u2192 ${newName}`, variant: 'success' })
+    toasts.add({ title: `已重命名文件：${oldName} \u2192 ${newName}`, variant: 'success' })
   }
 
   // Get the Y.Text for the active file (original version)
@@ -808,7 +808,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
   const handleFileDownload = useCallback((filename: string) => {
     const ytext = getDownloadYText(filename)
     if (!ytext) {
-      toasts.add({ title: `Could not download ${filename}`, variant: 'error' })
+      toasts.add({ title: `无法下载 ${filename}`, variant: 'error' })
       return
     }
 
@@ -831,10 +831,10 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
   }, [changedFiles, displayedFiles, isDiffMode, previewFilesMap])
   const activeFileDownloadable = activeFile ? displayedFiles.includes(activeFile) : false
   const activeFileModeLabel = isEditingLocked
-    ? 'Reviewing changes in'
+    ? '正在审阅以下文件中的更改：'
     : isDiffMode
-      ? 'Editing changes in'
-      : 'Editing'
+      ? '正在编辑以下文件中的更改：'
+      : '正在编辑：'
 
   if (loading) {
     return (
@@ -842,7 +842,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
         className="flex justify-center items-center text-kumo-subtle"
         style={{ height }}
       >
-        Loading code files...
+        正在加载代码文件…
       </div>
     )
   }
@@ -856,7 +856,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
       {hasUnsavedChanges && (
         <div className="bg-kumo-tint border-b border-kumo-line px-4 py-2 flex items-center gap-2 text-sm text-kumo-warning">
           <span className="text-base">&#9888;&#65039;</span>
-          <span>Connection issue - changes will be saved when connection is restored</span>
+          <span>连接出现问题 — 恢复连接后将保存更改</span>
         </div>
       )}
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -883,8 +883,8 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
                 {activeFileModeLabel} <span className="font-mono font-medium text-kumo-default">{activeFile}</span>
               </div>
               <WorkshopIconButton
-                aria-label={`Download ${activeFile}`}
-                title="Download file"
+                aria-label={`下载 ${activeFile}`}
+                title="下载文件"
                 onClick={() => handleFileDownload(activeFile)}
                 disabled={!activeFileDownloadable}
                 className="!h-6 !w-6"
@@ -898,10 +898,10 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
               <div className="flex h-full flex-col items-center justify-center bg-kumo-base px-6 text-center">
                 <div className="max-w-[360px]">
                   <p className="m-0 text-[15px] leading-[22px] font-semibold tracking-[-0.3px] text-kumo-default">
-                    No files yet
+                    暂无文件
                   </p>
                   <p className="mt-1.5 mb-0 text-[13px] leading-[19px] tracking-[-0.25px] text-kumo-subtle">
-                    Keep building with the agent in chat and files will appear here as it works, or create one yourself.
+                    继续在聊天中与智能体一起构建，文件会随着工作进展显示在这里；你也可以自行创建文件。
                   </p>
                   <div className="mt-4 flex justify-center">
                     <WorkshopButton
@@ -910,7 +910,7 @@ export default function GadgetCodeInterface({ overseer, filesRoot, height = '100
                       tone="primary"
                       className="!h-8"
                     >
-                      New file
+                      新建文件
                     </WorkshopButton>
                   </div>
                 </div>

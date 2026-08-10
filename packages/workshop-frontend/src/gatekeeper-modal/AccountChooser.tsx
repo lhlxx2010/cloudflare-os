@@ -60,17 +60,17 @@ export function AccountChooser({
   return (
     <section className="overflow-hidden rounded-xl border border-kumo-line bg-kumo-base">
       <div className="border-b border-kumo-line px-3 py-2.5">
-        <p className="text-[12px] leading-4 font-medium tracking-[-0.2px] text-kumo-default">Account</p>
+        <p className="text-[12px] leading-4 font-medium tracking-[-0.2px] text-kumo-default">账户</p>
         <p className="mt-0.5 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
           {isEmailMailbox
-            ? 'Enable the Email receiver account, then choose the mailbox name below.'
-            : `Pick which ${vendorName} identity this ${resourceTitle ?? 'connection'} should use.`}
+            ? '请启用 Email 接收账户，然后在下方选择邮箱名称。'
+            : `请选择要用于“${resourceTitle ?? '此连接'}”的 ${vendorName} 身份。`}
         </p>
       </div>
       <div className="divide-y divide-kumo-line">
         {accounts.map(account => {
           const selected = selectedAccountId === account.id
-          const name = account.description.uniqueName || account.description.displayName || 'Connected account'
+          const name = account.description.uniqueName || account.description.displayName || '已连接的账户'
           const expired = !account.credentialsValid
           const reconnecting = reconnectingAccountId === account.id
           const granted = account.description.grantedResourceUrlPatterns
@@ -104,10 +104,10 @@ export function AccountChooser({
                   <p className="truncate text-[13px] leading-[18px] font-medium tracking-[-0.25px] text-kumo-default">{name}</p>
                   <p className={`truncate text-[12px] leading-4 font-normal tracking-[-0.2px] ${needsAccess ? 'text-kumo-brand' : 'text-kumo-subtle'}`}>
                     {expired
-                      ? 'Expired credentials'
+                      ? '凭据已过期'
                       : needsAccess
-                      ? 'Additional permission needed'
-                      : resourceTitle ? `Connected ${vendorName} account` : 'Connected'}
+                      ? '需要额外权限'
+                      : resourceTitle ? `已连接的 ${vendorName} 账户` : '已连接'}
                   </p>
                 </div>
               </button>
@@ -118,7 +118,7 @@ export function AccountChooser({
                   disabled={reconnecting}
                   className="shrink-0 cursor-pointer rounded-md border border-kumo-line px-2 py-1 text-[12px] leading-4 font-medium tracking-[-0.2px] text-kumo-default transition-colors hover:bg-kumo-elevated disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {reconnecting ? 'Opening...' : 'Reconnect'}
+                  {reconnecting ? '正在打开...' : '重新连接'}
                 </button>
               ) : needsAccess ? (
                 <button
@@ -127,7 +127,7 @@ export function AccountChooser({
                   disabled={granting}
                   className="shrink-0 cursor-pointer rounded-md border border-kumo-line px-2 py-1 text-[12px] leading-4 font-medium tracking-[-0.2px] text-kumo-default transition-colors hover:bg-kumo-elevated disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {granting ? 'Opening...' : 'Grant access'}
+                  {granting ? '正在打开...' : '授予访问权限'}
                 </button>
               ) : null}
               {selected && <Check size={15} weight="bold" className="shrink-0 text-kumo-brand" />}
@@ -148,8 +148,8 @@ export function AccountChooser({
               <Plus size={14} />
             )}
             {isEmailMailbox
-              ? 'Enable Email mailboxes'
-              : accounts.length === 0 ? `Connect ${vendorName}` : `Use another ${vendorName} account`}
+              ? '启用 Email 邮箱'
+              : accounts.length === 0 ? `连接 ${vendorName}` : `使用其他 ${vendorName} 账户`}
           </button>
         )}
       </div>

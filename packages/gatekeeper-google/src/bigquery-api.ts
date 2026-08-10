@@ -272,10 +272,10 @@ async function callRest<T>(
       detail += ` [errors=${rawBody.error.errors.map(
           e => `${e.reason ?? "?"}:${e.message ?? "?"}`).join(" | ")}]`;
     }
-    throw new Error(`BigQuery API error: ${detail}`);
+    throw new Error(`BigQuery API 错误：${detail}`);
   }
   if (!isJson) {
-    throw new Error(`BigQuery API: expected JSON, got ${contentType}`);
+    throw new Error(`BigQuery API：预期返回 JSON，实际为 ${contentType}`);
   }
   return response.json() as Promise<T>;
 }
@@ -372,7 +372,7 @@ export class BigQueryApi {
     }, this.getAccessToken);
 
     if (resp.errors && resp.errors.length > 0) {
-      throw new Error(`BigQuery query failed: ${resp.errors[0].message ?? "unknown error"}`);
+      throw new Error(`BigQuery 查询失败：${resp.errors[0].message ?? "未知错误"}`);
     }
 
     while (!resp.jobComplete) {
@@ -387,7 +387,7 @@ export class BigQueryApi {
       );
       if (resp.errors && resp.errors.length > 0) {
         throw new Error(
-          `BigQuery query failed: ${resp.errors[0].message ?? "unknown error"}`);
+          `BigQuery 查询失败：${resp.errors[0].message ?? "未知错误"}`);
       }
     }
 
@@ -398,7 +398,7 @@ export class BigQueryApi {
         resp.jobReference.location,
       ).catch(() => {});
       throw new Error(
-        "Query took too long to complete. Try a more selective WHERE clause or a smaller LIMIT.");
+        "查询执行时间过长。请使用更精确的 WHERE 子句或更小的 LIMIT。");
     }
 
     let schema = convertSchema(resp.schema);
@@ -458,7 +458,7 @@ export class BigQueryApi {
 
     if (resp.status?.errorResult) {
       throw new Error(
-        `BigQuery dry run failed: ${resp.status.errorResult.message ?? "unknown error"}`);
+        `BigQuery 试运行失败：${resp.status.errorResult.message ?? "未知错误"}`);
     }
 
     let stats = resp.statistics?.query;

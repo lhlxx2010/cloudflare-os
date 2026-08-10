@@ -288,9 +288,8 @@ export class SupabaseApi {
         }
         const mb = (n: number) => Math.round(n / (1024 * 1024));
         throw new Error(
-          `Query returned too much data (~${mb(text.length)} MB across ${rowCount} rows). ` +
-          `Re-run with a LIMIT (and OFFSET to page) or select fewer columns; results must stay ` +
-          `under ${mb(options.maxBytes)} MB.`,
+          `查询返回的数据过多（约 ${mb(text.length)} MB，共 ${rowCount} 行）。` +
+          `请使用 LIMIT（并配合 OFFSET 分页）重新运行，或减少所选列；结果必须小于 ${mb(options.maxBytes)} MB。`,
         );
       }
       return (text.length === 0 ? undefined : JSON.parse(text)) as T;

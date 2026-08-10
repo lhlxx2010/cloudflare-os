@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Area" description="Choose a Home Assistant area (room).">
+      <Field label="区域" description="选择一个 Home Assistant 区域（房间）。">
         <Autocomplete
           name="areaId"
           value={values.areaId}
-          placeholder="Search areas..."
+          placeholder="搜索区域…"
           loadOptions={query => ui.listAreas(query)}
           onChange={areaId => setValues({ areaId })}
         />

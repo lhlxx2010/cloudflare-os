@@ -105,24 +105,24 @@ const IDENTITY_SCOPES = ["users:read"];
 // `https://*` denotes account-wide access; the configurator resolves the concrete workspace URL.
 const WORKSPACE_RESOURCE: SupportedResource = {
   urlPattern: "https://*",
-  title: "Slack Workspace",
+  title: "Slack 工作区",
   description:
-      "Read channels, direct messages, members, and search across the whole connected workspace. " +
-      "The workspace is auto-detected from the connected account — no URL or ID need be supplied.",
+      "读取频道、私信和成员，并在整个已连接工作区中搜索。系统会从已连接账户自动检测工作区，" +
+      "无需提供 URL 或 ID。",
   grantable: true,
 };
 
 const CONVERSATION_RESOURCE: SupportedResource = {
   urlPattern: "https://app.slack.com/client/:teamId/:conversationId",
-  title: "Slack Conversation",
-  description: "Read a single channel, direct message, or group DM.",
+  title: "Slack 会话",
+  description: "读取单个频道、私信或群组私信。",
   grantable: true,
 };
 
 const THREAD_RESOURCE: SupportedResource = {
   urlPattern: "https://*.slack.com/archives/:conversationId/:messageId",
-  title: "Slack Thread",
-  description: "Read a single message thread and its replies.",
+  title: "Slack 话题",
+  description: "读取单个消息话题及其回复。",
   grantable: true,
 };
 
@@ -155,7 +155,7 @@ function validateResourceUrlPatterns(resourceUrlPatterns?: string[]): void {
   let known = new Set(RESOURCE_SCOPES.map(entry => entry.resource.urlPattern));
   let unknown = resourceUrlPatterns.filter(pattern => !known.has(pattern));
   if (unknown.length > 0) {
-    throw new Error(`Unknown grantable resource URL pattern(s): ${unknown.join(", ")}`);
+    throw new Error(`未知的可授权资源 URL 模式：${unknown.join(", ")}`);
   }
 }
 
@@ -184,32 +184,32 @@ const SLACK_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(SLACK_LOGO_SVG)}
 // ── HTML shown in the OAuth popup ───────────────────────────────────
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #d97706; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1d4ed8; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Slack Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0;">Please see the README.md for instructions on configuring a Slack OAuth client ID and secret.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">Slack Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0;">请参阅 README.md，了解如何配置 Slack OAuth 客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -221,7 +221,7 @@ export default {
     let url = new URL(req.url);
     let basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     let relPath = url.pathname.slice(basePath.length);
     let path = relPath.slice(1).split("/");
@@ -250,17 +250,17 @@ export default {
       return Response.redirect(authUrl.toString(), 302);
     } else if (relPath === "/oauth") {
       let error = url.searchParams.get("error");
-      if (error) return new Response(`Slack authorization failed: ${error}`);
+      if (error) return new Response(`Slack 授权失败：${error}`);
 
       let state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       let colonIdx = state.indexOf(":");
-      if (colonIdx < 0) return new Response("Error: malformed state");
+      if (colonIdx < 0) return new Response("错误：“state”格式不正确");
       let doId = state.slice(0, colonIdx);
       let oauthNonce = state.slice(colonIdx + 1);
 
       let code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       let stub = ctx.exports.UserAccount.get(ctx.exports.UserAccount.idFromString(doId));
       if (!await stub.acceptAuthCode(code, oauthNonce)) {
@@ -270,7 +270,7 @@ export default {
       return new Response(SELF_CLOSING_HTML,
           { headers: { "Content-Type": "text/html; charset=utf-8" } });
     } else {
-      return new Response("Not Found", { status: 404 });
+      return new Response("未找到", { status: 404 });
     }
   },
 };
@@ -284,12 +284,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       displayName: "Slack",
       url: "https://slack.com",
       logo: { url: SLACK_LOGO_URL },
-      color: "#f4ede4",
-      tagline: "Read channels, DMs, and threads",
+      color: "#dbeafe",
+      tagline: "读取频道、私信和话题",
       description:
-          "Connect your Slack account to give Cloudflare OS read-only access to the workspaces, " +
-          "channels, direct messages, and threads you can see. Build agents that summarize " +
-          "conversations, monitor channels, or search across your Slack history.",
+          "连接你的 Slack 账户，让 NINT os 以只读方式访问你可见的工作区、频道、私信和话题。" +
+          "你可以构建用于总结对话、监控频道或搜索 Slack 历史记录的智能体。",
     };
   }
 
@@ -392,12 +391,12 @@ export class UserAccount extends DurableObject<Env> {
 
     let completion = await this.#updateCredentials(async () => {
       if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-        throw new Error("The Slack Gatekeeper is not configured.");
+        throw new Error("Slack Gatekeeper 尚未配置。");
       }
 
       let callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
       if (!callback) {
-        throw new Error("Took too long to complete the authorization. Please try again.");
+        throw new Error("完成授权所用时间过长，请重试。");
       }
 
       let grant = await exchangeAuthCode(
@@ -454,7 +453,7 @@ export class UserAccount extends DurableObject<Env> {
 
   async #getAccessTokenLocked(): Promise<SlackAccessToken> {
     let cached = this.ctx.storage.kv.get<SlackAccessToken>("accessToken");
-    if (!cached) throw new Error("No Slack credentials set.");
+    if (!cached) throw new Error("尚未配置 Slack 凭据。");
     // Normalize the persisted expiry before comparing it.
     let expires = new Date(cached.expires);
     if (expires.valueOf() > Date.now() + ACCESS_TOKEN_EXPIRY_SAFETY_MS) {
@@ -468,7 +467,7 @@ export class UserAccount extends DurableObject<Env> {
     }
 
     if (!this.env.CLIENT_ID || !this.env.CLIENT_SECRET) {
-      throw new Error("The Slack Gatekeeper is not configured.");
+      throw new Error("Slack Gatekeeper 尚未配置。");
     }
 
     let result = await refreshAccessToken(refreshToken, this.env.CLIENT_ID, this.env.CLIENT_SECRET);
@@ -476,7 +475,7 @@ export class UserAccount extends DurableObject<Env> {
       let callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
       callback?.credentialsExpired().catch(err =>
           console.error("Failed to notify Slack credential expiry:", err));
-      throw new Error("Slack credentials have expired or been revoked. Please re-authenticate.");
+      throw new Error("Slack 凭据已过期或被撤销，请重新授权。");
     }
 
     this.ctx.storage.kv.put<SlackAccessToken>("accessToken", result.accessToken);
@@ -563,7 +562,7 @@ export class SlackUserImpl extends WorkerEntrypoint<Env, SlackUserImplProps>
       let conversationId = segments[1];
       let messageId = segments[2];
       if (!conversationId || !messageId) {
-        throw new Error("Invalid Slack thread URL: expected /archives/<conversationId>/<messageId>.");
+        throw new Error("Slack 话题 URL 无效：应为 /archives/<conversationId>/<messageId>。");
       }
       let threadTs = parsed.searchParams.get("thread_ts") || messageIdToTs(messageId);
       let props: SlackThreadGatekeeperImplProps = {
@@ -598,7 +597,7 @@ export class SlackUserImpl extends WorkerEntrypoint<Env, SlackUserImplProps>
       };
     }
 
-    throw new Error(`Unsupported Slack resource URL: ${url}`);
+    throw new Error(`不支持的 Slack 资源 URL：${url}`);
   }
 
   async startResourceConfigurator(resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
@@ -621,7 +620,7 @@ export class SlackUserImpl extends WorkerEntrypoint<Env, SlackUserImplProps>
         ui: new RpcStub(new ThreadConfiguratorUI()),
       };
     }
-    throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
   }
 
   async reconnect(): Promise<{ url: string }> {
@@ -763,9 +762,9 @@ function truncate(text: string, max = 200): string {
 }
 
 function conversationLabel(info: SlackConversationInfo): string {
-  if (info.kind === "im") return "a direct message";
-  if (info.kind === "mpim") return "a group direct message";
-  return info.name ? `#${info.name}` : "a private channel";
+  if (info.kind === "im") return "一条私信";
+  if (info.kind === "mpim") return "一条群组私信";
+  return info.name ? `#${info.name}` : "一个私有频道";
 }
 
 function conversationEntry(
@@ -785,10 +784,10 @@ function messageEntry(
 function validateSearchQuery(query: string): void {
   // Reject blank queries before creating a lazy cursor.
   if (query.trim().length === 0) {
-    throw new Error("Search query must not be empty.");
+    throw new Error("搜索查询不能为空。");
   }
   if (new TextEncoder().encode(query).byteLength > MAX_SEARCH_QUERY_BYTES) {
-    throw new Error(`Search query must be at most ${MAX_SEARCH_QUERY_BYTES} bytes.`);
+    throw new Error(`搜索查询最多为 ${MAX_SEARCH_QUERY_BYTES} 字节。`);
   }
 }
 
@@ -841,7 +840,7 @@ class SlackCursor<T> extends RpcTarget implements Cursor<T> {
 const NO_ACTIONS: ActionKind[] = [];
 
 function unreachableAction(): never {
-  throw new Error("Slack gatekeeper is read-only and submits no actions.");
+  throw new Error("Slack Gatekeeper 为只读，不提交任何操作。");
 }
 
 type SlackWorkspaceGatekeeperImplProps = {
@@ -870,8 +869,8 @@ export class SlackWorkspaceGatekeeperImpl extends DurableObject<Env, SlackWorksp
     let info = await this.#api().getWorkspaceInfo();
     return {
       url: `https://app.slack.com/client/${info.teamId}`,
-      title: info.name || "Slack workspace",
-      snippet: `Slack workspace: ${info.name || info.teamId}`,
+      title: info.name || "Slack 工作区",
+      snippet: `Slack 工作区：${info.name || info.teamId}`,
       suggestedBindingName: "SLACK_WORKSPACE",
       tsType: "SlackWorkspaceSession",
     };
@@ -970,8 +969,7 @@ export class SlackWorkspaceGatekeeperImpl extends DurableObject<Env, SlackWorksp
     let observerTeamId = await verifier.getTeamId();
     if (!observerTeamId || observerTeamId !== boundTeamId) {
       throw new Error(
-          "This collaborator is not a member of the connected Slack workspace, so they cannot be " +
-          "allowed to observe it.");
+          "此协作者不是已连接 Slack 工作区的成员，因此不能查看该工作区。" );
     }
     // Loop until no new conversations appear mid-check (concurrent observations may add more).
     let checked = new Set<string>();
@@ -985,8 +983,7 @@ export class SlackWorkspaceGatekeeperImpl extends DurableObject<Env, SlackWorksp
           conversationIds, cid => verifier.hasConversationAccess(cid));
       if (access.some(hasAccess => !hasAccess)) {
         throw new Error(
-            "This collaborator does not have access to a Slack conversation whose data this workspace " +
-            "has read, so they cannot be allowed to observe it.");
+            "此协作者无权访问此工作区已读取数据的某个 Slack 会话，因此不能查看这些数据。" );
       }
       for (let cid of conversationIds) checked.add(cid);
     }
@@ -1029,7 +1026,7 @@ export class SlackConversationGatekeeperImpl
     return {
       url: `https://app.slack.com/client/${teamId}/${info.id}`,
       title,
-      snippet: info.purpose || info.topic || `Slack conversation ${info.id}`,
+      snippet: info.purpose || info.topic || `Slack 会话 ${info.id}`,
       suggestedBindingName: "SLACK_CONVERSATION",
       tsType: "SlackConversation",
     };
@@ -1058,8 +1055,7 @@ export class SlackConversationGatekeeperImpl
     let verifier = user as unknown as Fetcher<SlackVerifierApi>;
     if (!(await verifier.hasConversationAccess(this.ctx.props.conversationId))) {
       throw new Error(
-          "This collaborator does not have access to the connected Slack conversation, so they " +
-          "cannot be allowed to observe data this workspace read from it.");
+          "此协作者无权访问已连接的 Slack 会话，因此不能查看此工作区从中读取的数据。" );
     }
   }
 
@@ -1092,7 +1088,7 @@ export class SlackThreadGatekeeperImpl extends DurableObject<Env, SlackThreadGat
   }
 
   async describe(): Promise<ResourceDescription> {
-    let snippet = "Slack thread";
+    let snippet = "Slack 话题";
     try {
       let page = await this.#api().listReplies(
           this.ctx.props.conversationId, this.ctx.props.threadTs, undefined, 1);
@@ -1102,7 +1098,7 @@ export class SlackThreadGatekeeperImpl extends DurableObject<Env, SlackThreadGat
     }
     return {
       url: this.ctx.props.permalink,
-      title: "Slack thread",
+      title: "Slack 话题",
       snippet,
       suggestedBindingName: "SLACK_THREAD",
       tsType: "SlackThread",
@@ -1131,8 +1127,7 @@ export class SlackThreadGatekeeperImpl extends DurableObject<Env, SlackThreadGat
     let verifier = user as unknown as Fetcher<SlackVerifierApi>;
     if (!(await verifier.hasConversationAccess(this.ctx.props.conversationId))) {
       throw new Error(
-          "This collaborator does not have access to the Slack conversation containing this " +
-          "thread, so they cannot be allowed to observe data this workspace read from it.");
+          "此协作者无权访问包含此话题的 Slack 会话，因此不能查看此工作区从中读取的数据。" );
     }
   }
 
@@ -1161,8 +1156,8 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
   async getInfo(): Promise<SlackWorkspaceInfo> {
     let info = await this.#ctx.api.getWorkspaceInfo();
     await authorizeConversationObservation(this.#ctx, [], {
-      title: "Read Slack workspace info",
-      description: `Read metadata for the "${info.name}" workspace.`,
+      title: "读取 Slack 工作区信息",
+      description: `读取“${info.name}”工作区的元数据。`,
     });
     return info;
   }
@@ -1174,9 +1169,9 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
       await authorizeConversationObservation(ctx, page.items.map(info => info.id), {
         title: `${title} (${page.items.length})`,
         description: page.items.length > 0
-            ? `Listed conversations:\n${page.items.map(info =>
+            ? `列出的会话：\n${page.items.map(info =>
                 `- ${info.name ? "#" + info.name : conversationLabel(info)}`).join("\n")}`
-            : "No conversations on this page.",
+            : "此页没有会话。",
       });
       let entries = page.items.map(info => conversationEntry(ctx, info));
       return { items: entries, nextCursor: page.nextCursor };
@@ -1184,19 +1179,19 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
   }
 
   async listChannels(): Promise<Cursor<SlackConversationEntry>> {
-    return this.#listConversations(["public_channel", "private_channel"], "List Slack channels");
+    return this.#listConversations(["public_channel", "private_channel"], "列出 Slack 频道");
   }
 
   async listDirectMessages(): Promise<Cursor<SlackConversationEntry>> {
-    return this.#listConversations(["im", "mpim"], "List Slack direct messages");
+    return this.#listConversations(["im", "mpim"], "列出 Slack 私信");
   }
 
   async listUsers(): Promise<Cursor<SlackUser>> {
     return new SlackCursor<SlackUser>(this.#ctx, async (ctx, cursor) => {
       let page = await ctx.api.listUsers(cursor, USER_PAGE_SIZE);
       await authorizeConversationObservation(ctx, [], {
-        title: `List Slack members (${page.items.length})`,
-        description: `Read a page of ${page.items.length} workspace members.`,
+        title: `列出 Slack 成员（${page.items.length}）`,
+        description: `读取包含 ${page.items.length} 个工作区成员的一页。`,
       });
       return { items: page.items, nextCursor: page.nextCursor };
     });
@@ -1205,8 +1200,8 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
   async getUser(userId: string): Promise<SlackUser> {
     let user = await this.#ctx.api.getUser(userId);
     await authorizeConversationObservation(this.#ctx, [], {
-      title: `Read Slack user ${user.username}`,
-      description: `Read profile for user ${user.username} (${user.id}).`,
+      title: `读取 Slack 用户 ${user.username}`,
+      description: `读取用户 ${user.username}（${user.id}）的资料。`,
     });
     return user;
   }
@@ -1214,8 +1209,8 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
   async getConversation(conversationId: string): Promise<SlackConversation> {
     let info = await this.#ctx.api.getConversationInfo(conversationId);
     await authorizeConversationObservation(this.#ctx, [info.id], {
-      title: `Open Slack conversation ${info.name ? "#" + info.name : info.id}`,
-      description: `Open ${conversationLabel(info)} for reading.`,
+      title: `打开 Slack 会话 ${info.name ? "#" + info.name : info.id}`,
+      description: `打开${conversationLabel(info)}以供读取。`,
     });
     return new SlackConversationImpl(dupSessionContext(this.#ctx), info.id);
   }
@@ -1226,10 +1221,10 @@ class SlackWorkspaceSessionImpl extends RpcTarget implements SlackWorkspaceSessi
       let page = await ctx.api.searchMessages(query, cursor, SEARCH_PAGE_SIZE);
       let channelIds = [...new Set(page.items.map(match => match.channelId))];
       await authorizeConversationObservation(ctx, channelIds, {
-        title: `Search Slack (${page.items.length} results)`,
+        title: `搜索 Slack（${page.items.length} 个结果）`,
         description:
-            `Search the workspace for messages.\n\nQuery: ${truncate(query)}\n\n` +
-            `Matched ${page.items.length} messages on this page.`,
+            `在工作区中搜索消息。\n\n查询：${truncate(query)}\n\n` +
+            `此页匹配 ${page.items.length} 条消息。`,
       });
       let entries = page.items.map(match => messageEntry(ctx, match.channelId, match.message));
       return { items: entries, nextCursor: page.nextCursor };
@@ -1255,8 +1250,8 @@ class SlackConversationImpl extends RpcTarget implements SlackConversation {
   async getInfo(): Promise<SlackConversationInfo> {
     let info = await this.#ctx.api.getConversationInfo(this.#conversationId);
     await authorizeConversationObservation(this.#ctx, [this.#conversationId], {
-      title: `Read Slack conversation info ${info.name ? "#" + info.name : info.id}`,
-      description: `Read metadata for ${conversationLabel(info)}.`,
+      title: `读取 Slack 会话信息 ${info.name ? "#" + info.name : info.id}`,
+      description: `读取${conversationLabel(info)}的元数据。`,
     });
     return info;
   }
@@ -1267,8 +1262,8 @@ class SlackConversationImpl extends RpcTarget implements SlackConversation {
       let page = await ctx.api.listConversationMembers(conversationId, cursor, MEMBER_PAGE_SIZE);
       let users = await mapWithConcurrency(page.items, id => ctx.api.getUser(id));
       await authorizeConversationObservation(ctx, [conversationId], {
-        title: `List Slack conversation members (${users.length})`,
-        description: `Read ${users.length} members of conversation ${conversationId}.`,
+        title: `列出 Slack 会话成员（${users.length}）`,
+        description: `读取会话 ${conversationId} 的 ${users.length} 个成员。`,
       });
       return { items: users, nextCursor: page.nextCursor };
     });
@@ -1279,9 +1274,9 @@ class SlackConversationImpl extends RpcTarget implements SlackConversation {
     return new SlackCursor<SlackMessageEntry>(this.#ctx, async (ctx, cursor) => {
       let page = await ctx.api.listHistory(conversationId, cursor, HISTORY_PAGE_SIZE);
       await authorizeConversationObservation(ctx, [conversationId], {
-        title: `Read Slack messages (${page.items.length})`,
+        title: `读取 Slack 消息（${page.items.length}）`,
         description:
-            `Read a page of ${page.items.length} messages from conversation ${conversationId}.`,
+            `读取会话 ${conversationId} 中包含 ${page.items.length} 条消息的一页。`,
       });
       let entries = page.items.map(message =>
           messageEntry(ctx, conversationId, message));
@@ -1304,10 +1299,10 @@ class SlackConversationImpl extends RpcTarget implements SlackConversation {
       let page = await ctx.api.searchMessages(
           effectiveQuery, cursor, SEARCH_PAGE_SIZE, conversationId);
       await authorizeConversationObservation(ctx, [conversationId], {
-        title: `Search Slack conversation (${page.items.length} results)`,
+        title: `搜索 Slack 会话（${page.items.length} 个结果）`,
         description:
-            `Search within ${conversationLabel(info)}.\n\nQuery: ${truncate(query)}\n\n` +
-            `Matched ${page.items.length} messages on this page.`,
+            `在${conversationLabel(info)}中搜索。\n\n查询：${truncate(query)}\n\n` +
+            `此页匹配 ${page.items.length} 条消息。`,
       });
       let entries = page.items.map(match => messageEntry(ctx, match.channelId, match.message));
       return { items: entries, nextCursor: page.nextCursor };
@@ -1350,10 +1345,10 @@ class SlackThreadImpl extends RpcTarget implements SlackThread {
 
   async getRoot(): Promise<SlackMessage> {
     let { root } = await this.#resolveRoot();
-    if (!root) throw new Error(`Thread ${this.#threadTs} not found.`);
+    if (!root) throw new Error(`未找到话题 ${this.#threadTs}。`);
     await authorizeConversationObservation(this.#ctx, [this.#conversationId], {
-      title: "Read Slack thread root",
-      description: `Read the root message of a thread in conversation ${this.#conversationId}.`,
+      title: "读取 Slack 话题根消息",
+      description: `读取会话 ${this.#conversationId} 中话题的根消息。`,
     });
     return root;
   }
@@ -1370,9 +1365,9 @@ class SlackThreadImpl extends RpcTarget implements SlackThread {
       if (!cursor || messages.length >= MAX_THREAD_REPLIES) break;
     }
     await authorizeConversationObservation(this.#ctx, [this.#conversationId], {
-      title: `Read Slack thread (${messages.length} messages)`,
+      title: `读取 Slack 话题（${messages.length} 条消息）`,
       description:
-          `Read a thread of ${messages.length} messages in conversation ${this.#conversationId}.`,
+          `读取会话 ${this.#conversationId} 中包含 ${messages.length} 条消息的话题。`,
     });
     return messages.slice(0, MAX_THREAD_REPLIES);
   }

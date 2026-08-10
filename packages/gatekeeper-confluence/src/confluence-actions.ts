@@ -338,74 +338,74 @@ function describeAction(action: ConfluenceAction): ActionDescription {
   switch (action.type) {
     case "createContent":
       return {
-        title: `Create Confluence ${action.kind === "blogpost" ? "blog post" : "page"}`,
-        description: `Create a new ${action.kind === "blogpost" ? "blog post" : "page"} titled **${action.title}**` +
-          (action.parent.type === "page" ? " as a child page." : ` in space ${action.parent.spaceKey}.`),
+        title: `创建 Confluence ${action.kind === "blogpost" ? "博客文章" : "页面"}`,
+        description: `创建标题为 **${action.title}** 的新${action.kind === "blogpost" ? "博客文章" : "页面"}` +
+          (action.parent.type === "page" ? "，作为子页面。" : `，位于空间 ${action.parent.spaceKey} 中。`),
         implementsRevert: true,
-        actionKind: kind("createContent", "Create page/blog post"),
+        actionKind: kind("createContent", "创建页面/博客文章"),
       };
     case "setContent":
       return {
-        title: "Replace Confluence page content",
-        description: `Replace the body with:\n\n${truncate(action.markdown)}`,
+        title: "替换 Confluence 页面内容",
+        description: `将正文替换为：\n\n${truncate(action.markdown)}`,
         implementsRevert: true,
-        actionKind: kind("editContent", "Edit page content"),
+        actionKind: kind("editContent", "编辑页面内容"),
       };
     case "appendContent":
       return {
-        title: "Append to Confluence page",
-        description: `Append to the body:\n\n${truncate(action.markdown)}`,
+        title: "向 Confluence 页面追加内容",
+        description: `向正文追加：\n\n${truncate(action.markdown)}`,
         implementsRevert: true,
-        actionKind: kind("editContent", "Edit page content"),
+        actionKind: kind("editContent", "编辑页面内容"),
       };
     case "setTitle":
       return {
-        title: "Rename Confluence content",
-        description: `Change the title to **${action.title}** (was “${action.previousTitle}”).`,
+        title: "重命名 Confluence 内容",
+        description: `将标题从“${action.previousTitle}”更改为 **${action.title}**。`,
         implementsRevert: true,
-        actionKind: kind("setTitle", "Rename content"),
+        actionKind: kind("setTitle", "重命名内容"),
       };
     case "addComment":
       return {
-        title: "Comment on Confluence content",
-        description: `Post a comment:\n\n${truncate(action.text)}`,
+        title: "评论 Confluence 内容",
+        description: `发表评论：\n\n${truncate(action.text)}`,
         implementsRevert: true,
-        actionKind: kind("addComment", "Add comment"),
+        actionKind: kind("addComment", "添加评论"),
       };
     case "addLabel":
       return {
-        title: "Add label to Confluence content",
-        description: `Add the label \`${action.name}\`.`,
+        title: "为 Confluence 内容添加标签",
+        description: `添加标签 \`${action.name}\`。`,
         implementsRevert: true,
-        actionKind: kind("label", "Add/remove label"),
+        actionKind: kind("label", "添加/移除标签"),
       };
     case "removeLabel":
       return {
-        title: "Remove label from Confluence content",
-        description: `Remove the label \`${action.name}\`.`,
+        title: "移除 Confluence 内容的标签",
+        description: `移除标签 \`${action.name}\`。`,
         implementsRevert: true,
-        actionKind: kind("label", "Add/remove label"),
+        actionKind: kind("label", "添加/移除标签"),
       };
     case "uploadAttachment":
       return {
-        title: "Upload attachment to Confluence",
-        description: `Upload **${action.filename}** (${action.mediaType}, ${action.data.byteLength} bytes).`,
+        title: "向 Confluence 上传附件",
+        description: `上传 **${action.filename}**（${action.mediaType}，${action.data.byteLength} 字节）。`,
         implementsRevert: true,
-        actionKind: kind("uploadAttachment", "Upload attachment"),
+        actionKind: kind("uploadAttachment", "上传附件"),
       };
     case "trash":
       return {
-        title: "Move Confluence content to trash",
-        description: "Move this content to the trash (reversible).",
+        title: "将 Confluence 内容移至回收站",
+        description: "将此内容移至回收站（可撤销）。",
         implementsRevert: true,
-        actionKind: kind("trash", "Trash content"),
+        actionKind: kind("trash", "将内容移至回收站"),
       };
     case "restore":
       return {
-        title: "Restore Confluence content from trash",
-        description: "Restore this content from the trash.",
+        title: "从回收站恢复 Confluence 内容",
+        description: "从回收站恢复此内容。",
         implementsRevert: true,
-        actionKind: kind("trash", "Trash content"),
+        actionKind: kind("trash", "将内容移至回收站"),
       };
   }
 }
@@ -631,7 +631,7 @@ async function revertAction(store: ConfluenceStore, record: StoredActionRecord):
     case "setContent":
     case "appendContent": {
       if (action.type === "appendContent" && action.previousMarkdown === undefined) {
-        return { message: "Cannot automatically revert this append (the prior content was not captured)." };
+        return { message: "无法自动撤销此次追加操作（未能获取此前的内容）。" };
       }
       const id2 = requireResolved(store, action.contentId);
       const current = await store.getContentResponse(id2, true);

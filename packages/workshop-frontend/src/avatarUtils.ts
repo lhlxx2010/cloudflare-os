@@ -10,7 +10,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob)
-        else reject(new Error('Failed to encode image (canvas.toBlob returned null)'))
+        else reject(new Error('图片编码失败（canvas.toBlob 返回了 null）。'))
       },
       type,
       quality,
@@ -26,7 +26,7 @@ export async function compressAvatar(file: File): Promise<Uint8Array> {
   canvas.width = AVATAR_SIZE
   canvas.height = AVATAR_SIZE
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to get 2D canvas context')
+  if (!ctx) throw new Error('无法获取 2D 画布上下文。')
 
   // Center-crop to square
   const size = Math.min(bitmap.width, bitmap.height)

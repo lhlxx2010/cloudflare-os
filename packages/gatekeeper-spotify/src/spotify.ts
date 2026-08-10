@@ -114,48 +114,48 @@ const SPOTIFY_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(SPOTIFY_LOGO_S
 const ACCOUNT_RESOURCE: SupportedResource = {
   // Whole-instance catch-all (matches any URL), like other single-tenant gatekeepers.
   urlPattern: "https://*",
-  title: "Spotify Account",
+  title: "Spotify 账户",
   description:
-    "Whole-account access: profile, catalog search, your library, your playlists, and playback control.",
+    "账户级访问：个人资料、目录搜索、你的音乐库、播放列表和播放控制。",
   icon: { url: SPOTIFY_LOGO_URL },
 };
 
 const PLAYLIST_RESOURCE: SupportedResource = {
   urlPattern: "https://open.spotify.com/playlist/:playlistId",
-  title: "Spotify Playlist",
-  description: "Read and edit a single Spotify playlist.",
+  title: "Spotify 播放列表",
+  description: "读取和编辑单个 Spotify 播放列表。",
   icon: { url: SPOTIFY_LOGO_URL },
 };
 
 const SUPPORTED_RESOURCES: SupportedResource[] = [ACCOUNT_RESOURCE, PLAYLIST_RESOURCE];
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>授权链接已过期</title></head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #1DB954; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1DB954; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1DB954; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1DB954; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>需要配置</title></head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #1DB954; font-size: 1.5rem; margin: 0 0 1rem 0;">Spotify Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0;">Please configure a Spotify OAuth app client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #1DB954; font-size: 1.5rem; margin: 0 0 1rem 0;">Spotify Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0;">请为此 Gatekeeper 配置 Spotify OAuth 应用客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -192,7 +192,7 @@ function getBasePath(env: Env): string {
 
 function ensureConfigured(env: Env): asserts env is Env & { CLIENT_ID: string; CLIENT_SECRET: string } {
   if (!env.CLIENT_ID || !env.CLIENT_SECRET) {
-    throw new Error("The Spotify gatekeeper is not configured.");
+    throw new Error("Spotify Gatekeeper 尚未配置。");
   }
 }
 
@@ -363,7 +363,7 @@ function normalizePlaybackState(state: SpotifyPlaybackStateResponse | undefined)
 function clampLimit(limit: number | undefined, fallback: number, max: number): number {
   if (limit === undefined) return fallback;
   if (typeof limit !== "number" || !Number.isInteger(limit) || limit < 1) {
-    throw new Error("limit must be a positive integer.");
+    throw new Error("limit 必须是正整数。");
   }
   return Math.min(limit, max);
 }
@@ -371,7 +371,7 @@ function clampLimit(limit: number | undefined, fallback: number, max: number): n
 function clampOffset(offset: number | undefined): number {
   if (offset === undefined) return 0;
   if (typeof offset !== "number" || !Number.isInteger(offset) || offset < 0) {
-    throw new Error("offset must be a non-negative integer.");
+    throw new Error("offset 必须是非负整数。");
   }
   return offset;
 }
@@ -388,7 +388,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
 
     const relPath = url.pathname.slice(basePath.length);
@@ -421,21 +421,21 @@ export default {
     if (relPath === "/oauth") {
       const error = url.searchParams.get("error");
       if (error) {
-        return new Response("Spotify authorization failed or was denied. Please restart the connection flow from Cloudflare OS.", {
+        return new Response("Spotify 授权失败或被拒绝。请从 NINT os 重新开始连接流程。", {
           status: 400,
           headers: { "Content-Type": "text/plain; charset=utf-8" },
         });
       }
 
       const state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       const colonIndex = state.indexOf(":");
-      if (colonIndex < 0) return new Response("Error: malformed state");
+      if (colonIndex < 0) return new Response("错误：“state”格式不正确");
 
       const doId = state.slice(0, colonIndex);
       const oauthNonce = state.slice(colonIndex + 1);
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       const stub: DurableObjectStub<UserAccount> = ctx.exports.UserAccount.get(
         ctx.exports.UserAccount.idFromString(doId),
@@ -448,7 +448,7 @@ export default {
       return new Response(SELF_CLOSING_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -463,11 +463,10 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://www.spotify.com",
       logo: { url: SPOTIFY_LOGO_URL },
       color: "#1DB954",
-      tagline: "Manage playlists, your library, and playback",
+      tagline: "管理播放列表、音乐库和播放",
       description:
-        "Connect your Spotify account so Cloudflare OS can search the catalog, read and edit your " +
-        "library and playlists, and control playback on your devices. Grant whole-account access " +
-        "or scope a Gadget to a single playlist.",
+        "连接你的 Spotify 账户，让 NINT os 搜索目录、读取和编辑你的音乐库与播放列表，并控制设备播放。" +
+        "你可以授予账户级访问权限，也可以将小程序限制为仅访问单个播放列表。",
     };
   }
 
@@ -542,12 +541,12 @@ export class UserAccount extends DurableObject<Env> {
     ensureConfigured(this.env);
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const grant = await exchangeAuthCode(code, this.env.CLIENT_ID, this.env.CLIENT_SECRET, `${getBaseUrl(this.env)}/oauth`);
     if (!grant.refreshToken) {
-      throw new Error("Spotify did not return a refresh token.");
+      throw new Error("Spotify 未返回刷新令牌。");
     }
 
     this.ctx.storage.kv.put("refreshToken", grant.refreshToken);
@@ -584,7 +583,7 @@ export class UserAccount extends DurableObject<Env> {
 
     const refreshToken = this.ctx.storage.kv.get<string>("refreshToken");
     if (!refreshToken) {
-      throw new Error("Spotify credentials have not been configured for this account.");
+      throw new Error("尚未为此账户配置 Spotify 凭据。");
     }
     ensureConfigured(this.env);
 
@@ -647,7 +646,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     } catch (error) {
       if (error instanceof SpotifyApiError && error.isAuthError) {
         await account.noteCredentialsExpired();
-        throw new Error("Spotify credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("Spotify 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -714,7 +713,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
         ui: new RpcStub(new SpotifyPlaylistConfiguratorUI(getToken)),
       };
     }
-    throw new Error(`Unsupported Spotify resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的 Spotify 资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -882,14 +881,14 @@ function extractSpotifyId(input: string, kind: "track" | "album" | "artist" | "p
 function toBareId(input: string, kind: "track" | "album" | "artist"): string {
   const id = extractSpotifyId(input, kind);
   if (id) return id;
-  throw new Error(`Invalid Spotify ${kind} id "${input}". Pass a 22-character id, a "spotify:${kind}:" URI, or an open.spotify.com URL.`);
+  throw new Error(`Spotify ${kind} ID“${input}”无效。请传入 22 字符 ID、“spotify:${kind}:”URI 或 open.spotify.com URL。`);
 }
 
 // Music-only scope: accept a track id, URI, or open.spotify.com/track URL; normalize to a track URI.
 function toTrackUri(input: string): string {
   const id = extractSpotifyId(input, "track");
   if (id) return `spotify:track:${id}`;
-  throw new Error(`Invalid Spotify track "${input}". Pass a track id, "spotify:track:<id>" URI, or open.spotify.com/track/<id> URL.`);
+  throw new Error(`Spotify 曲目“${input}”无效。请传入曲目 ID、“spotify:track:<id>”URI 或 open.spotify.com/track/<id> URL。`);
 }
 
 // A playback "context" is an album, playlist, or artist (id, URI, or URL).
@@ -898,7 +897,7 @@ function toContextUri(input: string): string {
     const id = extractSpotifyId(input, kind);
     if (id) return `spotify:${kind}:${id}`;
   }
-  throw new Error(`Invalid Spotify context "${input}". Expected an album, playlist, or artist id/URI/URL.`);
+  throw new Error(`Spotify 上下文“${input}”无效。应为专辑、播放列表或艺人的 ID/URI/URL。`);
 }
 
 // Resolve a playlist argument (id, URL, URI, or a "~N" pending-create placeholder) to a logical id.
@@ -907,7 +906,7 @@ function toPlaylistLogicalId(input: string): string {
   if (/^~\d+$/.test(trimmed)) return trimmed;
   const id = extractSpotifyId(trimmed, "playlist");
   if (id) return id;
-  throw new Error(`Invalid Spotify playlist id "${input}". Pass a playlist id, URL, or URI.`);
+  throw new Error(`Spotify 播放列表 ID“${input}”无效。请传入播放列表 ID、URL 或 URI。`);
 }
 
 const SEARCH_TYPES = new Set(["track", "artist", "album", "playlist"]);
@@ -923,13 +922,13 @@ const SEARCH_FETCH_MAX = 10;
 // MUST validate every argument by hand, since the generated checks no longer run.
 function assertOptionalDeviceId(deviceId: unknown): void {
   if (deviceId !== undefined && typeof deviceId !== "string") {
-    throw new Error("deviceId must be a string when provided.");
+    throw new Error("提供 deviceId 时，其必须是字符串。");
   }
 }
 
 function assertOptionalLimit(limit: unknown): void {
   if (limit !== undefined && typeof limit !== "number") {
-    throw new Error("limit must be a number when provided.");
+    throw new Error("提供 limit 时，其必须是数字。");
   }
 }
 
@@ -990,7 +989,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     } catch (error) {
       if (error instanceof SpotifyApiError && error.isAuthError) {
         await account.noteCredentialsExpired();
-        throw new Error("Spotify credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("Spotify 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -1005,7 +1004,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
         url: summary.url,
         title: summary.name,
         snippet: summary.description?.trim() ||
-          `Playlist by ${summary.owner.displayName ?? summary.owner.id} · ${summary.trackCount} tracks`,
+          `由 ${summary.owner.displayName ?? summary.owner.id} 创建 · ${summary.trackCount} 首曲目`,
         suggestedBindingName: "SPOTIFY_PLAYLIST",
         tsType: "SpotifyPlaylist",
       };
@@ -1014,8 +1013,8 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     const user = await this.#withApi(api => api.getCurrentUser());
     return {
       url: externalUrl(user, profileUrl(user.id)),
-      title: user.display_name ? `${user.display_name}'s Spotify` : "Spotify Account",
-      snippet: "Whole-account access: library, playlists, search, and playback control.",
+      title: user.display_name ? `${user.display_name} 的 Spotify` : "Spotify 账户",
+      snippet: "账户级访问：音乐库、播放列表、搜索和播放控制。",
       suggestedBindingName: "SPOTIFY_ACCOUNT",
       tsType: "SpotifyAccountSession",
     };
@@ -1068,7 +1067,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
 
   #requireRecord(id: number): StoredActionRecord {
     const record = this.#getRecord(id);
-    if (!record) throw new Error(`No queued Spotify action exists with id ${id}.`);
+    if (!record) throw new Error(`不存在 ID 为 ${id} 的待处理 Spotify 操作。`);
     return record;
   }
 
@@ -1145,7 +1144,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
       summary = normalizePlaylistSummary(await this.#withApi(api => api.getPlaylist(realId)));
     } catch (error) {
       if (error instanceof SpotifyApiError && error.status === 404) {
-        throw new Error(`No Spotify playlist found with id "${realId}".`, { cause: error });
+        throw new Error(`未找到 ID 为“${realId}”的 Spotify 播放列表。`, { cause: error });
       }
       throw error;
     }
@@ -1225,8 +1224,8 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     const [summary, me] = await Promise.all([this.#getPlaylistSummary(realId), this.#currentUserRef()]);
     if (summary.owner.id !== me.id && !summary.collaborative) {
       throw new Error(
-        `Cannot edit playlist "${summary.name}": it is owned by ` +
-        `${summary.owner.displayName ?? summary.owner.id} and is not collaborative.`);
+        `无法编辑播放列表“${summary.name}”：其所有者为 ` +
+        `${summary.owner.displayName ?? summary.owner.id}，且不是协作播放列表。`);
     }
     const pendingDelta = this.#pendingPlaylistTrackActions(logicalId).length > 0
       ? (await this.#effectivePlaylistEntries(logicalId, realId)).length
@@ -1304,7 +1303,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
       return normalizeTrack(await this.#withApi(api => api.getTrack(trackId)));
     } catch (error) {
       if (error instanceof SpotifyApiError && (error.status === 404 || error.status === 400)) {
-        throw new Error(`No Spotify track found with id "${trackId}".`, { cause: error });
+        throw new Error(`未找到 ID 为“${trackId}”的 Spotify 曲目。`, { cause: error });
       }
       throw error;
     }
@@ -1519,7 +1518,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     } else {
       const create = this.#listPending().find(
         (a): a is PlaylistCreateAction => a.type === "playlistCreate" && a.provisionalId === logicalId);
-      if (!create) throw new Error(`Spotify playlist ${logicalId} was not found.`);
+      if (!create) throw new Error(`未找到 Spotify 播放列表 ${logicalId}。`);
       summary = this.#applyDetailsOverlay(logicalId, this.#synthCreatedSummary(create));
       summary = {
         ...summary,
@@ -1560,7 +1559,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     if (!realId) {
       const create = this.#listPending().find(
         (a): a is PlaylistCreateAction => a.type === "playlistCreate" && a.provisionalId === logicalId);
-      if (!create) throw new Error(`Spotify playlist ${logicalId} was not found.`);
+      if (!create) throw new Error(`未找到 Spotify 播放列表 ${logicalId}。`);
     }
 
     const entries = await this.#effectivePlaylistEntries(logicalId, realId);
@@ -1708,7 +1707,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
   #requireRealPlaylistId(playlistId: string): string {
     const realId = this.#resolveRealPlaylistId(playlistId);
     if (!realId) {
-      throw new Error(`Playlist ${playlistId} has not been created on Spotify yet. Approve the playlist creation first.`);
+      throw new Error(`播放列表 ${playlistId} 尚未在 Spotify 上创建，请先批准播放列表创建操作。`);
     }
     return realId;
   }
@@ -1717,7 +1716,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
     const record = this.#requireRecord(actionId);
     // "failed" is retryable (a prior apply threw); the overseer may call applyAction again.
     if (record.state !== "pending" && record.state !== "staged" && record.state !== "failed") {
-      throw new Error(`Spotify action ${actionId} is no longer pending.`);
+      throw new Error(`Spotify 操作 ${actionId} 已不再处于待处理状态。`);
     }
     const action = record.action;
     try {
@@ -1840,7 +1839,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
   async revertAction(actionId: number): Promise<void | { message?: string; canRetry?: boolean; restart?: boolean }> {
     const record = this.#requireRecord(actionId);
     if (record.state !== "approved") {
-      return { message: "This action has not been applied, so there is nothing to revert.", canRetry: false };
+      return { message: "此操作尚未应用，因此没有可撤销的内容。", canRetry: false };
     }
     const action = record.action;
     switch (action.type) {
@@ -1852,20 +1851,20 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
       case "unfollowArtists": await this.#withApi(api => api.saveToLibrary(action.artistIds.map(artistUri))); return;
       case "playlistUnfollow": {
         const realId = this.#resolveRealPlaylistId(action.playlistId);
-        if (!realId) return { message: "This playlist no longer exists.", canRetry: false };
+        if (!realId) return { message: "此播放列表已不存在。", canRetry: false };
         // Re-add (re-follow) the playlist to the user's library.
         await this.#withApi(api => api.saveToLibrary([playlistUri(realId)]));
         return;
       }
       case "playlistFollow": {
         const realId = this.#resolveRealPlaylistId(action.playlistId);
-        if (!realId) return { message: "This playlist no longer exists.", canRetry: false };
+        if (!realId) return { message: "此播放列表已不存在。", canRetry: false };
         await this.#withApi(api => api.removeFromLibrary([playlistUri(realId)]));
         return;
       }
       case "playlistCreate": {
         if (record.revert?.kind !== "playlistCreate") {
-          return { message: "This playlist was never created, so there is nothing to revert.", canRetry: false };
+          return { message: "此播放列表从未创建，因此没有可撤销的内容。", canRetry: false };
         }
         const realId = record.revert.realId;
         // "Deleting" a playlist on Spotify means unfollowing it (removing it from your library).
@@ -1878,8 +1877,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
       case "playlistReplace": {
         if (record.revert?.kind !== "playlistTracks") {
           return {
-            message: "This playlist was too large to snapshot, so it can't be reverted automatically. " +
-              "Please restore it manually.",
+            message: "此播放列表过大，无法创建快照，因此不能自动撤销。请手动恢复。",
             canRetry: false,
           };
         }
@@ -1889,7 +1887,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
       }
       case "playlistDetails": {
         if (record.revert?.kind !== "playlistDetails") {
-          return { message: "Revert information is unavailable for this action.", canRetry: false };
+          return { message: "此操作没有可用的撤销信息。", canRetry: false };
         }
         const { realId, previous } = record.revert;
         await this.#withApi(api => api.changePlaylistDetails(realId, previous));
@@ -1897,7 +1895,7 @@ export class SpotifyGatekeeperImpl extends DurableObject<Env, SpotifyGatekeeperI
         return;
       }
       case "player":
-        return { message: "Playback actions cannot be reverted.", canRetry: false };
+        return { message: "播放操作无法撤销。", canRetry: false };
     }
   }
 }
@@ -1932,8 +1930,8 @@ class SpotifyPlayerImpl extends RpcTarget implements SpotifyPlayer {
   async getState(): Promise<SpotifyPlaybackState> {
     const state = await this.#gk.playerGetState();
     await this.#queue.authorizeObservation({
-      title: "Read playback state",
-      description: "Read the current Spotify playback state and active device.",
+      title: "读取播放状态",
+      description: "读取当前 Spotify 播放状态和活动设备。",
     });
     return state;
   }
@@ -1941,8 +1939,8 @@ class SpotifyPlayerImpl extends RpcTarget implements SpotifyPlayer {
   async getDevices(): Promise<SpotifyDevice[]> {
     const devices = await this.#gk.playerGetDevices();
     await this.#queue.authorizeObservation({
-      title: "List playback devices",
-      description: "List the available Spotify Connect devices.",
+      title: "列出播放设备",
+      description: "列出可用的 Spotify Connect 设备。",
     });
     return devices;
   }
@@ -1950,8 +1948,8 @@ class SpotifyPlayerImpl extends RpcTarget implements SpotifyPlayer {
   async getQueue(): Promise<{ currentlyPlaying: SpotifyTrack | null; queue: SpotifyTrack[] }> {
     const result = await this.#gk.playerGetQueue();
     await this.#queue.authorizeObservation({
-      title: "Read playback queue",
-      description: "Read the currently playing track and the upcoming playback queue.",
+      title: "读取播放队列",
+      description: "读取当前播放的曲目和接下来的播放队列。",
     });
     return result;
   }
@@ -1959,15 +1957,15 @@ class SpotifyPlayerImpl extends RpcTarget implements SpotifyPlayer {
   async getRecentlyPlayed(limit?: number): Promise<SpotifyPlayHistoryEntry[]> {
     const result = await this.#gk.playerGetRecentlyPlayed(limit);
     await this.#queue.authorizeObservation({
-      title: "Read recently played",
-      description: "Read recently played tracks from listening history.",
+      title: "读取最近播放记录",
+      description: "从收听历史中读取最近播放的曲目。",
     });
     return result;
   }
 
   async play(options?: SpotifyPlayOptions): Promise<void> {
     if (options?.contextUri && options?.trackUris) {
-      throw new Error("play(): provide either contextUri or trackUris, not both.");
+      throw new Error("play()：请提供 contextUri 或 trackUris，不能同时提供两者。");
     }
     const body: Record<string, unknown> = {};
     if (options?.contextUri) body.context_uri = toContextUri(options.contextUri);
@@ -1976,71 +1974,71 @@ class SpotifyPlayerImpl extends RpcTarget implements SpotifyPlayer {
     if (options?.positionMs !== undefined) body.position_ms = options.positionMs;
     await this.#submit(
       { op: "play", deviceId: options?.deviceId, body },
-      "Start/resume playback",
-      "Start or resume Spotify playback on the active device.",
+      "开始或继续播放",
+      "在活动设备上开始或继续播放 Spotify 内容。",
     );
   }
 
   async pause(deviceId?: string): Promise<void> {
-    await this.#submit({ op: "pause", deviceId }, "Pause playback", "Pause Spotify playback.");
+    await this.#submit({ op: "pause", deviceId }, "暂停播放", "暂停 Spotify 播放。");
   }
 
   async next(deviceId?: string): Promise<void> {
-    await this.#submit({ op: "next", deviceId }, "Skip to next track", "Skip to the next track.");
+    await this.#submit({ op: "next", deviceId }, "跳到下一首", "跳到下一首曲目。");
   }
 
   async previous(deviceId?: string): Promise<void> {
-    await this.#submit({ op: "previous", deviceId }, "Skip to previous track", "Skip to the previous track.");
+    await this.#submit({ op: "previous", deviceId }, "跳到上一首", "跳到上一首曲目。");
   }
 
   async seek(positionMs: number, deviceId?: string): Promise<void> {
     if (!Number.isFinite(positionMs) || positionMs < 0) {
-      throw new Error("seek(): positionMs must be a non-negative number of milliseconds.");
+      throw new Error("seek()：positionMs 必须是非负毫秒数。");
     }
     const pos = Math.floor(positionMs);
-    await this.#submit({ op: "seek", positionMs: pos, deviceId }, "Seek playback", `Seek to ${pos} ms in the current track.`);
+    await this.#submit({ op: "seek", positionMs: pos, deviceId }, "调整播放进度", `跳转到当前曲目的 ${pos} 毫秒处。`);
   }
 
   async setVolume(volumePercent: number, deviceId?: string): Promise<void> {
     if (!Number.isFinite(volumePercent) || volumePercent < 0 || volumePercent > 100) {
-      throw new Error("setVolume(): volumePercent must be between 0 and 100.");
+      throw new Error("setVolume()：volumePercent 必须介于 0 和 100 之间。");
     }
     const volume = Math.round(volumePercent);
-    await this.#submit({ op: "setVolume", volumePercent: volume, deviceId }, "Set volume", `Set playback volume to ${volume}%.`);
+    await this.#submit({ op: "setVolume", volumePercent: volume, deviceId }, "设置音量", `将播放音量设为 ${volume}%。`);
   }
 
   @skipRpcValidation()
   async setShuffle(shuffle: boolean, deviceId?: string): Promise<void> {
     if (typeof shuffle !== "boolean") {
-      throw new Error("setShuffle(): shuffle must be a boolean (true or false).");
+      throw new Error("setShuffle()：shuffle 必须是布尔值（true 或 false）。");
     }
     assertOptionalDeviceId(deviceId);
-    await this.#submit({ op: "setShuffle", shuffle, deviceId }, "Set shuffle", `Turn shuffle ${shuffle ? "on" : "off"}.`);
+    await this.#submit({ op: "setShuffle", shuffle, deviceId }, "设置随机播放", `${shuffle ? "开启" : "关闭"}随机播放。`);
   }
 
   @skipRpcValidation()
   async setRepeat(mode: string, deviceId?: string): Promise<void> {
     if (typeof mode !== "string" || !REPEAT_MODES.has(mode)) {
-      throw new Error(`setRepeat(): mode must be one of "off", "track", or "context".`);
+      throw new Error(`setRepeat()：mode 必须是“off”“track”或“context”之一。`);
     }
     assertOptionalDeviceId(deviceId);
-    await this.#submit({ op: "setRepeat", mode: mode as SpotifyRepeatMode, deviceId }, "Set repeat mode", `Set repeat mode to "${mode}".`);
+    await this.#submit({ op: "setRepeat", mode: mode as SpotifyRepeatMode, deviceId }, "设置循环模式", `将循环模式设为“${mode}”。`);
   }
 
   async transferTo(deviceId: string, play?: boolean): Promise<void> {
     if (typeof deviceId !== "string" || deviceId.trim() === "") {
-      throw new Error("transferTo(): deviceId must be a non-empty string.");
+      throw new Error("transferTo()：deviceId 必须是非空字符串。");
     }
     await this.#submit(
       { op: "transfer", deviceId, play: play ?? false },
-      "Transfer playback",
-      `Move playback to device ${deviceId}${play ? " and resume" : ""}.`,
+      "转移播放设备",
+      `将播放转移到设备 ${deviceId}${play ? " 并继续播放" : ""}。`,
     );
   }
 
   async addToQueue(uri: string, deviceId?: string): Promise<void> {
     const trackUriValue = toTrackUri(uri);
-    await this.#submit({ op: "addToQueue", uri: trackUriValue, deviceId }, "Add to queue", `Add ${trackUriValue} to the playback queue.`);
+    await this.#submit({ op: "addToQueue", uri: trackUriValue, deviceId }, "添加到队列", `将 ${trackUriValue} 添加到播放队列。`);
   }
 }
 
@@ -2064,8 +2062,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async getDetails(): Promise<SpotifyPlaylistSummary> {
     const summary = await this.#gk.playlistGetDetails(this.#logicalId);
     await this.#queue.authorizeObservation({
-      title: `Read playlist "${summary.name}"`,
-      description: `Read details of the Spotify playlist "${summary.name}" (${summary.trackCount} tracks).`,
+      title: `读取播放列表“${summary.name}”`,
+      description: `读取 Spotify 播放列表“${summary.name}”的详情（${summary.trackCount} 首曲目）。`,
     });
     return summary;
   }
@@ -2073,8 +2071,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async listTracks(limit?: number, offset?: number): Promise<SpotifyPlaylistTrack[]> {
     const tracks = await this.#gk.playlistListTracks(this.#logicalId, limit, offset);
     await this.#queue.authorizeObservation({
-      title: "Read playlist tracks",
-      description: `Read ${tracks.length} track(s) from the playlist.`,
+      title: "读取播放列表曲目",
+      description: `从播放列表中读取 ${tracks.length} 首曲目。`,
     });
     return tracks;
   }
@@ -2082,17 +2080,17 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async addTracks(trackUris: string[], position?: number): Promise<void> {
     if (trackUris.length === 0) return;
     if (trackUris.length > MAX_PLAYLIST_URIS_PER_CALL) {
-      throw new Error(`addTracks(): at most ${MAX_PLAYLIST_URIS_PER_CALL} URIs per call.`);
+      throw new Error(`addTracks()：每次调用最多 ${MAX_PLAYLIST_URIS_PER_CALL} 个 URI。`);
     }
     if (position !== undefined && (!Number.isInteger(position) || position < 0)) {
-      throw new Error("addTracks(): position must be a non-negative integer.");
+      throw new Error("addTracks()：position 必须是非负整数。");
     }
     const uris = trackUris.map(toTrackUri);
     await this.#gk.assertEditablePlaylist(this.#logicalId);
     const action = this.#gk.preparePlaylistAdd(this.#logicalId, uris, position);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Add ${uris.length} track(s) to playlist`,
-      description: `Add ${uris.length} track(s) to the playlist${position === undefined ? "" : ` at position ${position}`}.`,
+      title: `向播放列表添加 ${uris.length} 首曲目`,
+      description: `向播放列表添加 ${uris.length} 首曲目${position === undefined ? "" : `，插入位置为 ${position}`}。`,
       implementsRevert: true,
     });
   }
@@ -2103,8 +2101,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
     await this.#gk.assertEditablePlaylist(this.#logicalId);
     const action = this.#gk.preparePlaylistRemove(this.#logicalId, uris);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Remove ${uris.length} track(s) from playlist`,
-      description: `Remove ${uris.length} track(s) from the playlist.`,
+      title: `从播放列表移除 ${uris.length} 首曲目`,
+      description: `从播放列表中移除 ${uris.length} 首曲目。`,
       implementsRevert: true,
     });
   }
@@ -2114,30 +2112,30 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
     if (!Number.isInteger(rangeStart) || rangeStart < 0 ||
         !Number.isInteger(insertBefore) || insertBefore < 0 ||
         !Number.isInteger(length) || length < 1) {
-      throw new Error("reorderTracks(): rangeStart/insertBefore must be >= 0 and rangeLength >= 1.");
+      throw new Error("reorderTracks()：rangeStart/insertBefore 必须 >= 0，且 rangeLength 必须 >= 1。");
     }
     const { trackCount } = await this.#gk.assertEditablePlaylist(this.#logicalId);
     if (rangeStart + length > trackCount || insertBefore > trackCount) {
-      throw new Error(`reorderTracks(): range is out of bounds for a playlist with ${trackCount} track(s).`);
+      throw new Error(`reorderTracks()：范围超出包含 ${trackCount} 首曲目的播放列表边界。`);
     }
     const action = this.#gk.preparePlaylistReorder(this.#logicalId, rangeStart, insertBefore, length);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: "Reorder playlist tracks",
-      description: `Move ${length} track(s) from position ${rangeStart} to before position ${insertBefore}.`,
+      title: "重新排列播放列表曲目",
+      description: `将从位置 ${rangeStart} 开始的 ${length} 首曲目移动到位置 ${insertBefore} 之前。`,
       implementsRevert: true,
     });
   }
 
   async replaceTracks(trackUris: string[]): Promise<void> {
     if (trackUris.length > MAX_PLAYLIST_URIS_PER_CALL) {
-      throw new Error(`replaceTracks(): at most ${MAX_PLAYLIST_URIS_PER_CALL} URIs per call.`);
+      throw new Error(`replaceTracks()：每次调用最多 ${MAX_PLAYLIST_URIS_PER_CALL} 个 URI。`);
     }
     const uris = trackUris.map(toTrackUri);
     await this.#gk.assertEditablePlaylist(this.#logicalId);
     const action = this.#gk.preparePlaylistReplace(this.#logicalId, uris);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: "Replace playlist tracks",
-      description: `Replace the playlist's contents with ${uris.length} track(s).`,
+      title: "替换播放列表曲目",
+      description: `将播放列表内容替换为 ${uris.length} 首曲目。`,
       implementsRevert: true,
     });
   }
@@ -2145,14 +2143,14 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async changeDetails(update: SpotifyPlaylistDetailsUpdate): Promise<void> {
     if (Object.keys(update).length === 0) return;
     if (update.public === true && update.collaborative === true) {
-      throw new Error("changeDetails(): a collaborative playlist must be private (public and collaborative cannot both be true).");
+      throw new Error("changeDetails()：协作播放列表必须是私有的（public 和 collaborative 不能同时为 true）。");
     }
     await this.#gk.assertEditablePlaylist(this.#logicalId);
     const action = this.#gk.preparePlaylistDetails(this.#logicalId, update);
-    const fields = Object.keys(update).join(", ") || "details";
+    const fields = Object.keys(update).join(", ") || "详情";
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: "Change playlist details",
-      description: `Update playlist ${fields}.`,
+      title: "更改播放列表详情",
+      description: `更新播放列表的 ${fields}。`,
       implementsRevert: true,
     });
   }
@@ -2160,8 +2158,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async unfollow(): Promise<void> {
     const action = this.#gk.preparePlaylistUnfollow(this.#logicalId);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: "Remove playlist from library",
-      description: "Remove this playlist from your library (for a playlist you own, this deletes it).",
+      title: "从音乐库移除播放列表",
+      description: "从音乐库中移除此播放列表（如果是你拥有的播放列表，此操作会将其删除）。",
       implementsRevert: true,
     });
   }
@@ -2169,8 +2167,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async follow(): Promise<void> {
     const action = this.#gk.preparePlaylistFollow(this.#logicalId);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: "Add playlist to library",
-      description: "Follow this playlist (add it to your library).",
+      title: "将播放列表添加到音乐库",
+      description: "关注此播放列表（将其添加到你的音乐库）。",
       implementsRevert: true,
     });
   }
@@ -2178,8 +2176,8 @@ class SpotifyPlaylistImpl extends RpcTarget implements SpotifyPlaylist {
   async isFollowing(): Promise<boolean> {
     const result = await this.#gk.isFollowingPlaylist(this.#logicalId);
     await this.#queue.authorizeObservation({
-      title: "Check playlist follow status",
-      description: "Check whether this playlist is in your library.",
+      title: "检查播放列表关注状态",
+      description: "检查此播放列表是否已在你的音乐库中。",
     });
     return result;
   }
@@ -2203,8 +2201,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async getProfile(): Promise<SpotifyProfile> {
     const profile = await this.#gk.getProfile();
     await this.#queue.authorizeObservation({
-      title: "Read Spotify profile",
-      description: `Read the connected Spotify account's profile (${profile.displayName ?? profile.id}).`,
+      title: "读取 Spotify 个人资料",
+      description: `读取已连接 Spotify 账户的个人资料（${profile.displayName ?? profile.id}）。`,
     });
     return profile;
   }
@@ -2212,21 +2210,21 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   @skipRpcValidation()
   async search(query: string, types: string[], limit?: number): Promise<SpotifySearchResults> {
     if (typeof query !== "string" || query.trim() === "") {
-      throw new Error("search(): query must be a non-empty string.");
+      throw new Error("search()：query 必须是非空字符串。");
     }
     if (!Array.isArray(types) || types.length === 0) {
-      throw new Error("search(): provide at least one type (track, artist, album, or playlist).");
+      throw new Error("search()：请至少提供一种类型（track、artist、album 或 playlist）。");
     }
     for (const type of types) {
       if (typeof type !== "string" || !SEARCH_TYPES.has(type)) {
-        throw new Error(`search(): unknown type "${type}". Valid types: track, artist, album, playlist.`);
+        throw new Error(`search()：未知类型“${type}”。有效类型：track、artist、album、playlist。`);
       }
     }
     assertOptionalLimit(limit);
     const results = await this.#gk.search(query, types as SpotifySearchType[], limit);
     await this.#queue.authorizeObservation({
-      title: `Search Spotify for "${query}"`,
-      description: `Search the Spotify catalog for "${query}" (${types.join(", ")}).`,
+      title: `在 Spotify 中搜索“${query}”`,
+      description: `在 Spotify 曲库中搜索“${query}”（${types.join(", ")}）。`,
     });
     return results;
   }
@@ -2234,8 +2232,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async getTrack(trackId: string): Promise<SpotifyTrack> {
     const track = await this.#gk.getTrack(toBareId(trackId, "track"));
     await this.#queue.authorizeObservation({
-      title: `Read track "${track.name}"`,
-      description: `Read catalog details for the track "${track.name}".`,
+      title: `读取曲目“${track.name}”`,
+      description: `读取曲目“${track.name}”的曲库详情。`,
     });
     return track;
   }
@@ -2243,8 +2241,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async listSavedTracks(limit?: number, offset?: number): Promise<SpotifyTrack[]> {
     const tracks = await this.#gk.listSavedTracks(limit, offset);
     await this.#queue.authorizeObservation({
-      title: "Read saved tracks",
-      description: `Read ${tracks.length} saved track(s) from the library.`,
+      title: "读取已收藏曲目",
+      description: `从音乐库中读取 ${tracks.length} 首已收藏曲目。`,
     });
     return tracks;
   }
@@ -2252,8 +2250,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async listSavedAlbums(limit?: number, offset?: number): Promise<SpotifyAlbumRef[]> {
     const albums = await this.#gk.listSavedAlbums(limit, offset);
     await this.#queue.authorizeObservation({
-      title: "Read saved albums",
-      description: `Read ${albums.length} saved album(s) from the library.`,
+      title: "读取已收藏专辑",
+      description: `从音乐库中读取 ${albums.length} 张已收藏专辑。`,
     });
     return albums;
   }
@@ -2261,8 +2259,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async areTracksSaved(trackIds: string[]): Promise<boolean[]> {
     const result = await this.#gk.areTracksSaved(trackIds.map(id => toBareId(id, "track")));
     await this.#queue.authorizeObservation({
-      title: "Check saved tracks",
-      description: `Check whether ${trackIds.length} track(s) are saved in the library.`,
+      title: "检查曲目收藏状态",
+      description: `检查 ${trackIds.length} 首曲目是否已收藏到音乐库。`,
     });
     return result;
   }
@@ -2270,8 +2268,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async areAlbumsSaved(albumIds: string[]): Promise<boolean[]> {
     const result = await this.#gk.areAlbumsSaved(albumIds.map(id => toBareId(id, "album")));
     await this.#queue.authorizeObservation({
-      title: "Check saved albums",
-      description: `Check whether ${albumIds.length} album(s) are saved in the library.`,
+      title: "检查专辑收藏状态",
+      description: `检查 ${albumIds.length} 张专辑是否已收藏到音乐库。`,
     });
     return result;
   }
@@ -2279,13 +2277,13 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   @skipRpcValidation()
   async getTopTracks(timeRange?: string, limit?: number): Promise<SpotifyTrack[]> {
     if (timeRange !== undefined && (typeof timeRange !== "string" || !TOP_TIME_RANGES.has(timeRange))) {
-      throw new Error(`getTopTracks(): invalid timeRange "${timeRange}". Use short_term, medium_term, or long_term.`);
+      throw new Error(`getTopTracks()：timeRange“${timeRange}”无效。请使用 short_term、medium_term 或 long_term。`);
     }
     assertOptionalLimit(limit);
     const tracks = await this.#gk.getTopTracks(timeRange as SpotifyTopTimeRange | undefined, limit);
     await this.#queue.authorizeObservation({
-      title: "Read top tracks",
-      description: `Read the user's top ${tracks.length} track(s).`,
+      title: "读取最常听曲目",
+      description: `读取用户最常听的 ${tracks.length} 首曲目。`,
     });
     return tracks;
   }
@@ -2293,13 +2291,13 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   @skipRpcValidation()
   async getTopArtists(timeRange?: string, limit?: number): Promise<SpotifyArtistRef[]> {
     if (timeRange !== undefined && (typeof timeRange !== "string" || !TOP_TIME_RANGES.has(timeRange))) {
-      throw new Error(`getTopArtists(): invalid timeRange "${timeRange}". Use short_term, medium_term, or long_term.`);
+      throw new Error(`getTopArtists()：timeRange“${timeRange}”无效。请使用 short_term、medium_term 或 long_term。`);
     }
     assertOptionalLimit(limit);
     const artists = await this.#gk.getTopArtists(timeRange as SpotifyTopTimeRange | undefined, limit);
     await this.#queue.authorizeObservation({
-      title: "Read top artists",
-      description: `Read the user's top ${artists.length} artist(s).`,
+      title: "读取最常听艺人",
+      description: `读取用户最常听的 ${artists.length} 位艺人。`,
     });
     return artists;
   }
@@ -2309,8 +2307,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     trackIds = trackIds.map(id => toBareId(id, "track"));
     const action = this.#gk.prepareSaveTracks(trackIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Save ${trackIds.length} track(s)`,
-      description: `Save ${trackIds.length} track(s) to the library.`,
+      title: `收藏 ${trackIds.length} 首曲目`,
+      description: `将 ${trackIds.length} 首曲目收藏到音乐库。`,
       implementsRevert: true,
     });
   }
@@ -2320,8 +2318,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     trackIds = trackIds.map(id => toBareId(id, "track"));
     const action = this.#gk.prepareRemoveSavedTracks(trackIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Remove ${trackIds.length} saved track(s)`,
-      description: `Remove ${trackIds.length} track(s) from the library.`,
+      title: `移除 ${trackIds.length} 首已收藏曲目`,
+      description: `从音乐库中移除 ${trackIds.length} 首曲目。`,
       implementsRevert: true,
     });
   }
@@ -2331,8 +2329,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     albumIds = albumIds.map(id => toBareId(id, "album"));
     const action = this.#gk.prepareSaveAlbums(albumIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Save ${albumIds.length} album(s)`,
-      description: `Save ${albumIds.length} album(s) to the library.`,
+      title: `收藏 ${albumIds.length} 张专辑`,
+      description: `将 ${albumIds.length} 张专辑收藏到音乐库。`,
       implementsRevert: true,
     });
   }
@@ -2342,8 +2340,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     albumIds = albumIds.map(id => toBareId(id, "album"));
     const action = this.#gk.prepareRemoveSavedAlbums(albumIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Remove ${albumIds.length} saved album(s)`,
-      description: `Remove ${albumIds.length} album(s) from the library.`,
+      title: `移除 ${albumIds.length} 张已收藏专辑`,
+      description: `从音乐库中移除 ${albumIds.length} 张专辑。`,
       implementsRevert: true,
     });
   }
@@ -2353,8 +2351,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     artistIds = artistIds.map(id => toBareId(id, "artist"));
     const action = this.#gk.prepareFollowArtists(artistIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Follow ${artistIds.length} artist(s)`,
-      description: `Follow ${artistIds.length} artist(s).`,
+      title: `关注 ${artistIds.length} 位艺人`,
+      description: `关注 ${artistIds.length} 位艺人。`,
       implementsRevert: true,
     });
   }
@@ -2364,8 +2362,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     artistIds = artistIds.map(id => toBareId(id, "artist"));
     const action = this.#gk.prepareUnfollowArtists(artistIds);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Unfollow ${artistIds.length} artist(s)`,
-      description: `Unfollow ${artistIds.length} artist(s).`,
+      title: `取消关注 ${artistIds.length} 位艺人`,
+      description: `取消关注 ${artistIds.length} 位艺人。`,
       implementsRevert: true,
     });
   }
@@ -2373,8 +2371,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async isFollowingArtists(artistIds: string[]): Promise<boolean[]> {
     const result = await this.#gk.areArtistsFollowed(artistIds.map(id => toBareId(id, "artist")));
     await this.#queue.authorizeObservation({
-      title: "Check followed artists",
-      description: `Check whether ${artistIds.length} artist(s) are followed.`,
+      title: "检查艺人关注状态",
+      description: `检查是否已关注 ${artistIds.length} 位艺人。`,
     });
     return result;
   }
@@ -2382,8 +2380,8 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
   async listPlaylists(limit?: number, offset?: number): Promise<SpotifyPlaylistSummary[]> {
     const playlists = await this.#gk.listPlaylists(limit, offset);
     await this.#queue.authorizeObservation({
-      title: "List playlists",
-      description: `List ${playlists.length} of the user's playlists.`,
+      title: "列出播放列表",
+      description: `列出用户的 ${playlists.length} 个播放列表。`,
     });
     return playlists;
   }
@@ -2400,15 +2398,15 @@ class SpotifyAccountSessionImpl extends RpcTarget implements SpotifyAccountSessi
     options?: { description?: string; public?: boolean; collaborative?: boolean },
   ): Promise<SpotifyPlaylist> {
     if (typeof name !== "string" || name.trim() === "") {
-      throw new Error("createPlaylist(): name must be a non-empty string.");
+      throw new Error("createPlaylist()：name 必须是非空字符串。");
     }
     if (options?.public === true && options?.collaborative === true) {
-      throw new Error("createPlaylist(): a collaborative playlist must be private (public and collaborative cannot both be true).");
+      throw new Error("createPlaylist()：协作播放列表必须是私有的（public 和 collaborative 不能同时为 true）。");
     }
     const action = this.#gk.preparePlaylistCreate(name, options);
     await this.#gk.submitActionForApproval(this.#queue, action, {
-      title: `Create playlist "${name}"`,
-      description: `Create a new ${options?.public ? "public" : "private"} playlist named "${name}".`,
+      title: `创建播放列表“${name}”`,
+      description: `创建名为“${name}”的新${options?.public ? "公开" : "私密"}播放列表。`,
       implementsRevert: true,
     });
     return new SpotifyPlaylistImpl(this.#gk, this.#queue.dup(), action.provisionalId);
@@ -2427,7 +2425,7 @@ const configuratorTokenGetters = new WeakMap<object, () => Promise<string>>();
 
 function configuratorApi(target: object): SpotifyApi {
   const getToken = configuratorTokenGetters.get(target);
-  if (!getToken) throw new Error("Spotify configurator is not initialized.");
+  if (!getToken) throw new Error("Spotify 配置器尚未初始化。");
   return new SpotifyApi(getToken);
 }
 

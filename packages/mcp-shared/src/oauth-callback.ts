@@ -17,7 +17,7 @@ export async function handleOAuthCallback(
   if (error) {
     const detail = url.searchParams.get("error_description") ?? error;
     return htmlResponse(errorPageHtml(
-      "Authorization failed", `${detail} Start the connection again.`), 400);
+      "授权失败", `${detail} 请重新开始连接。`), 400);
   }
 
   const state = url.searchParams.get("state") ?? "";
@@ -39,7 +39,7 @@ export async function handleOAuthCallback(
   } catch (err) {
     log.warn("oauth code exchange failed", { event: "connect.oauth.failed", error: err });
     return htmlResponse(errorPageHtml(
-      "Could not finish connecting", err instanceof Error ? err.message : String(err)), 502);
+      "无法完成连接", err instanceof Error ? err.message : String(err)), 502);
   }
   return htmlResponse(SELF_CLOSING_HTML);
 }

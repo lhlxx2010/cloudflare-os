@@ -46,7 +46,7 @@ export function createRateLimitedCapability(
     while (inFlight < options.maxConcurrency && queue.length > 0) {
       if (startedCalls.length >= options.maxCallsPerMinute) {
         if (options.onRateLimit === 'reject') {
-          queue.shift()?.reject(new Error(`${options.label} made too many requests.`))
+          queue.shift()?.reject(new Error(`${options.label}请求过于频繁。`))
           continue
         }
         // Throttle: pause and resume once the oldest call ages out of the window (a completion may
@@ -59,7 +59,7 @@ export function createRateLimitedCapability(
       }
       const call = queue.shift()!
       if (typeof capability?.[call.method] !== 'function') {
-        call.reject(new Error(`${options.label} method is not available: ${call.method}`))
+        call.reject(new Error(`${options.label}的方法不可用：${call.method}`))
         continue
       }
       startedCalls.push(Date.now())
@@ -81,7 +81,7 @@ export function createRateLimitedCapability(
       if (typeof property !== 'string') return undefined
       return (...args: unknown[]) => new Promise((resolve, reject) => {
         if (queue.length + inFlight >= options.maxPendingCalls) {
-          reject(new Error(`${options.label} has too many pending requests.`))
+          reject(new Error(`${options.label}的待处理请求过多。`))
           return
         }
         queue.push({ method: property, args, resolve, reject })

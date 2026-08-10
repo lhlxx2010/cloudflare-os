@@ -75,7 +75,7 @@ export default function OutOfCreditsModal({ open, onClose }: OutOfCreditsModalPr
       setAccounts(null)
       refresh()
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to select account'
+      const msg = err instanceof Error ? err.message : '选择账户失败'
       toasts.add({ title: msg, variant: 'error' })
     } finally {
       setSelecting(null)
@@ -90,7 +90,7 @@ export default function OutOfCreditsModal({ open, onClose }: OutOfCreditsModalPr
       <Dialog className="p-6 sm:w-[560px]" size="base">
         <Dialog.Title className="text-lg font-semibold mb-2 flex items-center gap-2">
           <CloudWarning size={22} weight="bold" className="text-kumo-warning" />
-          You've reached your free usage limit
+          你已达到免费用量上限
         </Dialog.Title>
 
         {usage === null ? (
@@ -99,44 +99,42 @@ export default function OutOfCreditsModal({ open, onClose }: OutOfCreditsModalPr
           <div className="space-y-4">
             {!connected ? (
               <p className="text-sm text-kumo-subtle">
-                You've used all {usage.dailyLimit} of your free {usage.dailyLimit === 1 ? 'request' : 'requests'} for
-                today. Connect your Cloudflare account to keep building now — usage beyond the free
-                tier is billed to your own Cloudflare AI Gateway credits
+                你今天的 {usage.dailyLimit} 次免费请求已全部用完。连接 Cloudflare 账户即可继续创作，
+                超出免费用量的部分将从你自己的 Cloudflare AI Gateway 额度中结算
                 {usage.resetAt ? (
                   <>
-                    {' '}— or wait: your free {usage.dailyLimit === 1 ? 'request resets' : 'requests reset'} at
-                    00:00 UTC, in <ResetCountdown resetAt={usage.resetAt} onElapsed={refresh} />.
+                    {' '}；你也可以等待免费用量在 00:00 UTC 重置，距离重置还有{' '}
+                    <ResetCountdown resetAt={usage.resetAt} onElapsed={refresh} />。
                   </>
-                ) : '.'}
+                ) : '。'}
               </p>
             ) : needsSelection ? (
               <p className="text-sm text-kumo-subtle">
-                Your Cloudflare connection has access to multiple accounts. Choose which one's AI
-                Gateway credits should be billed for usage beyond the free tier.
+                你的 Cloudflare 连接可以访问多个账户。请选择一个账户，用其 AI Gateway 额度
+                结算超出免费用量的部分。
               </p>
             ) : (
               <p className="text-sm text-kumo-subtle">
-                Your Cloudflare account is connected
+                你的 Cloudflare 账户已连接
                 {usage.balance !== null && (
-                  <> with a balance of <strong>${usage.balance.toFixed(2)}</strong></>
+                  <>，余额为 <strong>${usage.balance.toFixed(2)}</strong></>
                 )}
-                , but it's below the minimum needed to continue. Add credits to your AI Gateway to
-                keep building now
+                ，但余额低于继续使用所需的最低额度。向 AI Gateway 添加额度即可继续创作
                 {usage.resetAt ? (
                   <>
-                    {' '}or wait — your free {usage.dailyLimit === 1 ? 'request resets' : 'requests reset'} at
-                    00:00 UTC, in <ResetCountdown resetAt={usage.resetAt} onElapsed={refresh} />.
+                    {' '}；你也可以等待免费用量在 00:00 UTC 重置，距离重置还有{' '}
+                    <ResetCountdown resetAt={usage.resetAt} onElapsed={refresh} />。
                   </>
-                ) : '.'}
+                ) : '。'}
               </p>
             )}
 
             {needsSelection && (
               <div className="flex flex-col gap-2">
                 {accounts === null ? (
-                  <p className="text-sm text-kumo-subtle">Loading accounts…</p>
+                  <p className="text-sm text-kumo-subtle">正在加载账户…</p>
                 ) : accounts.length === 0 ? (
-                  <p className="text-sm text-kumo-subtle">No accounts available on this connection.</p>
+                  <p className="text-sm text-kumo-subtle">此连接没有可用账户。</p>
                 ) : (
                   accounts.map((a) => (
                     <Button
@@ -155,14 +153,14 @@ export default function OutOfCreditsModal({ open, onClose }: OutOfCreditsModalPr
             )}
 
             <p className="text-sm text-kumo-subtle">
-              Learn more about{' '}
+              进一步了解{' '}
               <a
                 href="https://developers.cloudflare.com/ai-gateway/features/unified-billing/"
                 target="_blank"
                 rel="noreferrer"
                 className="underline"
               >
-                AI Gateway unified billing
+                AI Gateway 统一计费
               </a>
               .
             </p>
@@ -170,22 +168,22 @@ export default function OutOfCreditsModal({ open, onClose }: OutOfCreditsModalPr
             <div className="flex items-center justify-end gap-2 pt-2">
               {!connected ? (
                 <>
-                  <Button variant="secondary" onClick={onClose}>Maybe later</Button>
+                  <Button variant="secondary" onClick={onClose}>稍后再说</Button>
                   <Button variant="primary" onClick={connect} loading={connecting}>
                     <Lightning size={16} weight="bold" />
-                    Connect Cloudflare
+                    连接 Cloudflare
                   </Button>
                 </>
               ) : needsSelection ? (
-                <Button variant="secondary" onClick={onClose}>Close</Button>
+                <Button variant="secondary" onClick={onClose}>关闭</Button>
               ) : (
                 <>
-                  <Button variant="secondary" onClick={onClose}>Close</Button>
+                  <Button variant="secondary" onClick={onClose}>关闭</Button>
                   <Button
                     variant="primary"
                     onClick={() => window.open(buildAddCreditsUrl(usage.accountId), '_blank')}
                   >
-                    Add credits in Cloudflare
+                    在 Cloudflare 中添加额度
                   </Button>
                 </>
               )}

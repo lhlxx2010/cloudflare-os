@@ -70,15 +70,15 @@ export async function exchangeAuthCode(
   if (!response.ok) {
     if (isJson) {
       let body = await response.json<any>();
-      throw new Error(`Failed to obtain refresh token: ${body.error} ${body.error_description}`);
+      throw new Error(`获取刷新令牌失败：${body.error} ${body.error_description}`);
     } else {
       throw new Error(
-          `Failed to obtain refresh token: ${response.status} ${response.statusText}`);
+          `获取刷新令牌失败：${response.status} ${response.statusText}`);
     }
   }
 
   if (!isJson) {
-    throw new Error("Token endpoint didn't return JSON?");
+    throw new Error("令牌端点未返回 JSON。");
   }
 
   let body = await response.json<any>();
@@ -133,11 +133,11 @@ export async function getAccessToken(
                  detail: body.error_description ?? "admin_policy_enforced" };
       }
       throw new Error(
-          `Failed to refresh access token: ${body.error} ${body.error_description}`);
+          `刷新访问令牌失败：${body.error} ${body.error_description}`);
     }
 
     let errorText = await readErrorText(response);
-    throw new Error(`Failed to refresh access token: ${response.status} ${errorText}`);
+    throw new Error(`刷新访问令牌失败：${response.status} ${errorText}`);
   }
 
   const data = await response.json() as {
@@ -166,7 +166,7 @@ export async function getGoogleAccountDescription(accessToken: string)
 
   if (!response.ok) {
     response.body?.cancel();
-    throw new Error(`Failed to fetch user info: ${response.status} ${response.statusText}`);
+    throw new Error(`获取用户信息失败：${response.status} ${response.statusText}`);
   }
 
   let data: any = await response.json();
@@ -193,7 +193,7 @@ export async function getGoogleVerifiedEmail(accessToken: string): Promise<strin
 
   if (!response.ok) {
     response.body?.cancel();
-    throw new Error(`Failed to fetch user info: ${response.status} ${response.statusText}`);
+    throw new Error(`获取用户信息失败：${response.status} ${response.statusText}`);
   }
 
   let data: any = await response.json();
@@ -230,10 +230,10 @@ export async function revokeGoogleToken(
       // Token may have been revoked previously, or may have never been valid. We don't really
       // know. But for the sake of idempotency, treat this as success.
     } else {
-      throw new Error(`Failed to revoke token: ${body.error}`);
+      throw new Error(`撤销令牌失败：${body.error}`);
     }
   } else {
-    throw new Error(`Failed to revoke token: ${response.status} ${response.statusText}`);
+    throw new Error(`撤销令牌失败：${response.status} ${response.statusText}`);
   }
 }
 
@@ -330,16 +330,16 @@ export function normalizeEmailRecipients(inputs: string[]): string[] {
   for (const input of inputs) {
     // oxlint-disable-next-line no-control-regex -- intentionally rejecting control chars (header-injection guard)
     if (/[\x00-\x1f\x7f]/.test(input)) {
-      throw new Error("Email addresses must not contain control characters.");
+      throw new Error("电子邮件地址不得包含控制字符。");
     }
     const parsed = addressParser(input, { flatten: true });
     if (parsed.length !== 1 || !parsed[0].address || parsed[0].group) {
-      throw new Error(`Expected exactly one email address, got: ${input}`);
+      throw new Error(`应仅提供一个电子邮件地址，实际为：${input}`);
     }
     const address = parsed[0].address.trim();
     const at = address.lastIndexOf('@');
     if (at <= 0 || at === address.length - 1 || address.length > 320 || /[<>\s,;]/.test(address)) {
-      throw new Error(`Invalid email address: ${input}`);
+      throw new Error(`电子邮件地址无效：${input}`);
     }
     const key = address.toLowerCase();
     if (!seen.has(key)) {
@@ -356,7 +356,7 @@ const MAX_SUBJECT_BYTES = 998;
 function validateMessageId(value: string, label: string): string {
   const trimmed = value.trim();
   if (!MESSAGE_ID_RE.test(trimmed)) {
-    throw new Error(`Invalid ${label}: ${value}`);
+    throw new Error(`${label} 无效：${value}`);
   }
   return trimmed;
 }
@@ -384,7 +384,7 @@ function foldReferences(references: string | undefined, parentId: string): strin
 }
 
 function normalizeTextBody(body: string): string {
-  if (body.includes('\0')) throw new Error("Email body must not contain NUL bytes.");
+  if (body.includes('\0')) throw new Error("邮件正文不得包含 NUL 字节。");
   return body.replace(/\r\n|\r|\n/g, '\r\n');
 }
 
@@ -450,7 +450,7 @@ function buildEncodedEmail(options: {
   // oxlint-disable-next-line no-control-regex -- intentionally rejecting control chars (header-injection guard)
   if (/[\x00-\x1f\x7f]/.test(options.subject) ||
       new TextEncoder().encode(options.subject).byteLength > MAX_SUBJECT_BYTES) {
-    throw new Error(`Email subject must be at most ${MAX_SUBJECT_BYTES} UTF-8 bytes and contain no control characters.`);
+    throw new Error(`邮件主题最多为 ${MAX_SUBJECT_BYTES} 个 UTF-8 字节，且不得包含控制字符。`);
   }
 
   const from = normalizeEmailRecipients([options.from])[0];
@@ -493,7 +493,7 @@ function buildEncodedEmail(options: {
 const GMAIL_ID_RE = /^[a-zA-Z0-9_-]+$/;
 function validateGmailId(id: string, label: string): void {
   if (!GMAIL_ID_RE.test(id)) {
-    throw new Error(`Invalid ${label}: ${id}`);
+    throw new Error(`${label} 无效：${id}`);
   }
 }
 
@@ -560,7 +560,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to list threads: ${response.status} ${errorText}`);
+      throw new Error(`列出会话失败：${response.status} ${errorText}`);
     }
 
     const data = await response.json() as {
@@ -584,7 +584,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to get thread: ${response.status} ${errorText}`);
+      throw new Error(`获取会话失败：${response.status} ${errorText}`);
     }
 
     const thread = await response.json() as {
@@ -612,7 +612,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to get thread info: ${response.status} ${errorText}`);
+      throw new Error(`获取会话信息失败：${response.status} ${errorText}`);
     }
 
     const thread = await response.json() as GmailThreadMetadata;
@@ -653,7 +653,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to modify thread: ${response.status} ${errorText}`);
+      throw new Error(`修改会话失败：${response.status} ${errorText}`);
     }
     await response.body?.cancel();
   }
@@ -669,7 +669,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to trash thread: ${response.status} ${errorText}`);
+      throw new Error(`将会话移至回收站失败：${response.status} ${errorText}`);
     }
     await response.body?.cancel();
   }
@@ -692,7 +692,7 @@ export class GmailApi {
     const response = await this.authedFetch(url.toString());
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to get message participants: ${response.status} ${errorText}`);
+      throw new Error(`获取邮件参与者失败：${response.status} ${errorText}`);
     }
 
     const data = await response.json() as {
@@ -718,7 +718,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to get message: ${response.status} ${errorText}`);
+      throw new Error(`获取邮件失败：${response.status} ${errorText}`);
     }
 
     return await response.json() as GmailMessageRaw;
@@ -848,7 +848,7 @@ export class GmailApi {
     cc = normalizeEmailRecipients(cc)
       .filter(address => !to.some(item => item.toLowerCase() === address.toLowerCase()));
     if (to.length === 0) {
-      throw new Error("Cannot construct a reply: source message has no usable recipient.");
+      throw new Error("无法构建回复：原邮件没有可用的收件人。");
     }
 
     // Build subject (add Re: if not already present)
@@ -859,7 +859,7 @@ export class GmailApi {
     // Build References header
     const originalMsgId = original.messageId?.trim();
     if (!originalMsgId) {
-      throw new Error("Cannot construct a threaded reply: source message has no Message-ID header.");
+      throw new Error("无法构建话题回复：原邮件没有 Message-ID 标头。");
     }
     const parentId = validateMessageId(originalMsgId, 'source Message-ID');
     const references = foldReferences(original.references, parentId);
@@ -897,8 +897,7 @@ export class GmailApi {
     const sourceBytes = base64UrlDecodedByteLength(originalMessage.raw);
     if (sourceBytes > MAX_FORWARD_SOURCE_BYTES) {
       throw new Error(
-        `Cannot forward this message: the original is ${sourceBytes} bytes, exceeding the ` +
-        `${MAX_FORWARD_SOURCE_BYTES}-byte safe forwarding limit.`);
+        `无法转发此邮件：原邮件大小为 ${sourceBytes} 字节，超过 ${MAX_FORWARD_SOURCE_BYTES} 字节的安全转发限制。`);
     }
 
     const normalizedTo = normalizeEmailRecipients(to);
@@ -907,7 +906,7 @@ export class GmailApi {
     const subject = originalSubject.toLowerCase().startsWith('fwd:')
       ? originalSubject
       : `Fwd: ${originalSubject}`;
-    const forwardBody = body ?? 'Forwarded message attached.';
+    const forwardBody = body ?? '已附上转发的邮件。';
     const attachment = {
       filename: 'forwarded-message.eml',
       // RFC 2045 forbids base64 transfer encoding for message/* composite
@@ -991,12 +990,12 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to send message: ${response.status} ${errorText}`);
+      throw new Error(`发送邮件失败：${response.status} ${errorText}`);
     }
 
     const result = await response.json() as { id?: string; threadId?: string };
     if (!result.id || !result.threadId) {
-      throw new Error("Gmail accepted the send request but returned an invalid response.");
+      throw new Error("Gmail 已接受发送请求，但返回了无效响应。");
     }
     return {id: result.id, threadId: result.threadId};
   }
@@ -1013,7 +1012,7 @@ export class GmailApi {
 
     if (!response.ok) {
       const errorText = await readErrorText(response);
-      throw new Error(`Failed to list labels: ${response.status} ${errorText}`);
+      throw new Error(`列出标签失败：${response.status} ${errorText}`);
     }
 
     const data = await response.json() as {

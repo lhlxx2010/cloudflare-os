@@ -140,12 +140,12 @@ describe("describeCall", () => {
     });
 
   it("says whose word the read classification is", () => {
-    expect(call("read", "server-annotation").description).toContain("from the server itself");
-    expect(call("read", "default").description).toContain("Treated as read-only by this deployment");
+    expect(call("read", "server-annotation").description).toContain("由服务器自身提供");
+    expect(call("read", "default").description).toContain("此部署将该工具视为只读");
   });
 
   it("tells an approver that nothing has happened yet", () => {
-    expect(call("action", "default").description).toContain("Nothing has been sent yet.");
+    expect(call("action", "default").description).toContain("尚未发送任何内容");
   });
 
   it("survives arguments that cannot be serialized", () => {
@@ -158,7 +158,7 @@ describe("describeCall", () => {
       toolArgs: cyclic,
       mode: "action",
       classifiedBy: "default",
-    }).description).toContain("could not be displayed");
+    }).description).toContain("无法显示参数");
   });
 });
 
@@ -203,7 +203,7 @@ describe("describeCall with untrusted server text", () => {
     const rendered = call("Sends a message.");
     expect(rendered).toContain("> Sends a message.");
     expect(rendered).toContain("a@b.c");
-    expect(rendered).toContain("Endpoint: `https://mcp.acme.com/mcp`");
+    expect(rendered).toContain("端点：`https://mcp.acme.com/mcp`");
   });
 });
 

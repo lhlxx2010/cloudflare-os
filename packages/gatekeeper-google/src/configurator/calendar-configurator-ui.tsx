@@ -17,32 +17,32 @@ export default {
   render({ values, setValues, ui }) {
     const availabilityMode = values.availabilityMode === "allVisible" ? "allVisible" : "thisCalendar";
     return <Section>
-      <Field label="Calendar" description="Choose the calendar this connection can read and manage.">
+      <Field label="日历" description="选择此连接可以读取和管理的日历。">
         <Autocomplete
           name="calendarId"
           value={values.calendarId}
-          placeholder="Search calendars..."
+          placeholder="搜索日历…"
           loadOptions={query => ui.listCalendars(query)}
           onChange={calendarId => setValues({ calendarId })}
         />
       </Field>
 
       <Field
-        label="Availability lookup"
-        description="Free/busy checks show only busy/free blocks, never event details."
+        label="空闲状态查询"
+        description="忙闲检查只显示忙碌或空闲的时间段，不会显示事件详情。"
       >
         <RadioCards
           value={availabilityMode}
           options={[
             {
               value: "thisCalendar",
-              title: "This calendar only",
-              description: "Check availability for this calendar only.",
+              title: "仅此日历",
+              description: "仅检查此日历的空闲状态。",
             },
             {
               value: "allVisible",
-              title: "All calendars visible to me",
-              description: "Check anyone visible to your account. Collaborators must also be able to see their availability.",
+              title: "我可见的所有日历",
+              description: "检查你的账户可见的任何人；协作者也必须能够查看相应的空闲状态。",
             },
           ]}
           onChange={nextMode => {

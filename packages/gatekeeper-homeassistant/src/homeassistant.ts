@@ -139,7 +139,7 @@ const HOMEASSISTANT_ICON: AvatarImage = { url: HOMEASSISTANT_LOGO_URL };
 const INSTANCE_RESOURCE: SupportedResource = {
   urlPattern: "https://*",
   title: "Home Assistant",
-  description: "Access to a Home Assistant instance: every area, device, entity, and dashboard.",
+  description: "访问 Home Assistant 实例中的每个区域、设备、实体和仪表板。",
   icon: HOMEASSISTANT_ICON,
 };
 
@@ -148,29 +148,29 @@ const INSTANCE_RESOURCE: SupportedResource = {
 // `https://*` whole-instance resource, and so URLPattern.test() routes correctly.
 const AREA_RESOURCE: SupportedResource = {
   urlPattern: "https://homeassistant.local/_resource/area/:areaId",
-  title: "Home Assistant Area",
-  description: "Access to a single Home Assistant area (room): its devices and entities only.",
+  title: "Home Assistant 区域",
+  description: "仅访问单个 Home Assistant 区域（房间）中的设备和实体。",
   icon: HOMEASSISTANT_ICON,
 };
 
 const LABEL_RESOURCE: SupportedResource = {
   urlPattern: "https://homeassistant.local/_resource/label/:labelId",
-  title: "Home Assistant Label",
-  description: "Access to all Home Assistant entities carrying a particular label.",
+  title: "Home Assistant 标签",
+  description: "访问带有指定标签的所有 Home Assistant 实体。",
   icon: HOMEASSISTANT_ICON,
 };
 
 const DEVICE_RESOURCE: SupportedResource = {
   urlPattern: "https://homeassistant.local/_resource/device/:deviceId",
-  title: "Home Assistant Device",
-  description: "Access to a single physical device and the entities it provides.",
+  title: "Home Assistant 设备",
+  description: "访问单个实体设备及其提供的实体。",
   icon: HOMEASSISTANT_ICON,
 };
 
 const ENTITY_RESOURCE: SupportedResource = {
   urlPattern: "https://homeassistant.local/_resource/entity/:entityId",
-  title: "Home Assistant Entity",
-  description: "Access to a single Home Assistant entity (light, sensor, switch, etc).",
+  title: "Home Assistant 实体",
+  description: "访问单个 Home Assistant 实体，例如灯、传感器或开关。",
   icon: HOMEASSISTANT_ICON,
 };
 
@@ -186,11 +186,11 @@ const SUPPORTED_RESOURCES: SupportedResource[] = [
 // HTML pages for the connect flow
 
 const CONNECT_FORM_HTML = (params: { actionUrl: string; error?: string }) => `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Connect Home Assistant</title>
+<title>连接 Home Assistant</title>
 <style>
   body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
   .card { background: white; padding: 2rem; max-width: 540px; width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -208,51 +208,51 @@ const CONNECT_FORM_HTML = (params: { actionUrl: string; error?: string }) => `<!
 </head>
 <body>
   <div class="card">
-    <h1>Connect Home Assistant</h1>
-    <p>Provide the URL of your Home Assistant instance and a long-lived access token. Cloudflare OS will use these to read entity states and control devices.</p>
+    <h1>连接 Home Assistant</h1>
+    <p>请提供 Home Assistant 实例 URL 和长期访问令牌。NINT os 将使用它们读取实体状态并控制设备。</p>
     ${params.error ? `<div class="error">${escapeHtml(params.error)}</div>` : ""}
     <form method="POST" action="${escapeAttr(params.actionUrl)}">
       <label for="baseUrl">Home Assistant URL</label>
       <input id="baseUrl" name="baseUrl" type="url" required placeholder="https://homeassistant.local:8123" autofocus>
-      <div class="hint">Include the protocol (http:// or https://) and port if non-standard. No trailing slash.</div>
+      <div class="hint">请包含协议（http:// 或 https://）；若使用非标准端口，也请包含端口号。末尾不要添加斜杠。</div>
 
-      <label for="token">Long-Lived Access Token</label>
+      <label for="token">长期访问令牌</label>
       <input id="token" name="token" type="password" required placeholder="eyJhbGc...">
-      <div class="hint">Tokens never expire; they grant full account access until revoked in HA.</div>
+      <div class="hint">令牌不会过期；在 Home Assistant 中撤销前，它会授予完整的账户访问权限。</div>
 
       <details>
-        <summary>How to create a long-lived access token</summary>
+        <summary>如何创建长期访问令牌</summary>
         <ol>
-          <li>Open your Home Assistant in a browser.</li>
-          <li>Click your username in the bottom-left corner.</li>
-          <li>Select the <b>Security</b> tab.</li>
-          <li>Scroll to the bottom and click <b>Create Token</b> under "Long-lived access tokens".</li>
-          <li>Give it a name like "Cloudflare OS", then copy the token and paste it above.</li>
+          <li>在浏览器中打开 Home Assistant。</li>
+          <li>点击左下角的用户名。</li>
+          <li>选择<b>安全</b>标签页。</li>
+          <li>滚动到底部，在“长期访问令牌”下点击<b>创建令牌</b>。</li>
+          <li>为其指定类似“NINT os”的名称，然后复制令牌并粘贴到上方。</li>
         </ol>
       </details>
 
-      <button type="submit">Connect</button>
+      <button type="submit">连接</button>
     </form>
   </div>
 </body>
 </html>`;
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Connected</title></head>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>连接成功</title></head>
 <body style="font-family: system-ui, sans-serif; padding: 2rem; text-align: center;">
   <script>window.close();</script>
-  <h2 style="color: #03a9f4;">Connected!</h2>
-  <p>Home Assistant has been linked to Cloudflare OS. You may close this tab.</p>
+  <h2 style="color: #03a9f4;">连接成功！</h2>
+  <p>Home Assistant 已连接到 NINT os。你可以关闭此标签页。</p>
 </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Link Expired</title></head>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>链接已过期</title></head>
 <body style="font-family: system-ui, sans-serif; padding: 2rem; text-align: center;">
-  <h2 style="color: #d97706;">Authorization Link Expired</h2>
-  <p>This connection link is invalid or has expired. Please return to Cloudflare OS and start over.</p>
+  <h2 style="color: #1d4ed8;">授权链接已过期</h2>
+  <p>此连接链接无效或已过期。请返回 NINT os 并重新开始。</p>
 </body>
 </html>`;
 
@@ -272,7 +272,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     const relPath = url.pathname.slice(basePath.length);
     const path = relPath.slice(1).split("/");
@@ -300,13 +300,13 @@ export default {
         try {
           formData = await req.formData();
         } catch {
-          return new Response("Invalid form submission.", { status: 400 });
+          return new Response("提交的表单无效。", { status: 400 });
         }
         const baseUrlInput = String(formData.get("baseUrl") ?? "").trim();
         const tokenInput = String(formData.get("token") ?? "").trim();
         if (!baseUrlInput || !tokenInput) {
           return new Response(
-            CONNECT_FORM_HTML({ actionUrl: req.url, error: "Both URL and token are required." }),
+            CONNECT_FORM_HTML({ actionUrl: req.url, error: "URL 和令牌均为必填项。" }),
             { headers: { "Content-Type": "text/html; charset=utf-8" }, status: 400 },
           );
         }
@@ -316,13 +316,13 @@ export default {
         try {
           const u = new URL(baseUrlInput);
           if (u.protocol !== "http:" && u.protocol !== "https:") {
-            throw new Error("URL must use http:// or https://");
+            throw new Error("URL 必须使用 http:// 或 https://");
           }
           // Strip trailing slash
           normalizedUrl = `${u.protocol}//${u.host}${stripTrailingSlashes(u.pathname)}`;
         } catch (e: any) {
           return new Response(
-            CONNECT_FORM_HTML({ actionUrl: req.url, error: `Invalid URL: ${e.message}` }),
+            CONNECT_FORM_HTML({ actionUrl: req.url, error: `URL 无效：${e.message}` }),
             { headers: { "Content-Type": "text/html; charset=utf-8" }, status: 400 },
           );
         }
@@ -345,7 +345,7 @@ export default {
       }
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -359,11 +359,10 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       displayName: "Home Assistant",
       url: "https://www.home-assistant.io/",
       logo: HOMEASSISTANT_ICON,
-      tagline: "Control your smart home, read sensor state, and edit Lovelace dashboards.",
+      tagline: "控制智能家居、读取传感器状态并编辑 Lovelace 仪表板",
       description:
-          "Connect your Home Assistant instance so Cloudflare OS can read entity state, call services " +
-          "to control devices, edit dashboards, and render templates. Build agents that automate " +
-          "your home, alert on sensor changes, or generate custom dashboards.",
+          "连接你的 Home Assistant 实例，让 NINT os 读取实体状态、调用服务控制设备、编辑仪表板并渲染模板。" +
+          "你可以构建用于实现家庭自动化、在传感器发生变化时发出提醒，或生成自定义仪表板的智能体。",
     };
   }
 
@@ -448,7 +447,7 @@ export class UserAccount extends DurableObject<Env> {
     } catch (e: any) {
       const msg = e instanceof HomeAssistantError
         ? e.message
-        : `Unable to reach Home Assistant: ${e?.message ?? e}`;
+        : `无法连接 Home Assistant：${e?.message ?? e}`;
       return { kind: "error", message: msg };
     }
 
@@ -462,7 +461,7 @@ export class UserAccount extends DurableObject<Env> {
     if (!callback) {
       // Callback evicted — should not normally happen.
       this.ctx.storage.kv.delete("credentials");
-      return { kind: "error", message: "Connection callback expired. Please restart." };
+      return { kind: "error", message: "连接回调已过期，请重新开始。" };
     }
 
     const reconnecting = this.ctx.storage.kv.get<boolean>("reconnecting");
@@ -471,7 +470,7 @@ export class UserAccount extends DurableObject<Env> {
       try {
         await callback.credentialsRestored();
       } catch (e: any) {
-        return { kind: "error", message: `Failed to notify workshop: ${e?.message ?? e}` };
+        return { kind: "error", message: `通知 NINT os 失败：${e?.message ?? e}` };
       }
     } else {
       try {
@@ -479,7 +478,7 @@ export class UserAccount extends DurableObject<Env> {
         await callback.complete(this.ctx.exports.HomeAssistantUserImpl({ props }));
       } catch (e: any) {
         this.ctx.storage.kv.delete("credentials");
-        return { kind: "error", message: `Failed to notify workshop: ${e?.message ?? e}` };
+        return { kind: "error", message: `通知 NINT os 失败：${e?.message ?? e}` };
       }
     }
 
@@ -490,7 +489,7 @@ export class UserAccount extends DurableObject<Env> {
   getCredentials(): HomeAssistantCredentials {
     const creds = this.ctx.storage.kv.get<StoredCredentials>("credentials");
     if (!creds) {
-      throw new Error("Home Assistant credentials are not configured for this account.");
+      throw new Error("尚未为此账户配置 Home Assistant 凭据。");
     }
     return creds;
   }
@@ -544,7 +543,7 @@ export class HomeAssistantUserImpl
     let uniqueName = creds.baseUrl;
     try {
       const config = await rest.getConfig();
-      if (config?.location_name) displayName = `Home Assistant (${config.location_name})`;
+      if (config?.location_name) displayName = `Home Assistant（${config.location_name}）`;
       if (config?.location_name) uniqueName = `${config.location_name} @ ${creds.baseUrl}`;
     } catch (e) {
       if (e instanceof HomeAssistantError && e.isAuthError) {
@@ -599,7 +598,7 @@ export class HomeAssistantUserImpl
           ui: new RpcStub(new EntityConfiguratorUI(credsGetter)),
         };
       default:
-        throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+        throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
     }
   }
 
@@ -611,10 +610,10 @@ export class HomeAssistantUserImpl
     try {
       parsed = new URL(url);
     } catch (e: any) {
-      throw new Error(`Invalid Home Assistant URL "${url}": ${e?.message ?? e}`, { cause: e });
+      throw new Error(`Home Assistant URL“${url}”无效：${e?.message ?? e}`, { cause: e });
     }
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new Error(`Unsupported URL scheme for Home Assistant: ${parsed.protocol}`);
+      throw new Error(`Home Assistant 不支持的 URL 协议：${parsed.protocol}`);
     }
 
     const userObjectId = this.ctx.props.userObjectId;
@@ -657,7 +656,7 @@ export class HomeAssistantUserImpl
               resource: ENTITY_RESOURCE,
             };
           default:
-            throw new Error(`Unsupported Home Assistant resource kind: ${kind}`);
+            throw new Error(`不支持的 Home Assistant 资源类型：${kind}`);
         }
       }
     }
@@ -726,14 +725,14 @@ class InstanceConfiguratorUI extends RpcTarget implements HomeAssistantInstanceC
 
   async resourceUrl(): Promise<string> {
     const getter = instanceConfiguratorGetters.get(this);
-    if (!getter) throw new Error("Configurator is not initialized.");
+    if (!getter) throw new Error("配置器尚未初始化。");
     const creds = await getter();
     return creds.baseUrl;
   }
 
   async describeInstance(): Promise<{ name: string; baseUrl: string }> {
     const getter = instanceConfiguratorGetters.get(this);
-    if (!getter) throw new Error("Configurator is not initialized.");
+    if (!getter) throw new Error("配置器尚未初始化。");
     const creds = await getter();
     let name = "Home Assistant";
     try {
@@ -759,7 +758,7 @@ const resourceConfiguratorGetters = new WeakMap<
 
 async function getResourceConfiguratorCreds(target: object): Promise<HomeAssistantCredentials> {
   const getter = resourceConfiguratorGetters.get(target);
-  if (!getter) throw new Error("Configurator is not initialized.");
+  if (!getter) throw new Error("配置器尚未初始化。");
   return await getter();
 }
 
@@ -809,7 +808,7 @@ class AreaConfiguratorUI extends RpcTarget implements HomeAssistantAreaConfigura
   }
 
   async resourceUrl(areaId: string | null | undefined): Promise<string> {
-    if (!areaId) throw new Error("No area selected.");
+    if (!areaId) throw new Error("尚未选择区域。");
     return buildAreaUrl(areaId);
   }
 }
@@ -842,7 +841,7 @@ class LabelConfiguratorUI extends RpcTarget implements HomeAssistantLabelConfigu
   }
 
   async resourceUrl(labelId: string | null | undefined): Promise<string> {
-    if (!labelId) throw new Error("No label selected.");
+    if (!labelId) throw new Error("尚未选择标签。");
     return buildLabelUrl(labelId);
   }
 }
@@ -878,7 +877,7 @@ class DeviceConfiguratorUI extends RpcTarget implements HomeAssistantDeviceConfi
   }
 
   async resourceUrl(deviceId: string | null | undefined): Promise<string> {
-    if (!deviceId) throw new Error("No device selected.");
+    if (!deviceId) throw new Error("尚未选择设备。");
     return buildDeviceUrl(deviceId);
   }
 }
@@ -934,7 +933,7 @@ class EntityConfiguratorUI extends RpcTarget implements HomeAssistantEntityConfi
   }
 
   async resourceUrl(entityId: string | null | undefined): Promise<string> {
-    if (!entityId) throw new Error("No entity selected.");
+    if (!entityId) throw new Error("尚未选择实体。");
     return buildEntityUrl(entityId);
   }
 }
@@ -1062,7 +1061,7 @@ export class HomeAssistantGatekeeperImpl
         return {
           url: baseUrl,
           title,
-          snippet: `Whole-instance access to ${title} (${baseUrl}).`,
+          snippet: `访问 ${title}（${baseUrl}）的整个实例。`,
           suggestedBindingName: "HOMEASSISTANT",
           tsType: "HomeAssistantSession",
         };
@@ -1073,8 +1072,8 @@ export class HomeAssistantGatekeeperImpl
         const name = area?.name ?? resourceId!;
         return {
           url: `${baseUrl}/config/areas/area/${encodeURIComponent(resourceId!)}`,
-          title: `Area: ${name}`,
-          snippet: `Home Assistant area "${name}".`,
+          title: `区域：${name}`,
+          snippet: `Home Assistant 区域“${name}”。`,
           suggestedBindingName: "HOMEASSISTANT_AREA",
           tsType: "Area",
         };
@@ -1085,8 +1084,8 @@ export class HomeAssistantGatekeeperImpl
         const name = label?.name ?? resourceId!;
         return {
           url: `${baseUrl}/config/labels`,
-          title: `Label: ${name}`,
-          snippet: `All entities carrying the Home Assistant label "${name}".`,
+          title: `标签：${name}`,
+          snippet: `带有 Home Assistant 标签“${name}”的所有实体。`,
           suggestedBindingName: "HOMEASSISTANT_LABEL",
           tsType: "Label",
         };
@@ -1097,8 +1096,8 @@ export class HomeAssistantGatekeeperImpl
         const name = device?.name_by_user ?? device?.name ?? resourceId!;
         return {
           url: `${baseUrl}/config/devices/device/${encodeURIComponent(resourceId!)}`,
-          title: `Device: ${name}`,
-          snippet: `Home Assistant device "${name}"${device?.manufacturer ? ` (${device.manufacturer}${device.model ? " " + device.model : ""})` : ""}.`,
+          title: `设备：${name}`,
+          snippet: `Home Assistant 设备“${name}”${device?.manufacturer ? `（${device.manufacturer}${device.model ? " " + device.model : ""}）` : ""}。`,
           suggestedBindingName: "HOMEASSISTANT_DEVICE",
           tsType: "Device",
         };
@@ -1108,8 +1107,8 @@ export class HomeAssistantGatekeeperImpl
         const name = summary?.name ?? resourceId!;
         return {
           url: `${baseUrl}/config/entities/entity/${encodeURIComponent(resourceId!)}`,
-          title: `Entity: ${name}`,
-          snippet: `Home Assistant entity \`${resourceId}\`.`,
+          title: `实体：${name}`,
+          snippet: `Home Assistant 实体 \`${resourceId}\`。`,
           suggestedBindingName: "HOMEASSISTANT_ENTITY",
           tsType: "Entity",
         };
@@ -1148,7 +1147,7 @@ export class HomeAssistantGatekeeperImpl
     // The overseer only knows the numeric action ID; the full action lives in DO storage.
     const pending = this.#getPending(actionId);
     if (!pending) {
-      throw new Error(`No queued Home Assistant action exists with id ${actionId}.`);
+      throw new Error(`不存在 ID 为 ${actionId} 的待处理 Home Assistant 操作。`);
     }
     const action = pending.action;
     const creds = await this.#getCreds();
@@ -1190,13 +1189,13 @@ export class HomeAssistantGatekeeperImpl
     // `applied:<id>` when the action was applied.
     const applied = this.#getApplied(actionId);
     if (!applied) {
-      throw new Error(`No applied Home Assistant action exists with id ${actionId}.`);
+      throw new Error(`不存在 ID 为 ${actionId} 的已应用 Home Assistant 操作。`);
     }
     const revertInfo = applied.revertInfo;
     const creds = await this.#getCreds();
     switch (revertInfo.type) {
       case "noRevert":
-        throw new Error("This action cannot be reverted.");
+        throw new Error("此操作无法撤销。");
       case "stateSnapshot": {
         // Open one WebSocket for the whole batch.
         const failures: string[] = [];
@@ -1955,7 +1954,7 @@ function coerceDate(value: string | Date): Date {
  * Used in ObservationDescription text. Returns the empty string if no overlay was applied. */
 function pendingSuffix(appliedCount: number): string {
   if (appliedCount <= 0) return "";
-  return ` (includes ${appliedCount} pending change${appliedCount === 1 ? "" : "s"})`;
+  return `（包含 ${appliedCount} 项待处理更改）`;
 }
 
 function buildTarget(target?: ServiceCallTarget): HATarget | undefined {
@@ -1988,11 +1987,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
   async getConfig(): Promise<HomeAssistantConfig> {
     const config = normalizeConfig(await callApi(this.#ctx, (r) => r.getConfig()));
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read Home Assistant configuration",
+      title: "读取 Home Assistant 配置",
       description:
-        `Fetched the HA instance configuration ` +
-        `(location: "${config.locationName}", version ${config.version}, ` +
-        `timezone ${config.timeZone}).`,
+        `已获取 HA 实例配置（位置：“${config.locationName}”，版本 ${config.version}，` +
+        `时区 ${config.timeZone}）。`,
     });
     return config;
   }
@@ -2003,8 +2001,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     );
     const result = list.map(normalizeArea);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant areas",
-      description: `Listed ${result.length} area${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Home Assistant 区域",
+      description: `列出 ${result.length} 个区域。`,
     });
     return result;
   }
@@ -2019,8 +2017,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     });
     const result = list.map(normalizeFloor);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant floors",
-      description: `Listed ${result.length} floor${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Home Assistant 楼层",
+      description: `列出 ${result.length} 个楼层。`,
     });
     return result;
   }
@@ -2035,8 +2033,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     });
     const result = list.map(normalizeLabel);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant labels",
-      description: `Listed ${result.length} label${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Home Assistant 标签",
+      description: `列出 ${result.length} 个标签。`,
     });
     return result;
   }
@@ -2047,8 +2045,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     );
     const result = list.map(normalizeDevice);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant devices",
-      description: `Listed ${result.length} device${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Home Assistant 设备",
+      description: `列出 ${result.length} 台设备。`,
     });
     return result;
   }
@@ -2068,10 +2066,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     }
     const filtered = applyEntityFilter(summaries, filter);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant entities",
+      title: "列出 Home Assistant 实体",
       description:
-        `Listed ${filtered.length} entit${filtered.length === 1 ? "y" : "ies"}` +
-        (filter ? ` (filter: ${JSON.stringify(filter)})` : "") +
+        `列出 ${filtered.length} 个实体` +
+        (filter ? `（筛选条件：${JSON.stringify(filter)}）` : "") +
         pendingSuffix(appliedCount) +
         ".",
     });
@@ -2088,8 +2086,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     }
     const result = [...set].toSorted();
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant integration domains",
-      description: `Listed ${result.length} domain${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Home Assistant 集成域",
+      description: `列出 ${result.length} 个域。`,
     });
     return result;
   }
@@ -2099,11 +2097,11 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     let services = normalizeServices(raw);
     if (domain) services = services.filter((s) => s.domain === domain);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Home Assistant services",
+      title: "列出 Home Assistant 服务",
       description:
-        `Listed ${services.length} service${services.length === 1 ? "" : "s"}` +
-        (domain ? ` in domain \`${domain}\`` : "") +
-        ".",
+        `列出 ${services.length} 个服务` +
+        (domain ? `，位于域 \`${domain}\`` : "") +
+        "。",
     });
     return services;
   }
@@ -2111,10 +2109,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
   async getArea(id: string): Promise<Area> {
     const snapshot = await this.#ctx.registrySnapshot();
     const area = snapshot.areas.find((a: any) => a.area_id === id);
-    if (!area) throw new Error(`Area not found: ${id}`);
+    if (!area) throw new Error(`未找到区域：${id}`);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open area capability`,
-      description: `Opened a capability for area "${area.name}" (\`${id}\`).`,
+      title: `打开区域能力`,
+      description: `打开区域“${area.name}”（\`${id}\`）的能力。`,
     });
     // Fork the context: the returned AreaImpl is a separate stub with its own approvalQueue
     // dup, so disposing it doesn't release ours.
@@ -2124,10 +2122,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
   async getLabel(id: string): Promise<Label> {
     const snapshot = await this.#ctx.registrySnapshot();
     const label = snapshot.labels.find((l: any) => l.label_id === id);
-    if (!label) throw new Error(`Label not found: ${id}`);
+    if (!label) throw new Error(`未找到标签：${id}`);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open label capability`,
-      description: `Opened a capability for label "${label.name}" (\`${id}\`).`,
+      title: `打开标签能力`,
+      description: `打开标签“${label.name}”（\`${id}\`）的能力。`,
     });
     return new LabelImpl(this.#ctx.fork(), id);
   }
@@ -2135,11 +2133,11 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
   async getDevice(id: string): Promise<Device> {
     const snapshot = await this.#ctx.registrySnapshot();
     const device = snapshot.devices.find((d: any) => d.id === id);
-    if (!device) throw new Error(`Device not found: ${id}`);
+    if (!device) throw new Error(`未找到设备：${id}`);
     const name = device.name_by_user ?? device.name ?? id;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open device capability`,
-      description: `Opened a capability for device "${name}" (\`${id}\`).`,
+      title: `打开设备能力`,
+      description: `打开设备“${name}”（\`${id}\`）的能力。`,
     });
     return new DeviceImpl(this.#ctx.fork(), id);
   }
@@ -2147,8 +2145,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
   async getEntity(entityId: string): Promise<Entity> {
     const state = await callApi(this.#ctx, (r) => r.getState(entityId));
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open entity capability`,
-      description: `Opened a capability for entity \`${entityId}\` (current state: ${state.state}).`,
+      title: `打开实体能力`,
+      description: `打开实体 \`${entityId}\` 的能力（当前状态：${state.state}）。`,
     });
     return new EntityImpl(this.#ctx.fork(), entityId);
   }
@@ -2159,8 +2157,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     // the capability in the approval queue. Actual dashboard reads (describe / getConfig) and
     // writes (saveConfig) authorize / submit themselves separately.
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open dashboard capability`,
-      description: `Opened a capability for Lovelace dashboard \`${urlPath}\`.`,
+      title: `打开仪表板能力`,
+      description: `打开 Lovelace 仪表板 \`${urlPath}\` 的能力。`,
     });
     return new DashboardImpl(this.#ctx.fork(), urlPath);
   }
@@ -2194,10 +2192,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     const result = await callApi(this.#ctx, (r) => r.renderTemplate(template, variables));
     const preview = template.length > 80 ? template.slice(0, 77) + "..." : template;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Render Jinja template",
+      title: "渲染 Jinja 模板",
       description:
-        `Rendered template \`${preview}\`. Templates can read every entity in the instance, ` +
-        `so the result may incorporate state from anywhere in Home Assistant.`,
+        `已渲染模板 \`${preview}\`。模板可以读取实例中的每个实体，` +
+        `因此结果可能包含 Home Assistant 中任意位置的状态。`,
     });
     return result;
   }
@@ -2212,10 +2210,10 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     );
     const histories = normalizeHistoryBundle(bundle);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read entity history",
+      title: "读取实体历史记录",
       description:
-        `Read state history for ${entityIds.length} entit${entityIds.length === 1 ? "y" : "ies"} ` +
-        `from ${coerceDate(start).toISOString()}${end ? ` to ${coerceDate(end).toISOString()}` : ""}.`,
+        `读取 ${entityIds.length} 个实体从 ${coerceDate(start).toISOString()}` +
+        `${end ? ` 至 ${coerceDate(end).toISOString()}` : ""} 的状态历史记录。`,
     });
     return histories;
   }
@@ -2230,12 +2228,12 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     );
     const result = normalizeLogbook(items);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read Home Assistant logbook",
+      title: "读取 Home Assistant 日志簿",
       description:
-        `Read ${result.length} logbook entr${result.length === 1 ? "y" : "ies"} ` +
-        `from ${coerceDate(start).toISOString()}${end ? ` to ${coerceDate(end).toISOString()}` : ""}` +
-        (entityId ? ` for entity \`${entityId}\`` : "") +
-        ".",
+        `读取从 ${coerceDate(start).toISOString()}${end ? ` 至 ${coerceDate(end).toISOString()}` : ""} ` +
+        `的 ${result.length} 条日志簿记录` +
+        (entityId ? `，实体为 \`${entityId}\`` : "") +
+        "。",
     });
     return result;
   }
@@ -2253,8 +2251,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
       requireAdmin: d.require_admin ?? false,
     }));
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Lovelace dashboards",
-      description: `Listed ${result.length} dashboard${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Lovelace 仪表板",
+      description: `列出 ${result.length} 个仪表板。`,
     });
     return result;
   }
@@ -2265,8 +2263,8 @@ class HomeAssistantSessionImpl extends RpcTarget implements HomeAssistantSession
     );
     const result = list.map((r: any) => ({ id: r.id, url: r.url, type: r.type }));
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Lovelace resources",
-      description: `Listed ${result.length} custom Lovelace resource${result.length === 1 ? "" : "s"}.`,
+      title: "列出 Lovelace 资源",
+      description: `列出 ${result.length} 个自定义 Lovelace 资源。`,
     });
     return result;
   }
@@ -2298,11 +2296,11 @@ class AreaImpl extends RpcTarget implements Area {
   async describe(): Promise<AreaInfo> {
     const snap = await this.#snapshot();
     const area = snap.areas.find((a: any) => a.area_id === this.#areaId);
-    if (!area) throw new Error(`Area not found: ${this.#areaId}`);
+    if (!area) throw new Error(`未找到区域：${this.#areaId}`);
     const info = normalizeArea(area);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Describe area: ${info.name}`,
-      description: `Read metadata for area "${info.name}" (\`${info.id}\`).`,
+      title: `描述区域：${info.name}`,
+      description: `读取区域“${info.name}”（\`${info.id}\`）的元数据。`,
     });
     return info;
   }
@@ -2312,16 +2310,16 @@ class AreaImpl extends RpcTarget implements Area {
     const area = snap.areas.find((a: any) => a.area_id === this.#areaId);
     if (!area?.floor_id) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read area floor`,
-        description: `Area \`${this.#areaId}\` is not assigned to a floor.`,
+        title: `读取区域所属楼层`,
+        description: `区域 \`${this.#areaId}\` 未分配到楼层。`,
       });
       return null;
     }
     const floor = snap.floors.find((f: any) => f.floor_id === area.floor_id);
     const info = floor ? normalizeFloor(floor) : null;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read area floor`,
-      description: `Area \`${this.#areaId}\` is on floor "${info?.name ?? area.floor_id}".`,
+      title: `读取区域所属楼层`,
+      description: `区域 \`${this.#areaId}\` 位于楼层“${info?.name ?? area.floor_id}”。`,
     });
     return info;
   }
@@ -2335,10 +2333,9 @@ class AreaImpl extends RpcTarget implements Area {
     );
     const filtered = applyEntityFilter(summaries, { ...filter, areaId: this.#areaId });
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `List entities in area`,
+      title: `列出区域内实体`,
       description:
-        `Listed ${filtered.length} entit${filtered.length === 1 ? "y" : "ies"} ` +
-        `in area \`${this.#areaId}\`` +
+        `列出区域 \`${this.#areaId}\` 中的 ${filtered.length} 个实体` +
         pendingSuffix(appliedCount) +
         `.`,
     });
@@ -2349,10 +2346,9 @@ class AreaImpl extends RpcTarget implements Area {
     const snap = await this.#snapshot();
     const result = snap.devices.filter((d: any) => d.area_id === this.#areaId).map(normalizeDevice);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `List devices in area`,
+      title: `列出区域内设备`,
       description:
-        `Listed ${result.length} device${result.length === 1 ? "" : "s"} ` +
-        `in area \`${this.#areaId}\`.`,
+        `列出区域 \`${this.#areaId}\` 中的 ${result.length} 台设备。`,
     });
     return result;
   }
@@ -2365,18 +2361,18 @@ class AreaImpl extends RpcTarget implements Area {
     const reg = snap.entities.find((e: any) => e.entity_id === entityId);
     const state = snap.states.get(entityId);
     if (!reg && !state) {
-      throw new Error(`Entity ${entityId} not found.`);
+      throw new Error(`未找到实体 ${entityId}。`);
     }
     const summary = buildSummary(reg, state, snap.devices);
     const inArea =
       summary.areaId === this.#areaId ||
       (summary.deviceId && deviceIdsInArea.has(summary.deviceId));
     if (!inArea) {
-      throw new Error(`Entity ${entityId} is not part of area ${this.#areaId}.`);
+      throw new Error(`实体 ${entityId} 不属于区域 ${this.#areaId}。`);
     }
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open entity capability (in area)`,
-      description: `Opened capability for entity \`${entityId}\` within area \`${this.#areaId}\`.`,
+      title: `打开区域内实体能力`,
+      description: `打开区域 \`${this.#areaId}\` 内实体 \`${entityId}\` 的能力。`,
     });
     return new EntityImpl(this.#ctx.fork(), entityId);
   }
@@ -2385,11 +2381,11 @@ class AreaImpl extends RpcTarget implements Area {
     const snap = await this.#snapshot();
     const device = snap.devices.find((d: any) => d.id === deviceId && d.area_id === this.#areaId);
     if (!device) {
-      throw new Error(`Device ${deviceId} is not part of area ${this.#areaId}.`);
+      throw new Error(`设备 ${deviceId} 不属于区域 ${this.#areaId}。`);
     }
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open device capability (in area)`,
-      description: `Opened capability for device \`${deviceId}\` within area \`${this.#areaId}\`.`,
+      title: `打开区域内设备能力`,
+      description: `打开区域 \`${this.#areaId}\` 内设备 \`${deviceId}\` 的能力。`,
     });
     return new DeviceImpl(this.#ctx.fork(), deviceId);
   }
@@ -2418,8 +2414,8 @@ class AreaImpl extends RpcTarget implements Area {
     }
     if (entityIds.length === 0) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read area history`,
-        description: `Area \`${this.#areaId}\` has no entities to fetch history for.`,
+        title: `读取区域历史记录`,
+        description: `区域 \`${this.#areaId}\` 没有可获取历史记录的实体。`,
       });
       return [];
     }
@@ -2428,12 +2424,10 @@ class AreaImpl extends RpcTarget implements Area {
     );
     const histories = normalizeHistoryBundle(bundle);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read area history`,
+      title: `读取区域历史记录`,
       description:
-        `Read history for ${entityIds.length} entit${entityIds.length === 1 ? "y" : "ies"} ` +
-        `in area \`${this.#areaId}\` from ${coerceDate(start).toISOString()}` +
-        (end ? ` to ${coerceDate(end).toISOString()}` : "") +
-        ".",
+        `读取区域 \`${this.#areaId}\` 中 ${entityIds.length} 个实体从 ` +
+        `${coerceDate(start).toISOString()}${end ? ` 至 ${coerceDate(end).toISOString()}` : ""} 的历史记录。`,
     });
     return histories;
   }
@@ -2464,11 +2458,11 @@ class LabelImpl extends RpcTarget implements Label {
   async describe(): Promise<LabelInfo> {
     const snap = await this.#snapshot();
     const label = snap.labels.find((l: any) => l.label_id === this.#labelId);
-    if (!label) throw new Error(`Label not found: ${this.#labelId}`);
+    if (!label) throw new Error(`未找到标签：${this.#labelId}`);
     const info = normalizeLabel(label);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Describe label: ${info.name}`,
-      description: `Read metadata for label "${info.name}" (\`${info.id}\`).`,
+      title: `描述标签：${info.name}`,
+      description: `读取标签“${info.name}”（\`${info.id}\`）的元数据。`,
     });
     return info;
   }
@@ -2483,10 +2477,9 @@ class LabelImpl extends RpcTarget implements Label {
     }
     const filtered = applyEntityFilter(summaries, { ...filter, labelId: this.#labelId });
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `List entities with label`,
+      title: `列出带标签的实体`,
       description:
-        `Listed ${filtered.length} entit${filtered.length === 1 ? "y" : "ies"} ` +
-        `carrying label \`${this.#labelId}\`` +
+        `列出带有标签 \`${this.#labelId}\` 的 ${filtered.length} 个实体` +
         pendingSuffix(appliedCount) +
         `.`,
     });
@@ -2498,11 +2491,11 @@ class LabelImpl extends RpcTarget implements Label {
     const reg = snap.entities.find((e: any) => e.entity_id === entityId);
     const labels: string[] = reg?.labels ?? [];
     if (!labels.includes(this.#labelId)) {
-      throw new Error(`Entity ${entityId} does not carry label ${this.#labelId}.`);
+      throw new Error(`实体 ${entityId} 没有标签 ${this.#labelId}。`);
     }
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open entity capability (by label)`,
-      description: `Opened capability for entity \`${entityId}\` carrying label \`${this.#labelId}\`.`,
+      title: `按标签打开实体能力`,
+      description: `打开带有标签 \`${this.#labelId}\` 的实体 \`${entityId}\` 的能力。`,
     });
     return new EntityImpl(this.#ctx.fork(), entityId);
   }
@@ -2527,8 +2520,8 @@ class LabelImpl extends RpcTarget implements Label {
     }
     if (entityIds.length === 0) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read label history`,
-        description: `Label \`${this.#labelId}\` has no entities.`,
+        title: `读取标签历史记录`,
+        description: `标签 \`${this.#labelId}\` 下没有实体。`,
       });
       return [];
     }
@@ -2537,10 +2530,9 @@ class LabelImpl extends RpcTarget implements Label {
     );
     const histories = normalizeHistoryBundle(bundle);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read label history`,
+      title: `读取标签历史记录`,
       description:
-        `Read history for ${entityIds.length} entit${entityIds.length === 1 ? "y" : "ies"} ` +
-        `carrying label \`${this.#labelId}\`.`,
+        `读取带有标签 \`${this.#labelId}\` 的 ${entityIds.length} 个实体的历史记录。`,
     });
     return histories;
   }
@@ -2571,11 +2563,11 @@ class DeviceImpl extends RpcTarget implements Device {
   async describe(): Promise<DeviceInfo> {
     const snap = await this.#snapshot();
     const device = snap.devices.find((d: any) => d.id === this.#deviceId);
-    if (!device) throw new Error(`Device not found: ${this.#deviceId}`);
+    if (!device) throw new Error(`未找到设备：${this.#deviceId}`);
     const info = normalizeDevice(device);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Describe device: ${info.name}`,
-      description: `Read metadata for device "${info.name}" (\`${this.#deviceId}\`).`,
+      title: `描述设备：${info.name}`,
+      description: `读取设备“${info.name}”（\`${this.#deviceId}\`）的元数据。`,
     });
     return info;
   }
@@ -2585,16 +2577,16 @@ class DeviceImpl extends RpcTarget implements Device {
     const device = snap.devices.find((d: any) => d.id === this.#deviceId);
     if (!device?.area_id) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read device area`,
-        description: `Device \`${this.#deviceId}\` is not assigned to an area.`,
+        title: `读取设备所属区域`,
+        description: `设备 \`${this.#deviceId}\` 未分配到区域。`,
       });
       return null;
     }
     const area = snap.areas.find((a: any) => a.area_id === device.area_id);
     const info = area ? normalizeArea(area) : null;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read device area`,
-      description: `Device \`${this.#deviceId}\` is in area "${info?.name ?? device.area_id}".`,
+      title: `读取设备所属区域`,
+      description: `设备 \`${this.#deviceId}\` 位于区域“${info?.name ?? device.area_id}”。`,
     });
     return info;
   }
@@ -2608,10 +2600,9 @@ class DeviceImpl extends RpcTarget implements Device {
     }
     const filtered = applyEntityFilter(summaries, { ...filter, deviceId: this.#deviceId });
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `List entities for device`,
+      title: `列出设备实体`,
       description:
-        `Listed ${filtered.length} entit${filtered.length === 1 ? "y" : "ies"} ` +
-        `provided by device \`${this.#deviceId}\`` +
+        `列出设备 \`${this.#deviceId}\` 提供的 ${filtered.length} 个实体` +
         pendingSuffix(appliedCount) +
         `.`,
     });
@@ -2622,11 +2613,11 @@ class DeviceImpl extends RpcTarget implements Device {
     const snap = await this.#snapshot();
     const reg = snap.entities.find((e: any) => e.entity_id === entityId);
     if (!reg || reg.device_id !== this.#deviceId) {
-      throw new Error(`Entity ${entityId} does not belong to device ${this.#deviceId}.`);
+      throw new Error(`实体 ${entityId} 不属于设备 ${this.#deviceId}。`);
     }
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Open entity capability (on device)`,
-      description: `Opened capability for entity \`${entityId}\` on device \`${this.#deviceId}\`.`,
+      title: `打开设备上的实体能力`,
+      description: `打开设备 \`${this.#deviceId}\` 上实体 \`${entityId}\` 的能力。`,
     });
     return new EntityImpl(this.#ctx.fork(), entityId);
   }
@@ -2650,8 +2641,8 @@ class DeviceImpl extends RpcTarget implements Device {
     }
     if (entityIds.length === 0) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read device history`,
-        description: `Device \`${this.#deviceId}\` has no entities.`,
+        title: `读取设备历史记录`,
+        description: `设备 \`${this.#deviceId}\` 没有实体。`,
       });
       return [];
     }
@@ -2660,10 +2651,9 @@ class DeviceImpl extends RpcTarget implements Device {
     );
     const histories = normalizeHistoryBundle(bundle);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read device history`,
+      title: `读取设备历史记录`,
       description:
-        `Read history for ${entityIds.length} entit${entityIds.length === 1 ? "y" : "ies"} ` +
-        `on device \`${this.#deviceId}\`.`,
+        `读取设备 \`${this.#deviceId}\` 上 ${entityIds.length} 个实体的历史记录。`,
     });
     return histories;
   }
@@ -2694,11 +2684,11 @@ class EntityImpl extends RpcTarget implements Entity {
   async describe(): Promise<EntitySummary> {
     const { snapshot, appliedCount } = await this.#ctx.registrySnapshotWithOverlay();
     const summary = summarizeEntity(snapshot, this.#entityId);
-    if (!summary) throw new Error(`Entity not found: ${this.#entityId}`);
+    if (!summary) throw new Error(`未找到实体：${this.#entityId}`);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Describe entity: ${summary.name}`,
+      title: `描述实体：${summary.name}`,
       description:
-        `Read metadata for entity \`${this.#entityId}\` (state: ${summary.state})` +
+        `读取实体 \`${this.#entityId}\` 的元数据（状态：${summary.state}）` +
         pendingSuffix(appliedCount) +
         `.`,
     });
@@ -2725,9 +2715,9 @@ class EntityImpl extends RpcTarget implements Entity {
     }
     const state = normalizeState(raw);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity state`,
+      title: `读取实体状态`,
       description:
-        `Read state of \`${this.#entityId}\` (current: ${state.state})` +
+        `读取 \`${this.#entityId}\` 的状态（当前：${state.state}）` +
         pendingSuffix(appliedCount) +
         `.`,
     });
@@ -2739,16 +2729,16 @@ class EntityImpl extends RpcTarget implements Entity {
     const reg = snap.entities.find((e: any) => e.entity_id === this.#entityId);
     if (!reg?.device_id) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read entity device`,
-        description: `Entity \`${this.#entityId}\` is not provided by a device.`,
+        title: `读取实体所属设备`,
+        description: `实体 \`${this.#entityId}\` 不是由设备提供的。`,
       });
       return null;
     }
     const device = snap.devices.find((d: any) => d.id === reg.device_id);
     const info = device ? normalizeDevice(device) : null;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity device`,
-      description: `Entity \`${this.#entityId}\` is provided by device "${info?.name ?? reg.device_id}".`,
+      title: `读取实体所属设备`,
+      description: `实体 \`${this.#entityId}\` 由设备“${info?.name ?? reg.device_id}”提供。`,
     });
     return info;
   }
@@ -2758,16 +2748,16 @@ class EntityImpl extends RpcTarget implements Entity {
     const summary = summarizeEntity(snap, this.#entityId);
     if (!summary?.areaId) {
       await this.#ctx.approvalQueue.authorizeObservation({
-        title: `Read entity area`,
-        description: `Entity \`${this.#entityId}\` is not assigned to an area.`,
+        title: `读取实体所属区域`,
+        description: `实体 \`${this.#entityId}\` 未分配到区域。`,
       });
       return null;
     }
     const area = snap.areas.find((a: any) => a.area_id === summary.areaId);
     const info = area ? normalizeArea(area) : null;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity area`,
-      description: `Entity \`${this.#entityId}\` is in area "${info?.name ?? summary.areaId}".`,
+      title: `读取实体所属区域`,
+      description: `实体 \`${this.#entityId}\` 位于区域“${info?.name ?? summary.areaId}”。`,
     });
     return info;
   }
@@ -2780,8 +2770,8 @@ class EntityImpl extends RpcTarget implements Entity {
       .filter((l: any) => labelIds.includes(l.label_id))
       .map(normalizeLabel);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity labels`,
-      description: `Entity \`${this.#entityId}\` carries ${result.length} label${result.length === 1 ? "" : "s"}.`,
+      title: `读取实体标签`,
+      description: `实体 \`${this.#entityId}\` 带有 ${result.length} 个标签。`,
     });
     return result;
   }
@@ -2792,11 +2782,10 @@ class EntityImpl extends RpcTarget implements Entity {
     );
     const histories = normalizeHistoryBundle(bundle);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity history`,
+      title: `读取实体历史记录`,
       description:
-        `Read history for \`${this.#entityId}\` from ${coerceDate(start).toISOString()}` +
-        (end ? ` to ${coerceDate(end).toISOString()}` : "") +
-        ".",
+        `读取 \`${this.#entityId}\` 从 ${coerceDate(start).toISOString()}` +
+        `${end ? ` 至 ${coerceDate(end).toISOString()}` : ""} 的历史记录。`,
     });
     return histories;
   }
@@ -2807,8 +2796,8 @@ class EntityImpl extends RpcTarget implements Entity {
     );
     const result = normalizeLogbook(items);
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read entity logbook`,
-      description: `Read ${result.length} logbook entr${result.length === 1 ? "y" : "ies"} for \`${this.#entityId}\`.`,
+      title: `读取实体日志簿`,
+      description: `读取 \`${this.#entityId}\` 的 ${result.length} 条日志簿记录。`,
     });
     return result;
   }
@@ -2837,10 +2826,10 @@ class EntityImpl extends RpcTarget implements Entity {
     // Pre-validation for light-specific numeric ranges.
     if (mapped) {
       if (typeof mapped.brightness === "number" && (mapped.brightness < 0 || mapped.brightness > 255)) {
-        throw new Error("brightness must be between 0 and 255.");
+        throw new Error("brightness 必须介于 0 和 255 之间。");
       }
       if (typeof mapped.brightness_pct === "number" && (mapped.brightness_pct < 0 || mapped.brightness_pct > 100)) {
-        throw new Error("brightnessPct must be between 0 and 100.");
+        throw new Error("brightnessPct 必须介于 0 和 100 之间。");
       }
     }
     await this.#submitServiceCall("turn_on", mapped);
@@ -2872,7 +2861,7 @@ class EntityImpl extends RpcTarget implements Entity {
 
   async setPosition(position: number): Promise<void> {
     if (position < 0 || position > 100) {
-      throw new Error("position must be between 0 and 100.");
+      throw new Error("position 必须介于 0 和 100 之间。");
     }
     await this.#submitServiceCall("set_cover_position", { position });
   }
@@ -2921,7 +2910,7 @@ class EntityImpl extends RpcTarget implements Entity {
 
   async setVolume(volume: number): Promise<void> {
     if (volume < 0 || volume > 1) {
-      throw new Error("volume must be between 0 and 1.");
+      throw new Error("volume 必须介于 0 和 1 之间。");
     }
     await this.#submitServiceCall("volume_set", { volume_level: volume });
   }
@@ -2939,7 +2928,7 @@ class EntityImpl extends RpcTarget implements Entity {
 
   async setSpeed(percentage: number): Promise<void> {
     if (percentage < 0 || percentage > 100) {
-      throw new Error("percentage must be between 0 and 100.");
+      throw new Error("percentage 必须介于 0 和 100 之间。");
     }
     await this.#submitServiceCall("set_percentage", { percentage });
   }
@@ -3067,13 +3056,13 @@ class DashboardImpl extends RpcTarget implements Dashboard {
         if (this.#urlPath === "lovelace") {
           return {
             urlPath: "lovelace",
-            title: "Overview",
+            title: "概览",
             mode: "storage",
             showInSidebar: true,
             requireAdmin: false,
           };
         }
-        throw new Error(`Dashboard not found: ${this.#urlPath}`);
+        throw new Error(`未找到仪表板：${this.#urlPath}`);
       }
       return {
         urlPath: found.url_path,
@@ -3089,8 +3078,8 @@ class DashboardImpl extends RpcTarget implements Dashboard {
   async describe(): Promise<DashboardInfo> {
     const info = await this.#describeRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Describe dashboard: ${info.title}`,
-      description: `Read metadata for dashboard \`${this.#urlPath}\` (mode: ${info.mode}).`,
+      title: `描述仪表板：${info.title}`,
+      description: `读取仪表板 \`${this.#urlPath}\` 的元数据（模式：${info.mode}）。`,
     });
     return info;
   }
@@ -3110,10 +3099,9 @@ class DashboardImpl extends RpcTarget implements Dashboard {
     const config = overlaid as DashboardConfig;
     const viewCount = Array.isArray(config?.views) ? config.views.length : 0;
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read dashboard config: ${this.#urlPath}`,
+      title: `读取仪表板配置：${this.#urlPath}`,
       description:
-        `Read Lovelace configuration for dashboard \`${this.#urlPath}\` ` +
-        `(${viewCount} view${viewCount === 1 ? "" : "s"})` +
+        `读取仪表板 \`${this.#urlPath}\` 的 Lovelace 配置（${viewCount} 个视图）` +
         pendingSuffix(appliedCount) +
         `.`,
     });

@@ -179,8 +179,7 @@ export class ConfluenceObserverTracker {
       const access = await Promise.all(sets.map(setId => this.#hasSetAccess(verifier, setId)));
       if (access.some(hasAccess => !hasAccess)) {
         throw new Error(
-          "This collaborator does not have access to Confluence data this workspace has read, so they " +
-          "cannot be allowed to observe it.");
+          "此协作者无权访问此工作区已读取的 Confluence 数据，因此不能查看这些数据。");
       }
       for (const setId of sets) checked.add(setId);
     }

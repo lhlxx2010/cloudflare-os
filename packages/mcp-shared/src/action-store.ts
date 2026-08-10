@@ -99,10 +99,10 @@ export class ActionStore {
       storedArgs = JSON.parse(argsJson) as Record<string, unknown>;
       if (storedArgs === null || Array.isArray(storedArgs)) throw new Error();
     } catch {
-      throw new Error("MCP tool arguments must be JSON-compatible.");
+      throw new Error("MCP 工具参数必须兼容 JSON。");
     }
     if (encoder.encode(argsJson).byteLength > MAX_ARGUMENT_BYTES) {
-      throw new Error(`MCP tool arguments are too large (maximum ${MAX_ARGUMENT_BYTES} bytes).`);
+      throw new Error(`MCP 工具参数过大（最多 ${MAX_ARGUMENT_BYTES} 字节）。`);
     }
 
     const { count } = this.#sql.exec<{ count: number }>(
@@ -110,8 +110,7 @@ export class ActionStore {
     ).one();
     if (count >= MAX_PENDING_ACTIONS) {
       throw new Error(
-        `${MAX_PENDING_ACTIONS} calls to this MCP server are already awaiting approval. Wait for ` +
-        "them to be approved or rejected before queueing more.");
+        `已有 ${MAX_PENDING_ACTIONS} 个对此 MCP 服务器的调用正在等待批准。请等待这些调用获批或被拒绝后再继续排队。`);
     }
 
     const submittedAt = Date.now();
@@ -133,14 +132,14 @@ export class ActionStore {
     log: McpLog,
   ): Promise<void> {
     const stored = this.get(id);
-    if (!stored) throw new Error(`MCP action ${id} is unknown.`);
+    if (!stored) throw new Error(`未知的 MCP 操作 ${id}。`);
     if (stored.state === "applied") return;
-    if (stored.state === "rejected") throw new Error(`MCP action ${id} was already rejected.`);
+    if (stored.state === "rejected") throw new Error(`MCP 操作 ${id} 已被拒绝。`);
     if (stored.state === "failed" && stored.retryable === false) {
-      throw new Error(stored.error ?? `MCP action ${id} cannot be retried.`);
+      throw new Error(stored.error ?? `MCP 操作 ${id} 无法重试。`);
     }
     if (stored.state === "applying") {
-      throw new Error(`MCP action ${id} is already being applied.`);
+      throw new Error(`MCP 操作 ${id} 正在应用。`);
     }
 
     stored.state = "applying";
@@ -187,7 +186,7 @@ export class ActionStore {
       stored.result = {
         status: "ok",
         content: [],
-        text: "(The call succeeded, but its response could not be read back.)",
+        text: "（调用已成功，但无法读回其响应。）",
       };
       log.warn("could not record tool call result", {
         event: "action.result.unreadable", actionId: id, toolName: stored.toolName, error: err,
@@ -203,8 +202,8 @@ export class ActionStore {
     if (!stored || stored.state === "rejected") return;
     if (stored.state !== "pending") {
       throw new Error(stored.state === "applying"
-        ? `MCP action ${id} is already being applied.`
-        : `MCP action ${id} is already ${stored.state}.`);
+        ? `MCP 操作 ${id} 正在应用。`
+        : `MCP 操作 ${id} 已处于 ${stored.state} 状态。`);
     }
     this.#sql.exec("UPDATE mcp_actions SET state = 'rejected' WHERE id = ?", id);
     this.#prune();
@@ -221,5 +220,5 @@ export class ActionStore {
 
 /** Message returned when a caller asks to revert an MCP action. */
 export const REVERT_UNSUPPORTED_MESSAGE =
-  "MCP tools do not describe how to undo themselves, so this action cannot be reverted " +
-  "automatically. Undo it directly in the target system if needed.";
+  "MCP 工具未说明如何撤销自身操作，因此无法自动撤销此操作。" +
+  "如有需要，请直接在目标系统中撤销。";

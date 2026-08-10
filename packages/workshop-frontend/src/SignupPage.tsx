@@ -20,7 +20,7 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
   const serverConfigError = useServerConfigError();
   const siteName = useSiteName();
   const connectionLost = useConnectionLost();
-  useDocumentTitle("Create account");
+  useDocumentTitle("创建账户");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,17 +29,17 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
 
   const usernameError =
     username && !/^[a-z0-9_-]+$/i.test(username)
-      ? "Letters, numbers, underscores, and hyphens only"
+      ? "仅可使用字母、数字、下划线和连字符"
       : undefined;
 
   const passwordError =
     password && password.length < 8
-      ? "Must be at least 8 characters"
+      ? "至少需要 8 个字符"
       : undefined;
 
   const confirmError =
     confirmPassword && confirmPassword !== password
-      ? "Passwords do not match"
+      ? "两次输入的密码不一致"
       : undefined;
 
   const canSubmit =
@@ -68,10 +68,10 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
         localStorage.setItem("authToken", token);
         window.location.href = "/";
       } else {
-        setError("Username already exists");
+        setError("该用户名已存在");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Account creation failed");
+      setError(err instanceof Error ? err.message : "账户创建失败");
     } finally {
       setLoading(false);
     }
@@ -85,9 +85,9 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
           className="min-h-screen flex flex-col items-center justify-center gap-4 bg-kumo-base px-4"
         >
           <p className="text-sm text-kumo-danger text-center">
-            Couldn&apos;t load deployment settings.
+            无法加载部署设置。
           </p>
-          <Button variant="secondary" onClick={() => window.location.reload()}>Reload</Button>
+          <Button variant="secondary" onClick={() => window.location.reload()}>重新加载</Button>
         </div>
       );
     }
@@ -95,7 +95,7 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-kumo-base px-4">
         <Loader size="lg" />
         <p className="text-sm text-kumo-subtle text-center">
-          {connectionLost ? "Can't reach the server. Retrying…" : "Loading…"}
+          {connectionLost ? "无法连接服务器，正在重试…" : "正在加载…"}
         </p>
       </div>
     );
@@ -133,16 +133,16 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
           <h1 className="text-xl font-semibold text-kumo-default">
             {siteName}
           </h1>
-          <p className="text-sm text-kumo-subtle mt-1">Create your account</p>
+          <p className="text-sm text-kumo-subtle mt-1">创建你的账户</p>
         </div>
 
         {!signupsEnabled && (
           <Banner
             variant="default"
-            title="Signups are closed"
+            title="注册已关闭"
             className="mb-4"
           >
-            New account registration is currently disabled on this deployment.
+            当前部署暂未开放新账户注册。
           </Banner>
         )}
 
@@ -151,19 +151,19 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label="Username"
+                label="用户名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
                 autoComplete="username"
                 disabled={loading}
-                placeholder="your-username"
+                placeholder="请输入用户名"
                 error={usernameError}
               />
 
               <Input
                 type="password"
-                label="Password"
+                label="密码"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
@@ -174,7 +174,7 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
 
               <Input
                 type="password"
-                label="Confirm Password"
+                label="确认密码"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 autoComplete="new-password"
@@ -192,7 +192,7 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
                 loading={loading}
                 className="w-full justify-center"
               >
-                Create account
+                创建账户
               </Button>
             </form>
           </>
@@ -204,7 +204,7 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
             {passwordAuthEnabled && (
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px flex-1 bg-kumo-line" />
-                <span className="text-xs text-kumo-subtle">or</span>
+                <span className="text-xs text-kumo-subtle">或</span>
                 <div className="h-px flex-1 bg-kumo-line" />
               </div>
             )}
@@ -214,9 +214,9 @@ export default function SignupPage({ rpcStub }: SignupPageProps) {
 
         {passwordAuthEnabled && (
           <p className="text-center text-sm text-kumo-subtle mt-6">
-            Already have an account?{" "}
+            已有账户？{" "}
             <Link to="/" className="text-kumo-brand hover:underline font-medium">
-              Sign in
+              登录
             </Link>
           </p>
         )}

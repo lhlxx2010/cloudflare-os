@@ -117,7 +117,7 @@ export function reorderFormats(formats: FormatCuration[], blueprintIds: string[]
   let byId = new Map(formats.map(f => [f.blueprintId, f]));
   if (blueprintIds.length !== byId.size || new Set(blueprintIds).size !== blueprintIds.length
       || blueprintIds.some(id => !byId.has(id))) {
-    throw new Error("Format order must list each promoted format exactly once.");
+    throw new Error("格式顺序必须完整列出每个已推广格式，且每个只能出现一次。");
   }
   return blueprintIds.map(id => byId.get(id)!);
 }

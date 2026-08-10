@@ -2,19 +2,19 @@
   {
     "name": "CLIENT_ID",
     "kind": "secret",
-    "label": "OAuth client ID",
+    "label": "OAuth 客户端 ID",
     "consoleUrl": "https://api.slack.com/apps",
     "setupSteps": [
-      "Create a Slack app (from scratch) in the workspace you want gadgets to read.",
-      "Under OAuth & Permissions, add the redirect URL below.",
-      "Enable token rotation (OAuth & Permissions > Token Rotation) — tokens are then short-lived and refreshed automatically.",
-      "Copy the app's Client ID and Client Secret (Basic Information > App Credentials) here."
+      "在希望小程序读取的工作区中从头创建一个 Slack 应用。",
+      "在 OAuth & Permissions 中添加下方的重定向 URL。",
+      "启用令牌轮换（OAuth & Permissions > Token Rotation），令牌随后会变为短期令牌并自动刷新。",
+      "将应用的 Client ID 和 Client Secret（Basic Information > App Credentials）复制到此处。"
     ],
     "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/slack/oauth"
   },
   {
     "name": "CLIENT_SECRET",
     "kind": "secret",
-    "label": "OAuth client secret"
+    "label": "OAuth 客户端密钥"
   }
 ]

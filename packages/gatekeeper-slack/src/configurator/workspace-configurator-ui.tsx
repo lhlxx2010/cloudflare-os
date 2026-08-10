@@ -17,8 +17,8 @@ export default {
   render() {
     return <Section>
       <Field
-        label="Whole workspace"
-        description="This connection lets the client read the channels and direct messages you can access, browse Slack workspace members, and search messages."
+        label="整个工作区"
+        description="此连接允许客户端读取你可以访问的频道和私信、浏览 Slack 工作区成员，并搜索消息。"
       >
         <span />
       </Field>

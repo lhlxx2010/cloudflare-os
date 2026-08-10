@@ -178,14 +178,14 @@ SLACK_TOKEN = ""`,
 // Sample data for the "Data" tab
 // -----------------------------------------------
 export const sampleDataRows: DataRow[] = [
-  { id: '1', channel: '#general', messages: 847, lastActive: '2 min ago', unread: true },
-  { id: '2', channel: '#engineering', messages: 1243, lastActive: '5 min ago', unread: true },
-  { id: '3', channel: '#design', messages: 312, lastActive: '1 hour ago', unread: false },
-  { id: '4', channel: '#product', messages: 589, lastActive: '3 hours ago', unread: false },
-  { id: '5', channel: '#random', messages: 2104, lastActive: '10 min ago', unread: true },
-  { id: '6', channel: '#incidents', messages: 76, lastActive: '2 days ago', unread: false },
-  { id: '7', channel: '#launches', messages: 198, lastActive: '6 hours ago', unread: false },
-  { id: '8', channel: '#standup', messages: 445, lastActive: '12 hours ago', unread: false },
+  { id: '1', channel: '#general', messages: 847, lastActive: '2 分钟前', unread: true },
+  { id: '2', channel: '#engineering', messages: 1243, lastActive: '5 分钟前', unread: true },
+  { id: '3', channel: '#design', messages: 312, lastActive: '1 小时前', unread: false },
+  { id: '4', channel: '#product', messages: 589, lastActive: '3 小时前', unread: false },
+  { id: '5', channel: '#random', messages: 2104, lastActive: '10 分钟前', unread: true },
+  { id: '6', channel: '#incidents', messages: 76, lastActive: '2 天前', unread: false },
+  { id: '7', channel: '#launches', messages: 198, lastActive: '6 小时前', unread: false },
+  { id: '8', channel: '#standup', messages: 445, lastActive: '12 小时前', unread: false },
 ]
 
 // -----------------------------------------------

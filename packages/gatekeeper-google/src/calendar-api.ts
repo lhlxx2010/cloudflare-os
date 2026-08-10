@@ -151,17 +151,17 @@ export function calendarEventSortKey(event: CalendarEvent): number {
 
 export function validateCalendarTimeWindow(timeMin: Date, timeMax: Date, maxDays: number) {
   if (!(timeMin instanceof Date) || Number.isNaN(timeMin.valueOf())) {
-    throw new Error("timeMin must be a valid Date.");
+    throw new Error("timeMin 必须是有效的 Date。");
   }
   if (!(timeMax instanceof Date) || Number.isNaN(timeMax.valueOf())) {
-    throw new Error("timeMax must be a valid Date.");
+    throw new Error("timeMax 必须是有效的 Date。");
   }
   if (timeMax.valueOf() <= timeMin.valueOf()) {
-    throw new Error("timeMax must be after timeMin.");
+    throw new Error("timeMax 必须晚于 timeMin。");
   }
   let days = (timeMax.valueOf() - timeMin.valueOf()) / (24 * 60 * 60 * 1000);
   if (days > maxDays) {
-    throw new Error(`Time window is too large; maximum is ${maxDays} days.`);
+    throw new Error(`时间范围过大，最多为 ${maxDays} 天。`);
   }
 }
 
@@ -184,7 +184,7 @@ export class GoogleCalendarApi {
 
     if (!response.ok) {
       let text = await response.text();
-      throw new Error(`Google Calendar API request failed: ${response.status} ${text}`);
+      throw new Error(`Google Calendar API 请求失败：${response.status} ${text}`);
     }
 
     if (response.status === 204) return undefined as T;
@@ -252,7 +252,7 @@ export class GoogleCalendarApi {
       let items = body.items ?? [];
       if (events.length + items.length > MAX_LIST_EVENTS) {
         throw new Error(
-          "Too many events in the requested window. Narrow timeMin/timeMax and try again.");
+          "请求的时间范围内事件过多。请缩小 timeMin/timeMax 范围后重试。");
       }
       for (let event of items) {
         events.push(calendarEventFromGoogle(event, {
@@ -310,7 +310,7 @@ export class GoogleCalendarApi {
     if (!availability || availability.error === "notFound") return false;
     if (availability.error) {
       throw new Error(
-        `Google Calendar free/busy access check failed for ${calendarId}: ${availability.error}`);
+        `检查 ${calendarId} 的 Google Calendar 空闲/忙碌访问权限失败：${availability.error}`);
     }
     return true;
   }

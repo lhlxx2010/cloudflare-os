@@ -25,11 +25,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Team" description="Search the teams in your workspace.">
+      <Field label="团队" description="搜索工作区中的团队。">
         <Autocomplete
           name="teamKey"
           value={values.teamKey}
-          placeholder="Search teams..."
+          placeholder="搜索团队…"
           loadOptions={query => ui.listTeams(query)}
           onChange={teamKey => setValues({ teamKey })}
         />

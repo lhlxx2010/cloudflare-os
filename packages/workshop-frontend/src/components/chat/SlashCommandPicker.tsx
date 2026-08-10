@@ -229,17 +229,17 @@ export function useSlashCommandPicker({
         maxHeight: layout.maxHeight,
       }}
     >
-      <p className={`m-0 shrink-0 px-3.5 pb-1 pt-2.5 ${PICKER_CAPTION}`}>Commands</p>
+      <p className={`m-0 shrink-0 px-3.5 pb-1 pt-2.5 ${PICKER_CAPTION}`}>命令</p>
       <div
         ref={listRef}
         id={listboxId}
         role="listbox"
-        aria-label="Slash commands"
+        aria-label="斜杠命令"
         aria-busy={loading}
         className="sidebar-scroll min-h-0 flex-1 overflow-y-auto"
       >
         {loading && choices.length === 0 ? (
-          <p className={PICKER_EMPTY}>Loading commands…</p>
+          <p className={PICKER_EMPTY}>正在加载命令…</p>
         ) : choices.length > 0 ? (
           choices.map((choice, optionIndex) => (
             <button
@@ -272,10 +272,10 @@ export function useSlashCommandPicker({
         ) : (
           <p className={PICKER_EMPTY}>
             {error
-              ? `Couldn’t load commands. ${error}`
+              ? `无法加载命令。${error}`
               : query
-                ? "No commands match your search."
-                : "No commands are available."}
+                ? "没有与搜索匹配的命令。"
+                : "暂无可用命令。"}
           </p>
         )}
       </div>
@@ -299,10 +299,10 @@ export function useSlashCommandPicker({
     setIndex: selectIndex,
     status: open
       ? loading
-        ? "Loading slash commands"
+        ? "正在加载斜杠命令"
         : error
-          ? `Slash commands unavailable: ${error}`
-          : `${choices.length} slash command${choices.length === 1 ? "" : "s"} found`
+          ? `斜杠命令不可用：${error}`
+          : `找到 ${choices.length} 个斜杠命令`
       : "",
   };
 }

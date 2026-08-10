@@ -17,7 +17,7 @@ export function BlueprintPreviewImage({
       {screenshotUrl ? (
         <img
           src={screenshotUrl}
-          alt={`Screenshot of ${title}`}
+          alt={`${title} 的截图`}
           className="aspect-[16/9] w-full object-cover"
           loading="lazy"
         />

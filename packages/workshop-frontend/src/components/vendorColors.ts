@@ -6,7 +6,7 @@ const VENDOR_ICON_BACKGROUNDS: Record<string, string> = {
   github: '#f0f0f0',
   notion: '#f5f5f5',
   linear: '#eeeffa',
-  figma: '#fef0ec',
+  figma: '#eff6ff',
 }
 
 const VENDOR_ICON_DARK_BACKGROUNDS: Record<string, string> = {
@@ -17,7 +17,7 @@ const VENDOR_ICON_DARK_BACKGROUNDS: Record<string, string> = {
   github: '#d6d6d6',
   notion: '#dadada',
   linear: '#cfd1ea',
-  figma: '#f0cfc5',
+  figma: '#bfdbfe',
 }
 
 export function getVendorIconBackground(vendorId: string, mode: 'light' | 'dark'): string {

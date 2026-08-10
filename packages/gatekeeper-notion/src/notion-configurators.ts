@@ -14,7 +14,7 @@ const tokenGetters = new WeakMap<object, () => Promise<string>>();
 
 function notionApi(target: object): NotionApi {
   const getToken = tokenGetters.get(target);
-  if (!getToken) throw new Error("Notion configurator is not initialized.");
+  if (!getToken) throw new Error("Notion 配置器尚未初始化。");
   return new NotionApi(getToken);
 }
 
@@ -37,8 +37,8 @@ export class NotionItemConfiguratorUI extends RpcTarget implements NotionItemCon
       const summary = itemResponseToSummary(item);
       const option: ConfiguratorOption = {
         value: summary.url,
-        title: summary.title || "Untitled",
-        subtitle: summary.kind === "database" ? "Database" : "Page",
+        title: summary.title || "无标题",
+        subtitle: summary.kind === "database" ? "数据库" : "页面",
       };
       if (summary.icon) option.meta = summary.icon;
       return option;

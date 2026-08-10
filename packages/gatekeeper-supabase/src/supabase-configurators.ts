@@ -19,7 +19,7 @@ const orgListCache = new WeakMap<object, Promise<OrganizationResponse[]>>();
 
 function api(target: object): SupabaseApi {
   const getToken = tokenGetters.get(target);
-  if (!getToken) throw new Error("Supabase configurator is not initialized.");
+  if (!getToken) throw new Error("Supabase 配置器尚未初始化。");
   return new SupabaseApi(getToken);
 }
 

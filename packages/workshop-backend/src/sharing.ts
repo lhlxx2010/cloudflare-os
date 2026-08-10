@@ -269,12 +269,12 @@ export class SharingManager {
   }): CollaboratorInfo {
     // Don't add the owner as a collaborator.
     if (opts.profile.id === this.ownerProfileId) {
-      throw new Error("Cannot add the workspace owner as a collaborator.");
+      throw new Error("不能将工作区所有者添加为协作者。");
     }
 
     let callerRole = this.#requireCallerRole(opts.caller);
     if (roleRank(opts.role) > roleRank(callerRole)) {
-      throw new Error("You cannot grant a role higher than your own.");
+      throw new Error("你不能授予高于自身权限的角色。");
     }
 
     let existing = this.storage.collaborators.get(opts.profile.id);
@@ -349,7 +349,7 @@ export class SharingManager {
       caller: SharingCaller, profileId: string, keepUsers: string[]): AffectedCollaborator[] {
     let target = this.storage.collaborators.get(profileId);
     if (!target) {
-      throw new Error("User is not a collaborator.");
+      throw new Error("该用户不是协作者。");
     }
 
     // Permission check: owner can remove anyone; collaborators can only remove users
@@ -358,7 +358,7 @@ export class SharingManager {
       let hasEdgeFromCaller = target.addedBy.some(
           e => e.type === "user" && e.sharer === caller.profileId);
       if (!hasEdgeFromCaller) {
-        throw new Error("You can only remove users that you added.");
+        throw new Error("你只能移除自己添加的用户。");
       }
     }
 
@@ -386,7 +386,7 @@ export class SharingManager {
   // the links they created. `action` is the user-facing verb (e.g. "revoke", "edit", "copy").
   #requireLinkManager(caller: SharingCaller, link: ShareLinkRecord, action: string): void {
     if (!caller.isOwner && link.createdBy !== caller.profileId) {
-      throw new Error(`You can only ${action} share links that you created.`);
+      throw new Error(`你只能${action}自己创建的分享链接。`);
     }
   }
 
@@ -394,7 +394,7 @@ export class SharingManager {
   #requireLink(linkId: string): ShareLinkRecord {
     let link = asLink(this.storage.shareKeys.get(linkId));
     if (!link) {
-      throw new Error("Share link not found.");
+      throw new Error("未找到分享链接。");
     }
     return link;
   }
@@ -404,7 +404,7 @@ export class SharingManager {
       : Promise<{ key: string; linkId: string }> {
     let callerRole = this.#requireCallerRole(opts.caller);
     if (roleRank(opts.role) > roleRank(callerRole)) {
-      throw new Error("You cannot grant a role higher than your own.");
+      throw new Error("你不能授予高于自身权限的角色。");
     }
 
     // The link is stored as its first key: the record is keyed by that key's hash.
@@ -423,15 +423,15 @@ export class SharingManager {
   async newShareLinkKey(opts: { caller: SharingCaller; linkId: string }): Promise<{ key: string }> {
     let link = this.#requireLink(opts.linkId);
     if (link.revoked) {
-      throw new Error("Share link not found.");
+      throw new Error("未找到分享链接。");
     }
-    this.#requireLinkManager(opts.caller, link, "copy");
+    this.#requireLinkManager(opts.caller, link, "复制");
 
     // Re-check the ceiling: the caller's role may have dropped below the link's since it was
     // created, and a fresh key must never grant more than the caller currently has.
     let callerRole = this.#requireCallerRole(opts.caller);
     if (roleRank(link.role ?? "build") > roleRank(callerRole)) {
-      throw new Error("You cannot grant a role higher than your own.");
+      throw new Error("你不能授予高于自身权限的角色。");
     }
 
     let { key, hash } = await this.#mintKey();
@@ -464,7 +464,7 @@ export class SharingManager {
 
   updateShareLink(caller: SharingCaller, linkId: string, note?: string): void {
     let link = this.#requireLink(linkId);
-    this.#requireLinkManager(caller, link, "edit");
+    this.#requireLinkManager(caller, link, "编辑");
 
     link.note = note === undefined ? undefined : note.slice(0, 500);
     this.storage.shareKeys.put(link);
@@ -473,7 +473,7 @@ export class SharingManager {
   previewRevokeShareLink(caller: SharingCaller, linkId: string): AffectedCollaborator[] {
     let link = asLink(this.storage.shareKeys.get(linkId));
     if (!link) return [];
-    this.#requireLinkManager(caller, link, "revoke");
+    this.#requireLinkManager(caller, link, "撤销");
     if (link.revoked) return [];
 
     let baseline = this.computeEffectiveRoles();
@@ -493,7 +493,7 @@ export class SharingManager {
   revokeShareLink(
       caller: SharingCaller, linkId: string, keepUsers: string[]): AffectedCollaborator[] {
     let link = this.#requireLink(linkId);
-    this.#requireLinkManager(caller, link, "revoke");
+    this.#requireLinkManager(caller, link, "撤销");
 
     let baseline = this.computeEffectiveRoles();
 
@@ -604,7 +604,7 @@ export class SharingManager {
     if (caller.isOwner) return "build";
     let role = this.computeEffectiveRoles().get(caller.profileId);
     if (!role) {
-      throw new Error("You do not have permission to share this workspace.");
+      throw new Error("你没有分享此工作区的权限。");
     }
     return role;
   }

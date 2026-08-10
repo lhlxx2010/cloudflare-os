@@ -54,8 +54,8 @@ const WIREFRAME_FOR_ICON: Record<OutputIcon, FormatWireframe> = {
 // know, which is normal: a deployment can serve a format newer than the browser's cached bundle.
 export const GENERIC_OUTPUT: BlueprintOutput = {
   id: 'app',
-  noun: 'App',
-  plural: 'Apps',
+  noun: '应用',
+  plural: '应用',
   icon: 'appWindow',
 }
 

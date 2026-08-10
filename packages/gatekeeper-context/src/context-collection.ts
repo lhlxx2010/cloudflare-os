@@ -37,21 +37,21 @@ const SKILL_INDEX_VERSION = 1;
 // Validate a document path before using it as a storage key.
 function validateDocumentPath(path: string): void {
   if (typeof path !== "string" || path.length === 0) {
-    throw new Error("Document path is required.");
+    throw new Error("文档路径为必填项。");
   }
   if (path.length > MAX_DOCUMENT_PATH_LENGTH) {
-    throw new Error(`Document path is too long (max ${MAX_DOCUMENT_PATH_LENGTH} characters).`);
+    throw new Error(`文档路径过长（最多 ${MAX_DOCUMENT_PATH_LENGTH} 个字符）。`);
   }
   if (path.startsWith("/")) {
-    throw new Error("Document path must be relative (no leading '/').");
+    throw new Error("文档路径必须是相对路径（不能以“/”开头）。");
   }
   // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f]/.test(path)) {
-    throw new Error("Document path must not contain control characters.");
+    throw new Error("文档路径不能包含控制字符。");
   }
   for (let segment of path.split("/")) {
     if (segment === "" || segment === "." || segment === "..") {
-      throw new Error("Document path must not contain empty, '.', or '..' segments.");
+      throw new Error("文档路径不能包含空路径段、“.”或“..”。");
     }
   }
 }
@@ -143,7 +143,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
 
   #artifacts(): Artifacts {
     let artifacts = this.env.ARTIFACTS;
-    if (!artifacts) throw new Error("Git-backed Context collections are not enabled.");
+    if (!artifacts) throw new Error("基于 Git 的上下文集合未启用。");
     return artifacts;
   }
 
@@ -171,7 +171,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
   // Rejects re-initialization so a (vanishingly unlikely) id reuse can't clobber existing content.
   async initialize(metadata: ContextCollectionMetadata, sharingDomain: string, ownerAccountId: string): Promise<ContextCollectionMetadata> {
     if (this.getMetadata().id) {
-      throw new Error("Collection already exists.");
+      throw new Error("集合已存在。");
     }
     this.storage.sharingDomain.put(sharingDomain);
     this.storage.ownerAccountId.put(ownerAccountId);
@@ -285,9 +285,9 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
     if (options.description !== undefined && options.description !== meta.description) { meta.description = options.description; changed = true; }
     if (options.icon !== undefined && options.icon !== meta.icon) { meta.icon = options.icon; changed = true; }
     if (options.branch !== undefined) {
-      if (meta.content.source !== "git") throw new Error("Collection is not git-based.");
+      if (meta.content.source !== "git") throw new Error("该集合并非基于 Git。");
       let branch = options.branch.trim();
-      if (!GIT_BRANCH_RE.test(branch)) throw new Error("Git branch is invalid.");
+      if (!GIT_BRANCH_RE.test(branch)) throw new Error("Git 分支无效。");
       if (branch !== meta.content.branch) {
         meta.content.branch = branch;
         delete meta.content.commit;
@@ -306,7 +306,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
 
   #assertWebWritable(): void {
     if (this.#isGitBased()) {
-      throw new Error("Git-based collections are read-only. All changes must be made through git.");
+      throw new Error("基于 Git 的集合为只读，所有更改都必须通过 Git 完成。");
     }
   }
 
@@ -357,7 +357,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
     // Enforce real UTF-8 bytes, not UTF-16 code units.
     let byteLength = new TextEncoder().encode(doc.body).length;
     if (byteLength > MAX_DOCUMENT_BODY_BYTES) {
-      throw new Error(`Document is too large (${byteLength} bytes; max ${MAX_DOCUMENT_BODY_BYTES}).`);
+      throw new Error(`文档过大（${byteLength} 字节；最多 ${MAX_DOCUMENT_BODY_BYTES} 字节）。`);
     }
 
     let contentType = doc.contentType || contentTypeFromPath(path);
@@ -383,7 +383,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
     // Mutations reject invalid paths; reads stay lenient.
     validateDocumentPath(path);
     let existing = this.storage.documents.get(path);
-    if (!existing) throw new Error(`Document not found: ${path}`);
+    if (!existing) throw new Error(`找不到文档：${path}`);
 
     this.storage.transaction(() => {
       this.#deleteDocument(path);
@@ -404,7 +404,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
 
     // Reject moving a folder into one of its own descendants.
     if (to.startsWith(from + "/")) {
-      throw new Error("Cannot move a folder into itself.");
+      throw new Error("不能将文件夹移动到其自身内部。");
     }
 
     let moves: { record: ContextRecord; newPath: string }[] = [];
@@ -419,12 +419,12 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
       }
     }
 
-    if (moves.length === 0) throw new Error(`Nothing to move at: ${from}`);
+    if (moves.length === 0) throw new Error(`此位置没有可移动的内容：${from}`);
 
     let movedFrom = new Set(moves.map(m => m.record.path));
     for (let m of moves) {
       if (!movedFrom.has(m.newPath) && this.storage.documents.get(m.newPath)) {
-        throw new Error(`Destination already exists: ${m.newPath}`);
+        throw new Error(`目标位置已存在：${m.newPath}`);
       }
     }
 
@@ -457,13 +457,13 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
   // --- Artifact-backed projection ---
 
   async syncArtifactSource(): Promise<void> {
-    if (!this.#isGitBased()) throw new Error("Collection is not git-based.");
+    if (!this.#isGitBased()) throw new Error("该集合并非基于 Git。");
     await this.#refreshArtifactSource();
   }
 
   async createGitToken(): Promise<ContextGitTokenCreateResult> {
     let meta = this.getMetadata();
-    if (meta.content.source !== "git") throw new Error("Collection is not git-based.");
+    if (meta.content.source !== "git") throw new Error("该集合并非基于 Git。");
     let repo = await this.#artifacts().get(meta.id);
     let token = await repo.createToken("write", GIT_TOKEN_TTL_SECONDS);
     return {
@@ -474,7 +474,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
   }
 
   async listGitTokens(): Promise<ContextGitTokenList> {
-    if (!this.#isGitBased()) throw new Error("Collection is not git-based.");
+    if (!this.#isGitBased()) throw new Error("该集合并非基于 Git。");
     let meta = this.getMetadata();
     let repo = await this.#artifacts().get(meta.id);
     let result = await repo.listTokens();
@@ -492,7 +492,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
   }
 
   async revokeGitToken(tokenId: string): Promise<boolean> {
-    if (!this.#isGitBased()) throw new Error("Collection is not git-based.");
+    if (!this.#isGitBased()) throw new Error("该集合并非基于 Git。");
     let meta = this.getMetadata();
     let repo = await this.#artifacts().get(meta.id);
     return repo.revokeToken(tokenId);
@@ -540,7 +540,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
       let meta = this.getMetadata();
       meta.documentCount = documents.length;
       meta.lastUpdated = new Date();
-      if (meta.content.source !== "git") throw new Error("Collection must be git-based.");
+      if (meta.content.source !== "git") throw new Error("集合必须基于 Git。");
       meta.content.commit = commit;
       meta.content.lastRefreshedAt = new Date();
       this.storage.metadata.put(meta);
@@ -558,7 +558,7 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
       let meta = this.getMetadata();
       meta.documentCount = 0;
       meta.lastUpdated = new Date();
-      if (meta.content.source !== "git") throw new Error("Collection must be git-based.");
+      if (meta.content.source !== "git") throw new Error("集合必须基于 Git。");
       meta.content.commit = commit;
       meta.content.lastRefreshedAt = new Date();
       this.storage.metadata.put(meta);
@@ -568,13 +568,13 @@ export class ContextCollectionDurableObject extends DurableObject<Cloudflare.Env
 
   async #loadArtifactSnapshot(): Promise<void> {
     const meta = this.getMetadata();
-    if (meta.content.source !== "git") throw new Error("Collection is not git-based.");
+    if (meta.content.source !== "git") throw new Error("该集合并非基于 Git。");
     const result = await readArtifactRepoDocuments(
         this.#artifacts(), meta.id, meta.content.remote, meta.content.branch, meta.content.commit);
     if (!result.changed) {
       // Nothing changed, just bump the refresh timestamp.
       const latestMeta = this.getMetadata();
-      if (latestMeta.content.source !== "git") throw new Error("Collection is not git-based.");
+      if (latestMeta.content.source !== "git") throw new Error("该集合并非基于 Git。");
       latestMeta.content = { ...latestMeta.content, lastRefreshedAt: new Date() };
       this.storage.metadata.put(latestMeta);
       return;

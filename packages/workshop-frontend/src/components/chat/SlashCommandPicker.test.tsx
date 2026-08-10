@@ -29,7 +29,7 @@ const choices: SlashCommandChoice[] = [{
 const compact: SlashCommandChoice = {
   selection: {builtin: true, commandId: "compact"},
   name: "compact",
-  description: "Summarize older context while preserving recent messages.",
+  description: "在保留近期消息的同时总结较早的上下文。",
   providerLabel: "Workshop",
 };
 

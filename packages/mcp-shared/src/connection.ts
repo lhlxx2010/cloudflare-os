@@ -93,7 +93,7 @@ export async function withClient<T>(
     if (err instanceof McpAuthRequiredError) {
       await account.noteCredentialsExpired(endpoint, generation);
       throw new Error(
-        "The MCP server rejected this connection's credentials. Please reconnect the account.",
+        "MCP 服务器拒绝了此连接的凭据，请重新连接账户。",
         { cause: err });
     }
     throw err;

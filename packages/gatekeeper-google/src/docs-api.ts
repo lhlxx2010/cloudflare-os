@@ -101,7 +101,7 @@ export class GoogleDocsApi {
 
     if (!response.ok) {
       let errorText = await response.text();
-      throw new Error(`Failed to get document: ${response.status} ${errorText}`);
+      throw new Error(`获取文档失败：${response.status} ${errorText}`);
     }
 
     return await response.json() as GoogleDocsDocument;
@@ -123,7 +123,7 @@ export class GoogleDocsApi {
 
     if (!response.ok) {
       let errorText = await response.text();
-      throw new Error(`Failed to get revision ID: ${response.status} ${errorText}`);
+      throw new Error(`获取修订版本 ID 失败：${response.status} ${errorText}`);
     }
 
     let data = await response.json() as { revisionId: string };
@@ -164,7 +164,7 @@ export class GoogleDocsApi {
 
     if (!response.ok) {
       let errorText = await response.text();
-      throw new Error(`Failed to batch update document: ${response.status} ${errorText}`);
+      throw new Error(`批量更新文档失败：${response.status} ${errorText}`);
     }
 
     let result = await response.json() as {

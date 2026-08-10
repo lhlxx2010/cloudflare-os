@@ -61,5 +61,5 @@ export async function revokeToken(
   const headers = new Headers({ "Content-Type": "application/x-www-form-urlencoded" });
   // The account registers as a public client with token_endpoint_auth_method "none".
   const response = await fetchFn(endpoint, { method: "POST", headers, body });
-  if (!response.ok) throw new Error(`Token revocation failed with HTTP ${response.status}.`);
+  if (!response.ok) throw new Error(`撤销令牌失败，HTTP 状态码为 ${response.status}。`);
 }

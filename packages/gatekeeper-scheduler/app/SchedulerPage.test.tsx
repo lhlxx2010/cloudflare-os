@@ -100,7 +100,7 @@ describe("SchedulerPage", () => {
     await render(<SchedulerPage api={{ list }} {...host} />);
 
     expect(container!.textContent).toContain("Morning brief");
-    expect(container!.textContent).toContain("Needs attention");
+    expect(container!.textContent).toContain("需要处理");
     expect(container!.querySelector('[role="switch"]')).toBeNull();
     // Rows carry cadence, target and timing only — never the schedule's description.
     expect(container!.textContent).not.toContain(active.description);
@@ -121,10 +121,10 @@ describe("SchedulerPage", () => {
 
     // Only the failed schedule gets a caret; healthy rows have nothing to expand.
     expect(container!.querySelectorAll('[data-action="toggle-diagnostic"]')).toHaveLength(1);
-    expect(container!.textContent).not.toContain("Task callback failed after retries.");
+    expect(container!.textContent).not.toContain("多次重试后任务回调仍然失败。");
 
     await click('[data-action="toggle-diagnostic"]');
-    expect(container!.textContent).toContain("Task callback failed after retries.");
+    expect(container!.textContent).toContain("多次重试后任务回调仍然失败。");
     expect(container!.textContent).not.toContain(dead.description);
   });
 
@@ -195,13 +195,13 @@ describe("SchedulerPage", () => {
     const list = vi.fn<ScheduleManagementClient["list"]>(() => result.promise);
     await render(<SchedulerPage api={{ list }} {...hostProps()} />);
 
-    expect(container!.textContent).toContain("Loading scheduled tasks");
+    expect(container!.textContent).toContain("正在加载定时任务");
     await act(async () => result.resolve({ schedules: [] }));
 
     expect(container!.querySelector('input[type="search"]')).toBeNull();
     expect(container!.querySelector('[data-filter="all"]')).toBeNull();
     expect(container!.querySelector('[data-action="create-schedule"]')).not.toBeNull();
-    expect(container!.textContent).toContain("Get started");
+    expect(container!.textContent).toContain("快速开始");
   });
 
   it("shows a bounded error and retries the first page", async () => {
@@ -211,9 +211,9 @@ describe("SchedulerPage", () => {
       .mockResolvedValueOnce({ schedules: [active] });
     await render(<SchedulerPage api={{ list }} {...hostProps()} />);
 
-    expect(container!.textContent).toContain("Couldn’t load scheduled tasks");
+    expect(container!.textContent).toContain("无法加载定时任务");
     expect(container!.textContent).not.toContain("private backend detail");
-    await click("button", "Try again");
+    await click("button", "重试");
     expect(container!.textContent).toContain("Morning brief");
   });
 
@@ -227,7 +227,7 @@ describe("SchedulerPage", () => {
     expect(list).toHaveBeenCalledTimes(1);
     await act(async () => new Promise((resolve) => setTimeout(resolve, 220)));
     expect(list).toHaveBeenLastCalledWith({ query: "weekly roundup", statuses: undefined });
-    expect(container!.textContent).toContain("No scheduled tasks match these filters");
+    expect(container!.textContent).toContain("没有符合当前筛选条件的定时任务");
     // The search and tabs must survive an empty result, or the filter can't be cleared.
     expect(container!.querySelector('input[type="search"]')).not.toBeNull();
     expect(container!.querySelector('[data-filter="all"]')).not.toBeNull();
@@ -250,7 +250,7 @@ describe("SchedulerPage", () => {
     const rows = [
       ...container!.querySelectorAll<HTMLButtonElement>('[data-action="open-schedule"]'),
     ];
-    expect(container!.textContent).toContain("Unavailable workspace");
+    expect(container!.textContent).toContain("工作区不可用");
     expect(rows.find((row) => row.textContent?.includes("Missed reminder"))?.disabled).toBe(true);
     expect(rows.find((row) => row.textContent?.includes("Quarterly export"))?.disabled).toBe(false);
   });

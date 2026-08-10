@@ -284,20 +284,20 @@ const AUTH_SCOPES = ["read:user", "user:email"];
 
 const REPO_RESOURCE: SupportedResource = {
   urlPattern: "https://github.com/:owner/:repo",
-  title: "GitHub Repository",
-  description: "Read and manage issues, pull requests, reviews, and discussions in a GitHub repository.",
+  title: "GitHub 仓库",
+  description: "读取和管理 GitHub 仓库中的议题、拉取请求、审查及讨论。",
 };
 
 const ISSUE_RESOURCE: SupportedResource = {
   urlPattern: "https://github.com/:owner/:repo/issues/:number",
-  title: "GitHub Issue",
-  description: "Read and manage a specific GitHub issue.",
+  title: "GitHub 议题",
+  description: "读取和管理指定的 GitHub 议题。",
 };
 
 const PULL_REQUEST_RESOURCE: SupportedResource = {
   urlPattern: "https://github.com/:owner/:repo/pull/:number",
-  title: "GitHub Pull Request",
-  description: "Read and manage a specific GitHub pull request and its review threads.",
+  title: "GitHub 拉取请求",
+  description: "读取和管理指定的 GitHub 拉取请求及其审查话题。",
 };
 
 const SUPPORTED_RESOURCES: SupportedResource[] = [
@@ -307,40 +307,40 @@ const SUPPORTED_RESOURCES: SupportedResource[] = [
 ];
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.</p>
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。</p>
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization Link Expired</title>
+    <title>授权链接已过期</title>
   </head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #d97706; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1d4ed8; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration Required</title>
+    <title>需要配置</title>
   </head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">GitHub Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0;">Please configure a GitHub OAuth app client ID and secret for this gatekeeper.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">GitHub Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0;">请为此 Gatekeeper 配置 GitHub OAuth 应用客户端 ID 和密钥。</p>
     </div>
   </body>
 </html>`;
@@ -372,7 +372,7 @@ function getBasePath(env: Env): string {
 
 function ensureConfigured(env: Env): void {
   if (!env.CLIENT_ID || !env.CLIENT_SECRET) {
-    throw new Error("The GitHub gatekeeper is not configured.");
+    throw new Error("GitHub Gatekeeper 尚未配置。");
   }
 }
 
@@ -933,7 +933,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
 
     const relPath = url.pathname.slice(basePath.length);
@@ -968,21 +968,21 @@ export default {
     if (relPath === "/oauth") {
       const error = url.searchParams.get("error");
       if (error) {
-        return new Response("GitHub authorization failed. Please restart the connection flow from Cloudflare OS.", {
+        return new Response("GitHub 授权失败。请从 NINT os 重新开始连接流程。", {
           status: 400,
           headers: { "Content-Type": "text/plain; charset=utf-8" },
         });
       }
 
       const state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       const colonIndex = state.indexOf(":");
-      if (colonIndex < 0) return new Response("Error: malformed state");
+      if (colonIndex < 0) return new Response("错误：“state”格式不正确");
 
       const doId = state.slice(0, colonIndex);
       const oauthNonce = state.slice(colonIndex + 1);
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       const stub: DurableObjectStub<UserAccount> = ctx.exports.UserAccount.get(
         ctx.exports.UserAccount.idFromString(doId),
@@ -999,7 +999,7 @@ export default {
       });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -1011,10 +1011,9 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://github.com",
       logo: { url: GITHUB_LOGO_URL },
       color: "#f0f0f0",
-      tagline: "Triage issues, review PRs, and manage repos",
+      tagline: "分流议题、审查拉取请求并管理仓库",
       description:
-          "Connect your GitHub account so Cloudflare OS can read and update issues, pull requests, " +
-          "and reviews on the repositories you choose.",
+          "连接你的 GitHub 账户，让 NINT os 读取和更新所选仓库中的议题、拉取请求及审查。",
       providesAuth: true,
     };
   }
@@ -1098,12 +1097,12 @@ export class UserAccount extends DurableObject<Env> {
     const clientId = this.env.CLIENT_ID;
     const clientSecret = this.env.CLIENT_SECRET;
     if (!clientId || !clientSecret) {
-      throw new Error("GitHub OAuth is not configured.");
+      throw new Error("GitHub OAuth 尚未配置。");
     }
 
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const grant = await exchangeAuthCode(code, clientId, clientSecret, `${getBaseUrl(this.env)}/oauth`);
@@ -1141,7 +1140,7 @@ export class UserAccount extends DurableObject<Env> {
   getAccessToken(): string {
     const accessToken = this.ctx.storage.kv.get<string>("accessToken");
     if (!accessToken) {
-      throw new Error("GitHub credentials have not been configured for this account.");
+      throw new Error("尚未为此账户配置 GitHub 凭据。");
     }
     return accessToken;
   }
@@ -1203,7 +1202,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     } catch (error) {
       if (error instanceof GitHubApiError && error.isAuthError) {
         await account.noteCredentialsExpired();
-        throw new Error("GitHub credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("GitHub 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -1235,12 +1234,12 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
   }> {
     const parsed = new URL(url);
     if (parsed.hostname !== "github.com") {
-      throw new Error(`Unsupported GitHub URL: ${url}`);
+      throw new Error(`不支持的 GitHub URL：${url}`);
     }
 
     const segments = parsed.pathname.split("/").filter(Boolean);
     if (segments.length < 2) {
-      throw new Error(`Unsupported GitHub URL: ${url}`);
+      throw new Error(`不支持的 GitHub URL：${url}`);
     }
 
     const [owner, repo, kind, number] = segments;
@@ -1298,7 +1297,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       };
     }
 
-    throw new Error(`Unsupported GitHub resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的 GitHub 资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -1392,7 +1391,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     } catch (error) {
       if (error instanceof GitHubApiError && error.isAuthError) {
         await account.noteCredentialsExpired();
-        throw new Error("GitHub credentials have expired or been revoked. Please reconnect the account.", { cause: error });
+        throw new Error("GitHub 凭据已过期或被撤销，请重新连接账户。", { cause: error });
       }
       throw error;
     }
@@ -1466,7 +1465,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     const response = await loader(cached?.etag);
     if (response.status === 304) {
       if (!cached) {
-        throw new Error(`GitHub returned 304 for uncached resource ${key}.`);
+        throw new Error(`GitHub 对未缓存的资源 ${key} 返回了 304。`);
       }
       this.#storeCached(key, cached.value, response.headers.get("etag") ?? cached.etag);
       return cached.value;
@@ -1546,7 +1545,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     return ids.map(id => {
       const entry = entries.get(id);
       if (!entry) {
-        throw new Error(`Cached GitHub ${label} ${id} is missing.`);
+        throw new Error(`缓存的 GitHub ${label} ${id} 缺失。`);
       }
       return entry;
     });
@@ -1658,7 +1657,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
       if (state.depth > 0 && normalized.some(comment => knownIds.has(comment.id))) {
         if (restarted) {
-          throw new Error(`GitHub discussion pagination shifted while loading #${realId}. Retry the request.`);
+          throw new Error(`加载 #${realId} 时 GitHub 讨论分页发生变化，请重试。`);
         }
         state = this.#resetDiscussionCommentState(realId);
         state.chunkSize = chunkSize;
@@ -1832,7 +1831,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
       if (state.depth > 0 && batch.some(comment => knownIds.has(String(comment.id)))) {
         if (restarted) {
-          throw new Error(`GitHub pull review comment pagination shifted while loading #${realId}. Retry the request.`);
+          throw new Error(`加载 #${realId} 时 GitHub 拉取请求审查评论分页发生变化，请重试。`);
         }
         state = this.#resetPullReviewCommentState(realId);
         state.chunkSize = chunkSize;
@@ -1880,7 +1879,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
   #requireActionRecord(approvalId: number): StoredActionRecord {
     const record = this.#getActionRecord(approvalId);
     if (!record) {
-      throw new Error(`No queued GitHub action exists with id ${approvalId}.`);
+      throw new Error(`不存在 ID 为 ${approvalId} 的待处理 GitHub 操作。`);
     }
     return record;
   }
@@ -2073,7 +2072,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
         const actor = actorFromUser(result.data);
         if (!actor) {
-          throw new Error("Failed to identify the connected GitHub account.");
+          throw new Error("无法识别已连接的 GitHub 账户。");
         }
 
         return {
@@ -2219,7 +2218,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     if (logicalId.startsWith("~")) {
       const provisional = this.#getProvisionalResource(logicalId);
       if (!provisional || provisional.kind !== "issue") {
-        throw new Error(`No provisional issue exists with id ${logicalId}`);
+        throw new Error(`不存在 ID 为 ${logicalId} 的临时议题`);
       }
 
       if (provisional.realId) {
@@ -2229,7 +2228,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
       const createAction = this.#findCreateAction(logicalId, "issue") as CreateIssueAction | undefined;
       if (!createAction) {
-        throw new Error(`Provisional issue ${logicalId} is no longer available.`);
+        throw new Error(`临时议题 ${logicalId} 已不可用。`);
       }
 
       const provisionalIssue = await this.#buildProvisionalIssueDetails(createAction);
@@ -2243,7 +2242,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     if (logicalId.startsWith("~")) {
       const provisional = this.#getProvisionalResource(logicalId);
       if (!provisional || provisional.kind !== "pull") {
-        throw new Error(`No provisional pull request exists with id ${logicalId}`);
+        throw new Error(`不存在 ID 为 ${logicalId} 的临时拉取请求`);
       }
 
       if (provisional.realId) {
@@ -2253,7 +2252,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
       const createAction = this.#findCreateAction(logicalId, "pull") as CreatePullRequestAction | undefined;
       if (!createAction) {
-        throw new Error(`Provisional pull request ${logicalId} is no longer available.`);
+        throw new Error(`临时拉取请求 ${logicalId} 已不可用。`);
       }
 
       const provisionalPull = await this.#buildProvisionalPullRequestDetails(createAction);
@@ -2273,7 +2272,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
         return result;
       }
       if (result.data.pull_request) {
-        throw new Error(`#${realId} is a pull request, not an issue.`);
+        throw new Error(`#${realId} 是拉取请求，而不是议题。`);
       }
 
       return {
@@ -2315,7 +2314,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     if (kind === "issue") {
       const issue = await this.#withApi(api => api.getIssue(this.ctx.props.owner, this.ctx.props.repo, Number(realId)));
       if (issue.pull_request) {
-        throw new Error(`#${realId} is a pull request, not an issue.`);
+        throw new Error(`#${realId} 是拉取请求，而不是议题。`);
       }
       return issue.comments;
     }
@@ -2981,7 +2980,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     if (logicalId.startsWith("~") && !this.#resolveProvisionalId(logicalId)) {
       const action = this.#findCreateAction(logicalId, "pull") as CreatePullRequestAction | undefined;
       if (!action) {
-        throw new Error(`Provisional pull request ${logicalId} is no longer available.`);
+        throw new Error(`临时拉取请求 ${logicalId} 已不可用。`);
       }
 
       const cacheKey = this.#cacheKey("diff-provisional", logicalId);
@@ -3181,7 +3180,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
         return {
           url: repo.url,
           title: repo.fullName,
-          snippet: repo.description ?? `GitHub repository ${repo.fullName}`,
+          snippet: repo.description ?? `GitHub 仓库 ${repo.fullName}`,
           suggestedBindingName: "GITHUB_REPO",
           tsType: "GitHubRepo",
         };
@@ -3190,8 +3189,8 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
         const issue = await this.#getIssueDetails(String(this.ctx.props.issueNumber));
         return {
           url: issue.url,
-          title: `Issue #${issue.id}: ${issue.title}`,
-          snippet: textSnippet(issue.bodyMarkdown, `${issue.state} issue in ${issue.repo.fullName}`),
+          title: `议题 #${issue.id}：${issue.title}`,
+          snippet: textSnippet(issue.bodyMarkdown, `${issue.state} 状态的议题，位于 ${issue.repo.fullName}`),
           suggestedBindingName: "GITHUB_ISSUE",
           tsType: "GitHubIssue",
         };
@@ -3200,8 +3199,8 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
         const pull = await this.#getPullRequestDetails(String(this.ctx.props.issueNumber));
         return {
           url: pull.url,
-          title: `Pull Request #${pull.id}: ${pull.title}`,
-          snippet: textSnippet(pull.bodyMarkdown, `${pull.state} pull request in ${pull.repo.fullName}`),
+          title: `拉取请求 #${pull.id}：${pull.title}`,
+          snippet: textSnippet(pull.bodyMarkdown, `${pull.state} 状态的拉取请求，位于 ${pull.repo.fullName}`),
           suggestedBindingName: "GITHUB_PULL_REQUEST",
           tsType: "GitHubPullRequest",
         };
@@ -3250,7 +3249,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
   async applyAction(actionId: number): Promise<void> {
     const record = this.#requireActionRecord(actionId);
     if (record.state !== "pending" && record.state !== "staged") {
-      throw new Error(`GitHub action ${actionId} is no longer pending.`);
+      throw new Error(`GitHub 操作 ${actionId} 已不再处于待处理状态。`);
     }
 
     const action = record.action;
@@ -3282,7 +3281,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "setTitle": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), { title: action.title }));
         this.#markActionApproved(action);
         this.#clearCaches();
@@ -3290,7 +3289,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "setBody": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), {
           body: this.#rewriteKnownReferences(action.bodyMarkdown, true),
         }));
@@ -3300,7 +3299,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "addLabels": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => api.addLabels(action.owner, action.repo, Number(realId), action.labels));
         this.#markActionApproved(action);
         this.#clearCaches();
@@ -3308,7 +3307,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "removeLabels": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => {
           const remainingLabels = action.previousLabels.filter(
             label => !action.labels.some(removed => removed.toLowerCase() === label.toLowerCase()),
@@ -3321,7 +3320,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "changeState": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), {
           state: action.state,
           state_reason: denormalizeStateReason(action.reason),
@@ -3332,7 +3331,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "postComment": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) throw new Error(`Target ${action.targetId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`目标 ${action.targetId} 尚未在 GitHub 上创建。`);
         const response = await this.#withApi(api => api.createIssueComment(
           action.owner,
           action.repo,
@@ -3349,7 +3348,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "postReview": {
         const realId = action.pullId.startsWith("~") ? this.#resolveProvisionalId(action.pullId) : action.pullId;
-        if (!realId) throw new Error(`Pull request ${action.pullId} has not been created on GitHub yet.`);
+        if (!realId) throw new Error(`拉取请求 ${action.pullId} 尚未在 GitHub 上创建。`);
         const review = await this.#withApi(api => api.createPullRequestReview(action.owner, action.repo, Number(realId), {
           commit_id: action.review.revision.headSha,
           body: action.review.bodyMarkdown ? this.#rewriteKnownReferences(action.review.bodyMarkdown, true) : undefined,
@@ -3402,7 +3401,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "replyToDiffComment": {
         const pullId = action.pullId.startsWith("~") ? this.#resolveProvisionalId(action.pullId) : action.pullId;
-        if (!pullId) throw new Error(`Pull request ${action.pullId} has not been created on GitHub yet.`);
+        if (!pullId) throw new Error(`拉取请求 ${action.pullId} 尚未在 GitHub 上创建。`);
         const replyTargetId = await this.#resolveReplyTarget(action.commentId);
         const response = await this.#withApi(api => api.replyToPullRequestReviewComment(
           action.owner,
@@ -3422,7 +3421,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "mergePullRequest": {
         const pullId = action.pullId.startsWith("~") ? this.#resolveProvisionalId(action.pullId) : action.pullId;
-        if (!pullId) throw new Error(`Pull request ${action.pullId} has not been created on GitHub yet.`);
+        if (!pullId) throw new Error(`拉取请求 ${action.pullId} 尚未在 GitHub 上创建。`);
         await this.#withApi(api => api.mergePullRequest(action.owner, action.repo, Number(pullId), {
           merge_method: action.options?.method,
           commit_title: action.options?.commitTitle,
@@ -3447,10 +3446,10 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     const seen = new Set<string>();
     while (pendingReplies.has(resolvedCommentId)) {
       if (seen.size >= MAX_REPLY_TARGET_HOPS) {
-        throw new Error(`Reply chain for diff comment ${commentId} exceeded ${MAX_REPLY_TARGET_HOPS} hops.`);
+        throw new Error(`差异评论 ${commentId} 的回复链超过 ${MAX_REPLY_TARGET_HOPS} 跳。`);
       }
       if (seen.has(resolvedCommentId)) {
-        throw new Error(`Reply chain for diff comment ${commentId} contains a cycle.`);
+        throw new Error(`差异评论 ${commentId} 的回复链包含循环。`);
       }
 
       seen.add(resolvedCommentId);
@@ -3463,7 +3462,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
 
     const aliased = this.ctx.storage.kv.get<string>(`diffAlias:${resolvedCommentId}`) ?? resolvedCommentId;
     if (!/^\d+$/.test(aliased)) {
-      throw new Error(`Diff comment ${resolvedCommentId} has not been created on GitHub yet.`);
+      throw new Error(`差异评论 ${resolvedCommentId} 尚未在 GitHub 上创建。`);
     }
 
     const comment = await this.#withApi(api => api.getPullRequestReviewComment(
@@ -3478,7 +3477,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     const record = this.#requireActionRecord(actionId);
     const action = record.action;
     if (record.state !== "pending" && record.state !== "staged") {
-      throw new Error(`GitHub action ${actionId} is no longer pending.`);
+      throw new Error(`GitHub 操作 ${actionId} 已不再处于待处理状态。`);
     }
 
     this.#markActionRejected(action);
@@ -3506,14 +3505,14 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     switch (action.type) {
       case "setTitle": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) return { message: "The target resource no longer exists on GitHub.", canRetry: false };
+        if (!realId) return { message: "目标资源在 GitHub 上已不存在。", canRetry: false };
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), { title: action.previousTitle }));
         this.#clearCaches();
         return;
       }
       case "setBody": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) return { message: "The target resource no longer exists on GitHub.", canRetry: false };
+        if (!realId) return { message: "目标资源在 GitHub 上已不存在。", canRetry: false };
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), { body: action.previousBodyMarkdown }));
         this.#clearCaches();
         return;
@@ -3521,14 +3520,14 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       case "addLabels":
       case "removeLabels": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) return { message: "The target resource no longer exists on GitHub.", canRetry: false };
+        if (!realId) return { message: "目标资源在 GitHub 上已不存在。", canRetry: false };
         await this.#withApi(api => api.setLabels(action.owner, action.repo, Number(realId), action.previousLabels));
         this.#clearCaches();
         return;
       }
       case "changeState": {
         const realId = action.targetId.startsWith("~") ? this.#resolveProvisionalId(action.targetId) : action.targetId;
-        if (!realId) return { message: "The target resource no longer exists on GitHub.", canRetry: false };
+        if (!realId) return { message: "目标资源在 GitHub 上已不存在。", canRetry: false };
         await this.#withApi(api => api.updateIssue(action.owner, action.repo, Number(realId), {
           state: action.previousState,
           state_reason: denormalizeStateReason(action.previousReason),
@@ -3538,7 +3537,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "postComment": {
         if (revertInfo?.type !== "issueComment") {
-          return { message: "Missing issue comment revert information.", canRetry: false };
+          return { message: "缺少议题评论撤销信息。", canRetry: false };
         }
         await this.#withApi(api => api.deleteIssueComment(action.owner, action.repo, revertInfo.commentId));
         this.#clearCaches();
@@ -3546,7 +3545,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       }
       case "replyToDiffComment": {
         if (revertInfo?.type !== "reviewComment") {
-          return { message: "Missing review comment revert information.", canRetry: false };
+          return { message: "缺少审查评论撤销信息。", canRetry: false };
         }
         await this.#withApi(api => api.deletePullRequestReviewComment(action.owner, action.repo, revertInfo.commentId));
         this.#clearCaches();
@@ -3557,7 +3556,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
       case "postReview":
       case "mergePullRequest":
         return {
-          message: "This GitHub action cannot be automatically reverted.",
+          message: "此 GitHub 操作无法自动撤销。",
           canRetry: false,
         };
     }
@@ -3782,8 +3781,7 @@ export class GitHubGatekeeperImpl extends DurableObject<Env, GitHubGatekeeperImp
     const { owner, repo } = this.ctx.props;
     if (!(await verifier.hasRepoAccess(owner, repo))) {
       throw new Error(
-        `This collaborator does not have read access to the GitHub repository ${owner}/${repo}, ` +
-        `so they cannot be allowed to observe data this workspace read from it.`);
+        `此协作者没有 GitHub 仓库 ${owner}/${repo} 的读取权限，因此不能查看此工作区从中读取的数据。`);
     }
   }
 
@@ -3808,8 +3806,8 @@ class GitHubRepoSessionImpl extends RpcTarget implements GitHubRepoSession {
   async getMetadata(): Promise<GitHubRepoMetadata> {
     const metadata = await this.#gatekeeper.repoMetadata();
     await this.#approvalQueue.authorizeObservation({
-      title: `Read repository metadata for ${metadata.fullName}`,
-      description: `Read basic metadata for the GitHub repository ${metadata.fullName}.`,
+      title: `读取 ${metadata.fullName} 的仓库元数据`,
+      description: `读取 GitHub 仓库 ${metadata.fullName} 的基本元数据。`,
     });
     return metadata;
   }
@@ -3817,8 +3815,8 @@ class GitHubRepoSessionImpl extends RpcTarget implements GitHubRepoSession {
   async createIssue(options: GitHubCreateIssueOptions): Promise<GitHubIssue> {
     const action = await this.#gatekeeper.prepareCreateIssue(options);
     await this.#gatekeeper.submitActionForApproval(this.#approvalQueue, action, {
-      title: `Create issue ${options.title}`,
-      description: `Create a new issue in ${action.owner}/${action.repo} titled "${options.title}".`,
+      title: `创建议题 ${options.title}`,
+      description: `在 ${action.owner}/${action.repo} 中创建标题为“${options.title}”的新议题。`,
       implementsRevert: false,
     });
     return new GitHubIssueImpl(this.#gatekeeper, this.#approvalQueue.dup(), action.provisionalId, "issue");
@@ -3827,8 +3825,8 @@ class GitHubRepoSessionImpl extends RpcTarget implements GitHubRepoSession {
   async createPullRequest(options: GitHubCreatePullRequestOptions): Promise<GitHubPullRequest> {
     const action = await this.#gatekeeper.prepareCreatePullRequest(options);
     await this.#gatekeeper.submitActionForApproval(this.#approvalQueue, action, {
-      title: `Create pull request ${options.title}`,
-      description: `Create a new pull request in ${action.owner}/${action.repo} from ${options.head} into ${options.base}.`,
+      title: `创建拉取请求 ${options.title}`,
+      description: `在 ${action.owner}/${action.repo} 中创建从 ${options.head} 合入 ${options.base} 的新拉取请求。`,
       implementsRevert: false,
     });
     return new GitHubPullRequestImpl(this.#gatekeeper, this.#approvalQueue.dup(), action.provisionalId);
@@ -3837,8 +3835,8 @@ class GitHubRepoSessionImpl extends RpcTarget implements GitHubRepoSession {
   async getIssue(id: string): Promise<GitHubIssue> {
     const details = await this.#gatekeeper.openIssue(id);
     await this.#approvalQueue.authorizeObservation({
-      title: `Open issue #${details.id}: ${details.title}`,
-      description: `Open a capability for issue #${details.id} in ${details.repo.fullName}.`,
+      title: `打开议题 #${details.id}：${details.title}`,
+      description: `打开 ${details.repo.fullName} 中议题 #${details.id} 的能力。`,
     });
     return new GitHubIssueImpl(this.#gatekeeper, this.#approvalQueue.dup(), id, "issue");
   }
@@ -3846,40 +3844,40 @@ class GitHubRepoSessionImpl extends RpcTarget implements GitHubRepoSession {
   async getPullRequest(id: string): Promise<GitHubPullRequest> {
     const details = await this.#gatekeeper.openPullRequest(id);
     await this.#approvalQueue.authorizeObservation({
-      title: `Open pull request #${details.id}: ${details.title}`,
-      description: `Open a capability for pull request #${details.id} in ${details.repo.fullName}.`,
+      title: `打开拉取请求 #${details.id}：${details.title}`,
+      description: `打开 ${details.repo.fullName} 中拉取请求 #${details.id} 的能力。`,
     });
     return new GitHubPullRequestImpl(this.#gatekeeper, this.#approvalQueue.dup(), id);
   }
 
   async listIssues(options?: GitHubIssueFilter): Promise<Cursor<GitHubIssueSummary>> {
     await this.#approvalQueue.authorizeObservation({
-      title: `List issues`,
-      description: `List issues in the GitHub repository.`,
+      title: `列出议题`,
+      description: `列出 GitHub 仓库中的议题。`,
     });
     return this.#gatekeeper.listIssues(options, options?.resultsPerPage ?? 50);
   }
 
   async searchIssues(query: GitHubIssueSearch): Promise<Cursor<GitHubIssueSummary>> {
     await this.#approvalQueue.authorizeObservation({
-      title: `Search issues for "${query.text}"`,
-      description: `Search issues in the GitHub repository for "${query.text}".`,
+      title: `搜索议题“${query.text}”`,
+      description: `在 GitHub 仓库议题中搜索“${query.text}”。`,
     });
     return this.#gatekeeper.searchIssues(query, query.resultsPerPage ?? 50);
   }
 
   async listPullRequests(options?: GitHubPullRequestFilter): Promise<Cursor<GitHubPullRequestSummary>> {
     await this.#approvalQueue.authorizeObservation({
-      title: `List pull requests`,
-      description: `List pull requests in the GitHub repository.`,
+      title: `列出拉取请求`,
+      description: `列出 GitHub 仓库中的拉取请求。`,
     });
     return this.#gatekeeper.listPullRequests(options, options?.resultsPerPage ?? 50);
   }
 
   async searchPullRequests(query: GitHubPullRequestSearch): Promise<Cursor<GitHubPullRequestSummary>> {
     await this.#approvalQueue.authorizeObservation({
-      title: `Search pull requests for "${query.text}"`,
-      description: `Search pull requests in the GitHub repository for "${query.text}".`,
+      title: `搜索拉取请求“${query.text}”`,
+      description: `在 GitHub 仓库拉取请求中搜索“${query.text}”。`,
     });
     return this.#gatekeeper.searchPullRequests(query, query.resultsPerPage ?? 50);
   }
@@ -3911,84 +3909,84 @@ class GitHubIssueImpl extends RpcTarget implements GitHubIssue {
 
   protected async authorizeMutationPreparation(action: string): Promise<void> {
     await this.approvalQueue.authorizeObservation({
-      title: `Read current state of #${this.logicalId}`,
-      description: `Read the current state of #${this.logicalId} in order to ${action} and capture revert information.`,
+      title: `读取 #${this.logicalId} 的当前状态`,
+      description: `读取 #${this.logicalId} 的当前状态，以便${action}并记录撤销信息。`,
     });
   }
 
   async getDetails(): Promise<GitHubIssueDetails> {
     const details = await this.gatekeeper.openIssue(this.logicalId);
     await this.approvalQueue.authorizeObservation({
-      title: `Read issue #${details.id}: ${details.title}`,
-      description: `Read the full details of issue #${details.id} in ${details.repo.fullName}.`,
+      title: `读取议题 #${details.id}：${details.title}`,
+      description: `读取 ${details.repo.fullName} 中议题 #${details.id} 的完整详情。`,
     });
     return details;
   }
 
   async setTitle(title: string): Promise<void> {
-    await this.authorizeMutationPreparation("change its title");
+    await this.authorizeMutationPreparation("修改其标题");
     const action = await this.gatekeeper.prepareSetTitle(this.kind, this.logicalId, title);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Rename #${this.logicalId}`,
-      description: `Change the title from "${action.previousTitle}" to "${title}".`,
+      title: `重命名 #${this.logicalId}`,
+      description: `将标题从“${action.previousTitle}”改为“${title}”。`,
       implementsRevert: true,
     });
   }
 
   async setBody(bodyMarkdown: string): Promise<void> {
-    await this.authorizeMutationPreparation("edit its body");
+    await this.authorizeMutationPreparation("编辑其正文");
     const action = await this.gatekeeper.prepareSetBody(this.kind, this.logicalId, bodyMarkdown);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Edit body of #${this.logicalId}`,
-      description: `Replace the Markdown body of #${this.logicalId}.`,
+      title: `编辑 #${this.logicalId} 的正文`,
+      description: `替换 #${this.logicalId} 的 Markdown 正文。`,
       implementsRevert: true,
     });
   }
 
   async addLabels(labels: string[]): Promise<void> {
-    await this.authorizeMutationPreparation("add labels");
+    await this.authorizeMutationPreparation("添加标签");
     const action = await this.gatekeeper.prepareAddLabels(this.kind, this.logicalId, labels);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Add labels to #${this.logicalId}`,
-      description: `Add labels ${labels.join(", ")} to #${this.logicalId}.`,
+      title: `为 #${this.logicalId} 添加标签`,
+      description: `为 #${this.logicalId} 添加标签 ${labels.join(", ")}。`,
       implementsRevert: true,
     });
   }
 
   async removeLabels(labels: string[]): Promise<void> {
-    await this.authorizeMutationPreparation("remove labels");
+    await this.authorizeMutationPreparation("移除标签");
     const action = await this.gatekeeper.prepareRemoveLabels(this.kind, this.logicalId, labels);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Remove labels from #${this.logicalId}`,
-      description: `Remove labels ${labels.join(", ")} from #${this.logicalId}.`,
+      title: `从 #${this.logicalId} 移除标签`,
+      description: `从 #${this.logicalId} 移除标签 ${labels.join(", ")}。`,
       implementsRevert: true,
     });
   }
 
   async close(reason?: "completed" | "notPlanned"): Promise<void> {
-    await this.authorizeMutationPreparation("close it");
+    await this.authorizeMutationPreparation("将其关闭");
     const action = await this.gatekeeper.prepareChangeState(this.kind, this.logicalId, "closed", reason);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Close #${this.logicalId}`,
-      description: `Close #${this.logicalId}${reason ? ` with reason ${reason}` : ""}.`,
+      title: `关闭 #${this.logicalId}`,
+      description: `关闭 #${this.logicalId}${reason ? `，原因：${reason}` : ""}。`,
       implementsRevert: true,
     });
   }
 
   async reopen(): Promise<void> {
-    await this.authorizeMutationPreparation("reopen it");
+    await this.authorizeMutationPreparation("将其重新打开");
     const action = await this.gatekeeper.prepareChangeState(this.kind, this.logicalId, "open");
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Reopen #${this.logicalId}`,
-      description: `Reopen #${this.logicalId}.`,
+      title: `重新打开 #${this.logicalId}`,
+      description: `重新打开 #${this.logicalId}。`,
       implementsRevert: true,
     });
   }
 
   async readDiscussion(options?: GitHubPageOptions): Promise<Cursor<GitHubDiscussionEntry>> {
     await this.approvalQueue.authorizeObservation({
-      title: `Read discussion for #${this.logicalId}`,
-      description: `Read the discussion thread for #${this.logicalId}.`,
+      title: `读取 #${this.logicalId} 的讨论`,
+      description: `读取 #${this.logicalId} 的讨论话题。`,
     });
     return this.gatekeeper.issueDiscussion(this.kind, this.logicalId, options?.resultsPerPage ?? 50);
   }
@@ -3996,8 +3994,8 @@ class GitHubIssueImpl extends RpcTarget implements GitHubIssue {
   async postComment(bodyMarkdown: string): Promise<void> {
     const action = await this.gatekeeper.preparePostComment(this.kind, this.logicalId, bodyMarkdown);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Comment on #${this.logicalId}`,
-      description: `Post a new Markdown comment on #${this.logicalId}.`,
+      title: `评论 #${this.logicalId}`,
+      description: `在 #${this.logicalId} 上发布新的 Markdown 评论。`,
       implementsRevert: true,
     });
   }
@@ -4012,24 +4010,24 @@ class GitHubPullRequestImpl extends GitHubIssueImpl implements GitHubPullRequest
   async getDetails(): Promise<GitHubPullRequestDetails> {
     const details = await this.gatekeeper.openPullRequest(this.logicalId);
     await this.approvalQueue.authorizeObservation({
-      title: `Read pull request #${details.id}: ${details.title}`,
-      description: `Read the full details of pull request #${details.id} in ${details.repo.fullName}.`,
+      title: `读取拉取请求 #${details.id}：${details.title}`,
+      description: `读取 ${details.repo.fullName} 中拉取请求 #${details.id} 的完整详情。`,
     });
     return details;
   }
 
   async readDiff(options?: GitHubPageOptions): Promise<GitHubPullRequestDiff> {
     await this.approvalQueue.authorizeObservation({
-      title: `Read diff for #${this.logicalId}`,
-      description: `Read the diff for pull request #${this.logicalId}.`,
+      title: `读取 #${this.logicalId} 的差异`,
+      description: `读取拉取请求 #${this.logicalId} 的差异。`,
     });
     return this.gatekeeper.pullDiff(this.logicalId, options?.resultsPerPage ?? 20);
   }
 
   async readDiffThreads(options?: GitHubPageOptions): Promise<Cursor<GitHubDiffThread>> {
     await this.approvalQueue.authorizeObservation({
-      title: `Read diff threads for #${this.logicalId}`,
-      description: `Read diff discussion threads for pull request #${this.logicalId}.`,
+      title: `读取 #${this.logicalId} 的差异话题`,
+      description: `读取拉取请求 #${this.logicalId} 的差异讨论话题。`,
     });
     return this.gatekeeper.pullThreads(this.logicalId, options?.resultsPerPage ?? 20);
   }
@@ -4037,8 +4035,8 @@ class GitHubPullRequestImpl extends GitHubIssueImpl implements GitHubPullRequest
   async postReview(review: GitHubPullRequestReviewDraft): Promise<void> {
     const action = await this.gatekeeper.preparePostReview(this.logicalId, review);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Submit review for #${this.logicalId}`,
-      description: `Submit a ${review.decision} review for pull request #${this.logicalId}.`,
+      title: `提交 #${this.logicalId} 的审查`,
+      description: `为拉取请求 #${this.logicalId} 提交 ${review.decision} 审查。`,
       implementsRevert: false,
     });
   }
@@ -4046,13 +4044,13 @@ class GitHubPullRequestImpl extends GitHubIssueImpl implements GitHubPullRequest
   async replyToDiffComment(commentId: string, bodyMarkdown: string): Promise<void> {
     if (commentId.startsWith("~")) {
       throw new Error(
-        "Replies to provisional diff comments are not supported until the parent review is approved and GitHub assigns real comment IDs.",
+        "父审查获批且 GitHub 分配真实评论 ID 之前，不支持回复临时差异评论。",
       );
     }
     const action = await this.gatekeeper.prepareReplyToDiffComment(this.logicalId, commentId, bodyMarkdown);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Reply to diff thread on #${this.logicalId}`,
-      description: `Reply to a diff discussion thread on pull request #${this.logicalId}.`,
+      title: `回复 #${this.logicalId} 的差异话题`,
+      description: `回复拉取请求 #${this.logicalId} 的差异讨论话题。`,
       implementsRevert: true,
     });
   }
@@ -4060,8 +4058,8 @@ class GitHubPullRequestImpl extends GitHubIssueImpl implements GitHubPullRequest
   async merge(options?: GitHubPullRequestMergeOptions): Promise<void> {
     const action = await this.gatekeeper.prepareMergePullRequest(this.logicalId, options);
     await this.gatekeeper.submitActionForApproval(this.approvalQueue, action, {
-      title: `Merge pull request #${this.logicalId}`,
-      description: `Merge pull request #${this.logicalId}${options?.method ? ` using ${options.method}` : ""}.`,
+      title: `合并拉取请求 #${this.logicalId}`,
+      description: `合并拉取请求 #${this.logicalId}${options?.method ? `，方式：${options.method}` : ""}。`,
       implementsRevert: false,
     });
   }

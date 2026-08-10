@@ -25,21 +25,19 @@ const FORM_STYLE = `
 // Renders the endpoint prompt shown when the user starts connecting.
 export function connectFormHtml(path: string, error?: string): string {
   return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Connect an MCP server</title><style>${PAGE_STYLE}${FORM_STYLE}</style></head>
+<title>连接 MCP 服务器</title><style>${PAGE_STYLE}${FORM_STYLE}</style></head>
 <body><main>
-  <h1>Connect an MCP server</h1>
-  <p class="sub">We will discover the server's tools and, if it requires authorization, take you
-  through its sign-in.</p>
+  <h1>连接 MCP 服务器</h1>
+  <p class="sub">我们将发现此服务器提供的工具；如果服务器要求授权，还会引导你完成登录。</p>
   ${error ? `<p class="err">${escapeHtml(error)}</p>` : ""}
   <form method="POST" action="${escapeHtml(path)}">
-    <label for="url">Server URL</label>
+    <label for="url">服务器 URL</label>
     <input id="url" type="url" name="url" placeholder="https://example.com/mcp" required autofocus>
-    <p class="hint">Only connect a server you trust. Its own annotations decide which of its tools
-    run without asking you and which wait for your approval, and an annotation is only as
-    trustworthy as the server that sent it.</p>
-    <button type="submit">Continue</button>
+    <p class="hint">请只连接你信任的服务器。服务器自身提供的注解决定哪些工具无需询问即可运行、
+    哪些工具需要等待你的批准；注解的可信度取决于发送它的服务器。</p>
+    <button type="submit">继续</button>
   </form>
 </main></body></html>`;
 }

@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Device" description="Choose a physical device. The binding grants access to all entities the device provides.">
+      <Field label="设备" description="选择一个实体设备。此绑定将授予对该设备所提供全部实体的访问权限。">
         <Autocomplete
           name="deviceId"
           value={values.deviceId}
-          placeholder="Search devices..."
+          placeholder="搜索设备…"
           loadOptions={query => ui.listDevices(query)}
           onChange={deviceId => setValues({ deviceId })}
         />

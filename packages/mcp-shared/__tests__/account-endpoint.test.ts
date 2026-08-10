@@ -152,7 +152,7 @@ describe("connect initiation nonce", () => {
     const account = new AuthChallengeAccount(context as never, {});
 
     await expect(account.getConnection("https://old.example/mcp"))
-      .rejects.toThrow(/account is now connected to new\.example/);
+      .rejects.toThrow(/账户现已连接到 new\.example/);
   });
 
   it("moves the server record before probing a repointed static-token portal", async () => {
@@ -172,7 +172,7 @@ describe("connect initiation nonce", () => {
     expect(context.storage.kv.get<ConnectedServer>("server")?.endpoint)
       .toBe("https://new.example/mcp");
     await expect(account.getConnection("https://old.example/mcp"))
-      .rejects.toThrow(/account is now connected to new\.example/);
+      .rejects.toThrow(/账户现已连接到 new\.example/);
 
     account.failProbe();
     await expect(repoint).rejects.toThrow("stop test probe");
@@ -235,7 +235,7 @@ describe("connect initiation nonce", () => {
       access_token: "late-old-access", refresh_token: "late-old-refresh",
     }), { status: 200, headers: { "Content-Type": "application/json" } }));
 
-    await expect(refreshing).rejects.toThrow(/previous MCP connection|connection changed/);
+    await expect(refreshing).rejects.toThrow(/先前 MCP 连接|连接发生了变化/);
     expect(context.storage.kv.get("tokens")).toBeUndefined();
 
     account.failProbe();
@@ -302,7 +302,7 @@ describe("connect initiation nonce", () => {
     const failure = await account.getConnection("https://old.example/mcp").catch(err => err);
     expect(failure).toBeInstanceOf(Error);
     expect(failure.message).not.toContain("new-portal-token");
-    expect(failure.message).toMatch(/reconnect the account/i);
+    expect(failure.message).toMatch(/重新连接账户/);
   });
 
   it("does not spend the expiry latch on a failed notification", async () => {
@@ -344,7 +344,7 @@ describe("connect initiation nonce", () => {
 
     await expect(account.beginConnect(nonce, {
       ...server("https://portal.example/mcp"), auth: "token", provenance: "deployment",
-    })).rejects.toThrow(/No preissued token is configured/);
+    })).rejects.toThrow(/未.*配置预颁发令牌/);
 
     // Nothing was recorded, and the link still works so an administrator can set the token and retry.
     expect(context.storage.kv.get("server")).toBeUndefined();
@@ -388,10 +388,10 @@ describe("connect initiation nonce", () => {
 
     await expect(account.beginConnect(nonce, {
       ...server("https://portal.example/mcp"), auth: "none", provenance: "deployment",
-    })).rejects.toThrow(/unsafe authorization URL/);
+    })).rejects.toThrow(/不安全的授权 URL/);
     await expect(account.beginConnect(nonce, {
       ...server("https://portal.example/mcp"), auth: "none", provenance: "deployment",
-    })).rejects.toThrow(/unsafe authorization URL/);
+    })).rejects.toThrow(/不安全的授权 URL/);
     expect(context.storage.kv.get<ConnectedServer>("server")?.auth).toBe("oauth");
   });
 

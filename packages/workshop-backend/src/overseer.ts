@@ -47,7 +47,7 @@ import {
 import { renderGadgetPdf } from "./browser-export";
 
 const logger = createWorkshopLogger("workshop.overseer");
-export const AGENT_RUNNING_ERROR_MESSAGE = "Agent is running, wait for it to finish.";
+export const AGENT_RUNNING_ERROR_MESSAGE = "Agent 正在运行，请等待其完成。";
 
 let CODE_MODE_HARNESS =
 `import { WorkerEntrypoint, restore, RpcStub, RpcTarget } from "cloudflare:workers";
@@ -165,7 +165,7 @@ type LegacyBlueprintBindingAnnotation = BlueprintBindingAnnotation & {
 };
 
 function defaultBlueprintBindingTitle(record: GatekeeperRecord, bindingName?: string): string {
-  return record.resourceTitle || bindingName || "Connection";
+  return record.resourceTitle || bindingName || "连接";
 }
 
 // Storage key of a chat's compaction checkpoint. See the `chatCompactions` collection.
@@ -285,7 +285,7 @@ function fallbackBindingName(base: string, isTaken: (name: string) => boolean): 
 function observerVendorId(record: GatekeeperRecord): string | null {
   if (!record.creationSpec) {
     throw new Error(
-        "This workspace has a legacy connection that must be reconnected by its owner before it can be shared.");
+        "此工作区包含旧版连接，必须由所有者重新连接后才能分享。");
   }
   return "vendorId" in record.creationSpec ? record.creationSpec.vendorId : null;
 }
@@ -293,7 +293,7 @@ function observerVendorId(record: GatekeeperRecord): string | null {
 // Human-readable title for an observer binding -- what the user sees both in the config modal and in
 // a verification-failure message, so both must derive it the same way.
 function observerBindingTitle(record: GatekeeperRecord): string {
-  return record.resourceTitle || "Connection";
+  return record.resourceTitle || "连接";
 }
 
 function observerBindingNeed(record: GatekeeperRecord): ObserverBindingNeed {
@@ -379,10 +379,10 @@ function describeBindingKind(binding: BlueprintBinding): string {
 const MAX_BLUEPRINT_SCREENSHOT_BYTES = 1024 * 1024;
 function validateBlueprintScreenshotUpload(screenshot: BlueprintScreenshotUpload): BlueprintScreenshotUpload {
   if (screenshot.mimeType !== "image/jpeg" && screenshot.mimeType !== "image/png") {
-    throw new Error("Blueprint screenshot must be a JPEG or PNG image.");
+    throw new Error("蓝图截图必须是 JPEG 或 PNG 图片。");
   }
   if (screenshot.content.byteLength > MAX_BLUEPRINT_SCREENSHOT_BYTES) {
-    throw new Error("Blueprint screenshot must be under 1 MB.");
+    throw new Error("蓝图截图必须小于 1 MB。");
   }
   return screenshot;
 }
@@ -394,7 +394,7 @@ const MAX_STAGED_CHAT_ATTACHMENT_AGE_MS = 24 * 60 * 60 * 1000;
 const CHAT_ATTACHMENT_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function validateChatAttachmentId(id: string): string {
-  if (!CHAT_ATTACHMENT_ID_REGEX.test(id)) throw new Error("Invalid chat attachment ID.");
+  if (!CHAT_ATTACHMENT_ID_REGEX.test(id)) throw new Error("聊天附件 ID 无效。");
   return id;
 }
 
@@ -622,7 +622,7 @@ function actionRecordToLog(record: ActionRecord): ActionLogEntry {
       return {
         id: record.id,
         gatekeeperId,
-        resourceTitle: record.resourceTitle || "(title unavailable)",
+        resourceTitle: record.resourceTitle || "（标题不可用）",
         resourceUrl: record.resourceUrl,
         createdAt: record.createdAt,
         state: record.state,
@@ -633,7 +633,7 @@ function actionRecordToLog(record: ActionRecord): ActionLogEntry {
       return {
         id: record.id,
         gatekeeperId,
-        resourceTitle: record.resourceTitle || "(title unavailable)",
+        resourceTitle: record.resourceTitle || "（标题不可用）",
         resourceUrl: record.resourceUrl,
         createdAt: record.createdAt,
         appliedAt: record.appliedAt,
@@ -647,7 +647,7 @@ function actionRecordToLog(record: ActionRecord): ActionLogEntry {
       return {
         id: record.id,
         gatekeeperId,
-        resourceTitle: record.resourceTitle || "(title unavailable)",
+        resourceTitle: record.resourceTitle || "（标题不可用）",
         resourceUrl: record.resourceUrl,
         createdAt: record.createdAt,
         state: record.state,
@@ -684,7 +684,7 @@ function makeOverseerStorage(storage: DurableObjectStorage) {
       version: 0,
 
       // The workspace title. (Each chat, gatekeeper, and gadget has its own title, elsewhere.)
-      title: "Untitled Workspace",
+      title: "未命名工作区",
 
       // If present, this gadget was migrated from version zero, when a workspace had only one
       // gadget. Many stored records that normally contain a `gadgetId` might be missing it; they
@@ -1476,7 +1476,7 @@ class OverseerImpl implements AgentHooks {
     if (gadgetId !== undefined) return gadgetId;
     let def = this.defaultGadgetId;
     if (def === undefined) {
-      throw new Error("This workspace has no default gadget; a gadget must be named explicitly.");
+      throw new Error("此工作区没有默认应用，必须明确指定应用。");
     }
     return def;
   }
@@ -1488,9 +1488,9 @@ class OverseerImpl implements AgentHooks {
     let record = this.storage.gadgets.get(id);
     if (!record) {
       if (this.defaultGadgetId === id) {
-        throw new Error("This workspace's original gadget has been deleted.");
+        throw new Error("此工作区的原始应用已被删除。");
       }
-      throw new Error(`No such gadget: ${id}`);
+      throw new Error(`未找到应用：${id}`);
     }
     return record;
   }
@@ -1551,7 +1551,7 @@ class OverseerImpl implements AgentHooks {
                output?: BlueprintOutput): GadgetRecord {
     title = title.trim();
     if (!title) {
-      throw new Error("A gadget requires a non-empty title.");
+      throw new Error("应用标题不能为空。");
     }
     validateBindingName(bindingName);
     // Pre-check the unique index for a friendly error (the index would throw on put() anyway,
@@ -1559,11 +1559,10 @@ class OverseerImpl implements AgentHooks {
     let conflict = this.storage.gadgets.byBindingName.get(bindingName);
     if (conflict) {
       if (conflict.pending && conflict.pending.chatId !== chatId) {
-        throw new Error(`The gadget name "${bindingName}" is claimed by a gadget still pending ` +
-            `in another chat. Accept or revert that chat's changes first, or choose a different ` +
-            `name.`);
+        throw new Error(`应用名称“${bindingName}”已被另一个聊天中待处理的应用占用。` +
+            `请先接受或还原该聊天的更改，或选择其他名称。`);
       }
-      throw new Error(`There is already a gadget named "${bindingName}".`);
+      throw new Error(`已存在名为“${bindingName}”的应用。`);
     }
     let record: GadgetRecord = {
       id: this.allocateWorkpieceId(),
@@ -1721,7 +1720,7 @@ class OverseerImpl implements AgentHooks {
                 chatId?: number): void {
     validateBindingName(name);
     if (name === "GADGET") {
-      throw new Error("The binding name `GADGET` is reserved.");
+      throw new Error("绑定名称“GADGET”为保留名称。");
     }
     let gadget = this.getGadgetRecord(gadgetId);
     let existing = gadget.bindings[name];
@@ -1730,16 +1729,16 @@ class OverseerImpl implements AgentHooks {
       // writes: allowing a second proposal under the same name would mean accepting both
       // silently overwrites one with the other.
       if (existing.pending && existing.pending.chatId !== chatId) {
-        throw new Error(`The binding name "${name}" is already proposed by another chat. ` +
-            `Accept or revert that chat's changes first, or choose a different name.`);
+        throw new Error(`绑定名称“${name}”已由另一个聊天提出。` +
+            `请先接受或还原该聊天的更改，或选择其他名称。`);
       }
-      throw new Error(`There is already a binding named "${name}".`);
+      throw new Error(`已存在名为“${name}”的绑定。`);
     }
     if (!this.storage.gatekeepers.get(target)) {
       if (this.storage.gadgets.get(target)) {
-        throw new Error(`Gadget-to-gadget bindings are not supported yet.`);
+        throw new Error("暂不支持应用之间的绑定。");
       }
-      throw new Error(`No such gatekeeper: ${target}`);
+      throw new Error(`未找到 Gatekeeper：${target}`);
     }
     gadget.bindings[name] = {target, ...(chatId !== undefined ? {pending: {chatId}} : {})};
     this.storage.gadgets.put(gadget);
@@ -1756,7 +1755,7 @@ class OverseerImpl implements AgentHooks {
     let edge = gadget.bindings[name];
     if (!edge || (edge.pending && edge.pending.chatId !== forChatId &&
                   forChatId !== undefined)) {
-      throw new Error(`No such binding: ${name}`);
+      throw new Error(`未找到绑定：${name}`);
     }
     delete gadget.bindings[name];
     this.storage.gadgets.put(gadget);
@@ -1768,15 +1767,15 @@ class OverseerImpl implements AgentHooks {
     let gadget = this.getGadgetRecord(gadgetId);
     let edge = gadget.bindings[oldName];
     if (!edge) {
-      throw new Error(`No such binding: ${oldName}`);
+      throw new Error(`未找到绑定：${oldName}`);
     }
     if (oldName === newName) return;
     validateBindingName(newName);
     if (newName === "GADGET") {
-      throw new Error("The binding name `GADGET` is reserved.");
+      throw new Error("绑定名称“GADGET”为保留名称。");
     }
     if (gadget.bindings[newName]) {
-      throw new Error(`There is already a binding named "${newName}".`);
+      throw new Error(`已存在名为“${newName}”的绑定。`);
     }
 
     delete gadget.bindings[oldName];
@@ -2179,7 +2178,7 @@ class OverseerImpl implements AgentHooks {
     return {
       type: "user",
       id: first.id,
-      name: "Multiple Authors",
+      name: "多位作者",
     };
   }
 
@@ -2512,7 +2511,7 @@ class OverseerImpl implements AgentHooks {
   // Blocks other messages and agent turns for this chat until the returned object is disposed.
   reserveChatMessagePreparation(chatId: number): Disposable {
     if (this.#preparingChatMessages.has(chatId)) {
-      throw new Error("A chat message is already being prepared for this chat.");
+      throw new Error("此聊天已有一条消息正在准备中。");
     }
     let resolve!: () => void;
     let done = new Promise<void>(resolver => {
@@ -2657,9 +2656,8 @@ class OverseerImpl implements AgentHooks {
     if (description.prohibitAllSharing) {
       if ((await this.getSharingManager()).hasAnyShares()) {
         throw new Error(
-            "This observation was blocked because it contains sensitive data that must only be " +
-            "shown to the account owner, but this workspace is shared with other users. Try again " +
-            "from a workspace that is not shared.");
+            "此查看操作已被阻止，因为其中包含只能向账户所有者展示的敏感数据，" +
+            "但此工作区已与其他用户共享。请在未共享的工作区中重试。");
       }
 
       this.storage.prohibitAllSharing.put(true);
@@ -2698,7 +2696,7 @@ class OverseerImpl implements AgentHooks {
   async getChatAttachmentData(chatId: number, id: string): Promise<Uint8Array> {
     let content = this.storage.chatAttachmentContent.get(validateChatAttachmentId(id));
     if (!content || content.state.type !== "committed" || content.state.chatId !== chatId) {
-      throw new Error("Chat attachment not found.");
+      throw new Error("未找到聊天附件。");
     }
     return content.data;
   }
@@ -2728,7 +2726,7 @@ class OverseerImpl implements AgentHooks {
   ): ChatAttachmentRef[] | undefined {
     if (!attachments || attachments.length === 0) return undefined;
     if (attachments.length > MAX_CHAT_ATTACHMENTS_PER_MESSAGE) {
-      throw new Error(`You can attach up to ${MAX_CHAT_ATTACHMENTS_PER_MESSAGE} attachments.`);
+      throw new Error(`最多可以添加 ${MAX_CHAT_ATTACHMENTS_PER_MESSAGE} 个附件。`);
     }
 
     let total = 0;
@@ -2736,11 +2734,11 @@ class OverseerImpl implements AgentHooks {
     let seenIds = new Set<string>();
     for (let attachment of attachments) {
       let id = validateChatAttachmentId(attachment.id);
-      if (seenIds.has(id)) throw new Error("Duplicate chat attachment.");
+      if (seenIds.has(id)) throw new Error("聊天附件重复。");
       seenIds.add(id);
       let content = this.storage.chatAttachmentContent.get(id);
       if (!content || content.state.type !== "staged") {
-        throw new Error("Chat attachment not found.");
+        throw new Error("未找到聊天附件。");
       }
       assertChatAttachmentSupportedByProvider(provider, content.state.mimeType, content.data.byteLength);
       total += content.data.byteLength;
@@ -2752,7 +2750,7 @@ class OverseerImpl implements AgentHooks {
       });
     }
     if (total > MAX_CHAT_ATTACHMENT_TOTAL_BYTES) {
-      throw new Error("Attached files are too large.");
+      throw new Error("附件总大小过大。");
     }
     return result;
   }
@@ -2762,7 +2760,7 @@ class OverseerImpl implements AgentHooks {
       let id = validateChatAttachmentId(attachment.id);
       let content = this.storage.chatAttachmentContent.get(id);
       if (!content || content.state.type !== "staged") {
-        throw new Error("Chat attachment is no longer available.");
+        throw new Error("聊天附件已不可用。");
       }
       this.storage.chatAttachmentContent.put({
         fileId: id,
@@ -2800,8 +2798,7 @@ class OverseerImpl implements AgentHooks {
 
       if (sharing.getEffectiveRole(observer.profileId)) {
         throw new Error(
-            "This observation was blocked because it contains data that a current collaborator " +
-            "is not permitted to see.");
+            "此查看操作已被阻止，因为其中包含当前协作者无权查看的数据。");
       }
     }
 
@@ -2825,8 +2822,7 @@ class OverseerImpl implements AgentHooks {
       //   a search index, then it's not leaking anything. If we had a search provider we could
       //   trust... for now though, we will be extra-careful specifically when prohibiting sharing.
       throw new Error(
-          "This workspace has observed sensitive data. To prevent leaks, the workspace is prohibited " +
-          "from fetching from public web sites.");
+          "此工作区已查看敏感数据。为防止泄露，禁止从公共网站抓取内容。");
     }
 
     return {
@@ -2870,8 +2866,7 @@ class OverseerImpl implements AgentHooks {
       : Promise<void> {
     if (this.storage.prohibitAllSharing.get()) {
       throw new Error(
-          "This workspace has observed sensitive data. To prevent leaks, the workspace is prohibited " +
-          "from performing actions.");
+          "此工作区已查看敏感数据。为防止泄露，禁止执行操作。");
     }
 
     let actionId = this.storage.nextActionId.get();
@@ -3292,7 +3287,7 @@ class OverseerImpl implements AgentHooks {
   getChatMetaOrThrow(chatId: number): AiChatMetadata {
     let meta = this.storage.chatMeta.get(chatId);
     if (!meta) {
-      throw new Error("No such chatId: " + chatId);
+      throw new Error("未找到聊天 ID：" + chatId);
     }
     return meta;
   }
@@ -3316,13 +3311,13 @@ class OverseerImpl implements AgentHooks {
       // The name is typed but arrives over RPC, and one we don't implement would commit an event and
       // then start a turn with no prompt for the model to answer, so reject it here.
       if (message.id.builtin === true) {
-        if (message.id.commandId !== "compact") throw new Error("Unknown built-in slash command.");
+        if (message.id.commandId !== "compact") throw new Error("未知的内置斜杠命令。");
         return {slashCommand: message};
       }
       // Held separately because reassigning `message` below widens `id` back to the union.
       let {gatekeeperId} = message.id;
       let record = this.storage.gatekeepers.get(gatekeeperId);
-      if (!record?.hasSlashCommands) throw new Error("Slash command provider is not available.");
+      if (!record?.hasSlashCommands) throw new Error("斜杠命令提供方不可用。");
       // Display-only, and from the browser, so a bad value is dropped rather than refused.
       message = {...message, commandPosition: sanitizeCommandPosition(message)};
       using authorizer = new NativeRpcStub<ObservationAuthorizer>(
@@ -3333,12 +3328,12 @@ class OverseerImpl implements AgentHooks {
         return {slashCommand: message, skillName: result.skillName};
       }
       if (!result.message.trim() && !hasAttachments) {
-        throw new Error("Slash command returned an empty message.");
+        throw new Error("斜杠命令返回了空消息。");
       }
       return {slashCommand: message, message: result.message, skillName: result.skillName};
     }
     if (!message.trim() && !hasAttachments) {
-      throw new Error("Cannot send an empty chat message.");
+      throw new Error("不能发送空聊天消息。");
     }
     return {message};
   }
@@ -3354,12 +3349,11 @@ class OverseerImpl implements AgentHooks {
       let gadget = this.storage.gadgets.get(capsule.gatekeeperId);
       if (gadget) {
         if (gadget.pending && gadget.pending.chatId !== chatId) {
-          throw new Error(`Chat message references gadget ${capsule.gatekeeperId}, which is ` +
-              `still pending in another chat.`);
+          throw new Error(`聊天消息引用的应用 ${capsule.gatekeeperId} ` +
+              `仍在另一个聊天中等待处理。`);
         }
       } else if (!this.storage.gatekeepers.get(capsule.gatekeeperId)) {
-        throw new Error(`Chat message references workpiece ${capsule.gatekeeperId}, which does ` +
-            `not exist.`);
+        throw new Error(`聊天消息引用的工作项 ${capsule.gatekeeperId} 不存在。`);
       }
     }
   }
@@ -3436,7 +3430,7 @@ class OverseerImpl implements AgentHooks {
       if (decision.reuseExisting) return decision.record.chatId;
     }
     if (typeof initialMessage !== "string" && (capsules?.length || attachments?.length)) {
-      throw new Error("Slash commands cannot include resources or attachments.");
+      throw new Error("斜杠命令不能包含资源或附件。");
     }
     let canonicalAttachments = this.canonicalizeChatAttachmentRefs(
         attachments, userMeta.aiModel?.config.provider);
@@ -3449,7 +3443,7 @@ class OverseerImpl implements AgentHooks {
       chatId = this.nextChatId();
       let meta: AiChatMetadata = {
         id: chatId,
-        title: "New Chat",   // filled in later by AI
+        title: "新聊天",   // filled in later by AI
         started: timestamp,
         lastActive: timestamp,
       };
@@ -3462,7 +3456,7 @@ class OverseerImpl implements AgentHooks {
           chatId, timestamp, userMeta.profile, prepared, capsules, canonicalAttachments, formats);
       if (responseTargetRegistration) {
         if (promptSequence === undefined) {
-          throw new Error("External messages require a prompt.");
+          throw new Error("外部消息必须包含提示词。");
         }
         this.registerExternalMessageResponseTarget(
           responseTargetRegistration.idempotencyKey,
@@ -3514,7 +3508,7 @@ class OverseerImpl implements AgentHooks {
       if (decision.reuseExisting) return;
     }
     if (typeof message !== "string" && (capsules?.length || attachments?.length)) {
-      throw new Error("Slash commands cannot include resources or attachments.");
+      throw new Error("斜杠命令不能包含资源或附件。");
     }
     let canonicalAttachments = this.canonicalizeChatAttachmentRefs(
         attachments, userMeta.aiModel?.config.provider);
@@ -3540,7 +3534,7 @@ class OverseerImpl implements AgentHooks {
           formats);
       if (responseTargetRegistration) {
         if (promptSequence === undefined) {
-          throw new Error("External messages require a prompt.");
+          throw new Error("外部消息必须包含提示词。");
         }
         this.registerExternalMessageResponseTarget(
           responseTargetRegistration.idempotencyKey,
@@ -3571,7 +3565,7 @@ class OverseerImpl implements AgentHooks {
     chatGatewayRpcTarget: NativeRpcStub<ChatGatewayRpcTarget>,
   ): void {
     if (this.storage.gadgetResponseDeliveries.undeliveredByChatId.get(chatId)) {
-      throw new Error("This chat already has an undelivered workspace response target.");
+      throw new Error("此聊天已有尚未送达的工作区响应目标。");
     }
     chatGatewayRpcTarget = chatGatewayRpcTarget.dup();
     try {
@@ -4158,13 +4152,13 @@ class OverseerImpl implements AgentHooks {
   async deliverAgentCallback(
       chatId: number, methodName: string, args: unknown[],
       initiatorUserId: string, initiatorModelId: string): Promise<unknown> {
-    if (!this.ownerId) throw new Error("Workspace has been deleted.");
+    if (!this.ownerId) throw new Error("工作区已被删除。");
 
     // Compute the summary eagerly (it only reads, doesn't mutate or need the sequence).
     let argsSummary = summarizeArgs(args);
 
     let meta = this.storage.chatMeta.get(chatId);
-    if (!meta) throw new Error("No such chatId: " + chatId);
+    if (!meta) throw new Error("未找到聊天 ID：" + chatId);
 
     // Register this callback in the pending callbacks for the chat.
     let liveChat = this.#getLiveChat(chatId);
@@ -4309,7 +4303,7 @@ class OverseerImpl implements AgentHooks {
       output: gadget.output,
       bindings: this.visibleBindings(gadget, forChatId).map(([name, edge]) => ({
         name,
-        title: this.storage.gatekeepers.get(edge.target)?.resourceTitle || "(title unavailable)",
+        title: this.storage.gatekeepers.get(edge.target)?.resourceTitle || "（标题不可用）",
         target: edge.target,
       })),
     }));
@@ -4320,7 +4314,7 @@ class OverseerImpl implements AgentHooks {
   // =======================================================================================
 
   #ownerUserDo() {
-    if (!this.ownerId) throw new Error("Workspace is not initialized.");
+    if (!this.ownerId) throw new Error("工作区尚未初始化。");
     return this.users.get(this.users.idFromString(this.ownerId));
   }
 
@@ -4829,7 +4823,7 @@ class OverseerImpl implements AgentHooks {
     return [{
       selection: {builtin: true, commandId: "compact"},
       name: "compact",
-      description: "Summarize older context while preserving recent messages.",
+      description: "在保留近期消息的同时总结较早的上下文。",
       providerLabel: resolveSiteName((await readAdminConfig(this.env)).siteName),
     }, ...await collectSlashCommands(sources)];
   }
@@ -4886,7 +4880,7 @@ class OverseerImpl implements AgentHooks {
 
       if (!spec) {
         throw new Error(
-          `Binding "${bindingName}" has no creation spec (created before blueprint support).`
+          `绑定“${bindingName}”没有创建规范（它创建于支持蓝图之前）。`
         );
       }
 
@@ -4942,15 +4936,13 @@ class OverseerImpl implements AgentHooks {
           continue;
         }
         if (this.storage.gadgets.get(target)) {
-          throw new Error(`Cannot create a blueprint: agent spawner binding "${bindingName}" ` +
-              `gives its agents access to another gadget ("${envName}"), which blueprints ` +
-              `cannot express yet.`);
+          throw new Error(`无法创建蓝图：Agent 启动器绑定“${bindingName}”允许其 Agent ` +
+              `访问另一个应用（“${envName}”），而蓝图暂时无法表示这种关系。`);
         }
         let targetGk = this.storage.gatekeepers.get(target);
         if (!targetGk) {
-          throw new Error(`Cannot create a blueprint: agent spawner binding "${bindingName}" ` +
-              `gives its agents access to a resource ("${envName}") that no longer exists. ` +
-              `Remove it from the spawner's configuration first.`);
+          throw new Error(`无法创建蓝图：Agent 启动器绑定“${bindingName}”允许其 Agent ` +
+              `访问已不存在的资源（“${envName}”）。请先从启动器配置中移除此资源。`);
         }
         let targetSpec = targetGk.creationSpec;
         if (targetSpec?.type === "gatekeeper" || targetSpec?.type === "aiModel") {
@@ -4977,9 +4969,8 @@ class OverseerImpl implements AgentHooks {
           edgeNameByTarget.set(target, synthName);
           env[envName] = {type: "binding", name: synthName};
         } else {
-          throw new Error(`Cannot create a blueprint: agent spawner binding "${bindingName}" ` +
-              `gives its agents access to a resource ("${envName}") of a kind that blueprints ` +
-              `cannot express.`);
+          throw new Error(`无法创建蓝图：Agent 启动器绑定“${bindingName}”允许其 Agent ` +
+              `访问蓝图无法表示的资源类型（“${envName}”）。`);
         }
       }
 
@@ -5037,7 +5028,7 @@ class OverseerImpl implements AgentHooks {
       codeSnapshot?: Uint8Array,
       screenshot?: BlueprintScreenshotUpload | null,
   ): Promise<void> {
-    if (!this.ownerId) throw new Error("Workspace not initialized.");
+    if (!this.ownerId) throw new Error("工作区尚未初始化。");
 
     // Mark dirty.
     record.dirty = true;
@@ -5093,7 +5084,7 @@ class OverseerImpl implements AgentHooks {
 
   // Delete a blueprint's propagated data (KV, R2, User DO, local).
   async deleteBlueprintPropagation(record: BlueprintGadgetRecord): Promise<void> {
-    if (!this.ownerId) throw new Error("Workspace not initialized.");
+    if (!this.ownerId) throw new Error("工作区尚未初始化。");
 
     // Delete from KV first (stops public access).
     await this.env.BLUEPRINTS.delete(record.id);
@@ -5185,7 +5176,9 @@ class OverseerImpl implements AgentHooks {
       // Also rename the gadget if this is the first chat. Since the gadget likely doesn't have
       // any code yet, the user still sees it as just a chat, and therefore it makes sense to
       // apply the same title as the chat itself.
-      if (chatId === 0 && ["Untitled Gadget", "Untitled Workspace"].includes(this.storage.title.get()) && this.ownerId) {
+      if (chatId === 0 &&
+          ["Untitled Gadget", "Untitled Workspace", "未命名工作区"].includes(this.storage.title.get()) &&
+          this.ownerId) {
         this.storage.title.put(result);
         let owner = this.users.get(this.users.idFromString(this.ownerId));
         await owner.updateTitle(this.ctx.id.toString(), result);
@@ -5618,8 +5611,8 @@ class OverseerImpl implements AgentHooks {
     let vendor = vendors.find(v => v.id === input.vendorId);
     if (!vendor) {
       return { requested: false, message:
-          `Cannot request a connection: unknown vendor "${input.vendorId}". ` +
-          `Available vendors: ${vendors.map(v => v.id).join(", ") || "(none)"}.` };
+          `无法请求连接：未知提供商“${input.vendorId}”。` +
+          `可用提供商：${vendors.map(v => v.id).join("、") || "（无）"}。` };
     }
 
     // Resolve the exact resource this request maps to, using the same precedence the accept modal
@@ -5628,7 +5621,7 @@ class OverseerImpl implements AgentHooks {
     let resolved = resolveRequestedResource(vendor.supportedResources, input.resourceUrl);
     if (!resolved.ok) {
       return { requested: false, message:
-          `Cannot request a connection for "${vendor.description.displayName}": ${resolved.reason}` };
+          `无法为“${vendor.description.displayName}”请求连接：${resolved.reason}` };
     }
 
     let requestId = `${chatId}:${crypto.randomUUID()}`;
@@ -5656,9 +5649,9 @@ class OverseerImpl implements AgentHooks {
     list.push(body);
 
     return { requested: true, message:
-        `Connection request sent to the user for "${vendor.description.displayName}". ` +
-        `Awaiting their decision; your turn will end now. If they accept, you'll be resumed with ` +
-        `access to the resource; if they deny, your turn stays ended until the user messages you.` };
+        `已向用户发送“${vendor.description.displayName}”的连接请求。` +
+        `正在等待用户决定；当前轮次将立即结束。如果用户接受，你将恢复并获得该资源的访问权限；` +
+        `如果用户拒绝，当前轮次会保持结束状态，直到用户再次发送消息。` };
   }
 
   consumeCapturedConnectionRequests(chatId: number): AiChatMessageBody[] {
@@ -6080,8 +6073,7 @@ class OverseerImpl implements AgentHooks {
           if (!configureCb) {
             // Non-interactive open (e.g. no UI). We can't configure, so deny.
             throw new Error(
-                "To open this workspace, you must choose connected accounts for the services it " +
-                "uses, but no configuration channel was provided.");
+                "要打开此工作区，必须为其使用的服务选择已连接账户，但未提供配置渠道。");
           }
 
           let needs: ObserverBindingNeed[] = uncovered.map(gk => ({
@@ -6097,7 +6089,7 @@ class OverseerImpl implements AgentHooks {
             // Validate the choice.
             if (!uncoveredIds.has(choice.gatekeeperId) || !Number.isSafeInteger(choice.accountId)) {
               throw new Error(
-                  "The account choices returned by the client were invalid. Please try again.");
+                  "客户端返回的账户选择无效，请重试。");
             }
 
             accountChoices[choice.gatekeeperId] = choice.accountId;
@@ -6107,8 +6099,7 @@ class OverseerImpl implements AgentHooks {
           let stillUncovered = uncovered.filter(gk => !(gk.id in accountChoices));
           if (stillUncovered.length > 0) {
             throw new Error(
-                "You must connect an account for every service this workspace uses in order to open " +
-                "it.");
+                "必须为此工作区使用的每项服务连接账户，才能打开工作区。");
           }
         }
 
@@ -6121,7 +6112,7 @@ class OverseerImpl implements AgentHooks {
           let accountId = accountChoices[gk.id];
           let vendorId = observerVendorId(gk);
           if (!vendorId) {
-            throw new Error("An observer account was requested for a non-gatekeeper binding.");
+            throw new Error("非 Gatekeeper 绑定请求了观察者账户。");
           }
 
           let fail = (reason: string, err?: unknown) => {
@@ -6135,7 +6126,7 @@ class OverseerImpl implements AgentHooks {
           let verifier = await clientUser.getVerifier(accountId, vendorId);
           if (!verifier) {
             // Account gone -> the overseer authors the reason. (Wrong vendor throws above.)
-            fail("This account is no longer connected.");
+            fail("此账户已不再连接。");
             return;
           }
 
@@ -6170,8 +6161,7 @@ class OverseerImpl implements AgentHooks {
           // Terminal. Name each failed connection and account so the user knows what to fix, rather
           // than reporting an anonymous refusal.
           throw new Error(
-              "This workspace could not confirm that you are permitted to observe all of the data it " +
-              "has accessed:\n" +
+              "此工作区无法确认你有权查看它所访问的全部数据：\n" +
               await this.#describeObserverFailures(clientUser, inScope, failures));
         }
 
@@ -6238,7 +6228,7 @@ class OverseerImpl implements AgentHooks {
       return ownerProfileId;
     }
 
-    if (!this.ownerId) throw new Error("Workspace is not initialized.");
+    if (!this.ownerId) throw new Error("工作区尚未初始化。");
     const ownerDo = this.users.get(this.users.idFromString(this.ownerId));
     const ownerProfile = await ownerDo.whoami();
     this.ownerProfileId = ownerProfile.id;
@@ -6500,7 +6490,7 @@ export class OverseerDurableObject extends DurableObject<Cloudflare.Env> {
     input: ExternalMessageSubmitInput,
   ): Promise<SubmitExternalMessageResult> {
     if (!input.prompt.trim()) {
-      return { accepted: false, message: "Please include a prompt." };
+      return { accepted: false, message: "请输入提示词。" };
     }
 
     // Resolve the caller.
@@ -6511,7 +6501,7 @@ export class OverseerDurableObject extends DurableObject<Cloudflare.Env> {
       let siteName = resolveSiteName((await readAdminConfig(this.impl.env)).siteName);
       return {
         accepted: false,
-        message: `Please create a ${siteName} account to continue.`,
+        message: `请先创建 ${siteName} 账户再继续。`,
       };
     }
 
@@ -6532,14 +6522,14 @@ export class OverseerDurableObject extends DurableObject<Cloudflare.Env> {
       if (this.impl.storage.prohibitAllSharing.get()) {
         return {
           accepted: false,
-          message: "This workspace has sharing disabled, so only its owner can access it.",
+          message: "此工作区已禁用共享，只有所有者可以访问。",
         };
       }
       let role = (await this.impl.getSharingManager()).getEffectiveRole(callerProfile.id);
       if (role !== "build") {
         return {
           accepted: false,
-          message: "You do not have access to interact with this workspace through its agent.",
+          message: "你无权通过此工作区的 Agent 与其交互。",
         };
       }
     }
@@ -6573,7 +6563,7 @@ export class OverseerDurableObject extends DurableObject<Cloudflare.Env> {
       let siteName = resolveSiteName((await readAdminConfig(this.impl.env)).siteName);
       return {
         accepted: false,
-        message: `Your ${siteName} account needs an AI model configured before it can respond.`,
+        message: `你的 ${siteName} 账户需要先配置 AI 模型才能响应。`,
       };
     }
 
@@ -7263,7 +7253,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     let chatNames: Set<string> | undefined;
     if (chatId !== undefined) {
       if (!this.impl.storage.chatMeta.get(chatId)) {
-        throw new Error(`No such chat: ${chatId}`);
+        throw new Error(`未找到聊天：${chatId}`);
       }
       chatNames = this.impl.chatScopeNames(chatId);
     }
@@ -7281,8 +7271,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       }
       bindingName ??= fallbackBindingName("GADGET", name => taken.has(name));
     } else if (chatNames?.has(bindingName)) {
-      throw new Error(`The name "${bindingName}" is already in use in this chat. Choose a ` +
-          `different name.`);
+      throw new Error(`名称“${bindingName}”已在此聊天中使用，请选择其他名称。`);
     }
 
     let record;
@@ -7298,7 +7287,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       if (!this.impl.storage.chatMeta.get(chatId)) {
         // Re-check adjacent to the synchronous creation: the chat may have been deleted during
         // the awaits above, and a pending record for a deleted chat would never be reaped.
-        throw new Error(`No such chat: ${chatId}`);
+        throw new Error(`未找到聊天：${chatId}`);
       }
       record = this.impl.createGadget(title, bindingName, chatId);
       this.impl.addChatMessages(chatId, author, [{
@@ -7320,7 +7309,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async deleteSelf(): Promise<void> {
     if (!this.isOwner) {
-      throw new Error("Only the workspace owner can delete it.");
+      throw new Error("只有工作区所有者才能删除它。");
     }
     let startedAt = Date.now();
 
@@ -7442,7 +7431,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async getGatekeeperById(id: number): Promise<GatekeeperClient<any>> {
     let gatekeeper = this.impl.storage.gatekeepers.get(id)?.id;
     if (gatekeeper === undefined) {
-      throw new Error(`No such gatekeeper id: ${id}`);
+      throw new Error(`未找到 Gatekeeper ID：${id}`);
     }
     return new GatekeeperClientImpl(this.impl, id, this.impl.getGatekeeperFacet(id));
   }
@@ -7511,12 +7500,11 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       let gadget = this.impl.storage.gadgets.get(target);
       if (gadget) {
         if (gadget.pending) {
-          throw new Error(`Agent spawner env entry "${name}" references gadget ${target}, ` +
-              `which is still pending in a chat.`);
+          throw new Error(`智能体启动器环境项“${name}”引用的应用 ${target} ` +
+              `仍在聊天中等待处理。`);
         }
       } else if (!this.impl.storage.gatekeepers.get(target)) {
-        throw new Error(`Agent spawner env entry "${name}" references workpiece ${target}, ` +
-            `which does not exist.`);
+        throw new Error(`Agent 启动器环境项“${name}”引用的工作项 ${target} 不存在。`);
       }
     }
 
@@ -7557,17 +7545,17 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async approveAction(id: number): Promise<void> {
     let action = this.impl.storage.actions.get(id);
     if (!action) {
-      throw new Error(`No such action: ${id}`);
+      throw new Error(`未找到操作：${id}`);
     }
 
     if (action.type === "bindHook") {
-      throw new Error("Hooks should be enabled/disabled, not approved/rejected.");
+      throw new Error("Hook 应启用或禁用，不能批准或拒绝。");
     }
     if (action.state !== "pending") {
-      throw new Error(`Action is not pending: ${id}`);
+      throw new Error(`操作不处于待处理状态：${id}`);
     }
     if (action.type === "observation") {
-      throw new Error("Observations can't have 'pending' state.");
+      throw new Error("查看操作不能处于待处理状态。");
     }
 
     // Resolve the approver's identity before applying, so a failed profile fetch can't leave the
@@ -7609,7 +7597,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async enableHook(id: number): Promise<void> {
     let record = this.impl.storage.boundHooks.get(id);
-    if (!record) throw new Error("Invalid hook ID.");
+    if (!record) throw new Error("Hook ID 无效。");
 
     if (!record.enabled) {
       let props: GatekeeperHookLoopbackProps = {
@@ -7643,7 +7631,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async disableHook(id: number): Promise<void> {
     let record = this.impl.storage.boundHooks.get(id);
-    if (!record) throw new Error("Invalid hook ID.");
+    if (!record) throw new Error("Hook ID 无效。");
 
     if (record.enabled) {
       await record.controller.disable();
@@ -7707,15 +7695,15 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async rejectAction(id: number): Promise<void> {
     let action = this.impl.storage.actions.get(id);
     if (!action) {
-      throw new Error(`No such action: ${id}`);
+      throw new Error(`未找到操作：${id}`);
     }
 
     if (action.state !== "pending") {
-      throw new Error(`Action is not pending: ${id}`);
+      throw new Error(`操作不处于待处理状态：${id}`);
     }
 
     if (action.type !== "action") {
-      throw new Error(`Can't reject an observation: ${id}`);
+      throw new Error(`不能拒绝查看操作：${id}`);
     }
 
     let gatekeeper = this.impl.getGatekeeperFacet(action.gatekeeperId);
@@ -7743,7 +7731,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       : Promise<void> {
     let gatekeeper = this.impl.storage.gatekeepers.get(gatekeeperId);
     if (!gatekeeper) {
-      throw new Error(`No such gatekeeper: ${gatekeeperId}`);
+      throw new Error(`未找到 Gatekeeper：${gatekeeperId}`);
     }
 
     let profile = await this.#getClientProfile();
@@ -7795,7 +7783,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
         // resourceTitle is a denormalized cache of the gatekeeper's describe().title, populated in a
         // second step after the record is first persisted (see addGatekeeper). It can be absent if
         // that describe() failed, or for records predating the field, so fall back to a placeholder.
-        resourceTitle: gk.resourceTitle || "(title unavailable)",
+        resourceTitle: gk.resourceTitle || "（标题不可用）",
         vendorId: gk.creationSpec?.type === "gatekeeper" ? gk.creationSpec.vendorId : undefined,
         actionKind,
         alreadyEnabled:
@@ -7810,16 +7798,16 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   // (`${chatId}:...`) so we only scan that thread's messages.
   #findConnectionRequest(requestId: string): AiChatMessage & {type: "connectionRequest"} {
     let colonIdx = requestId.indexOf(":");
-    if (colonIdx < 0) throw new Error(`Malformed connection request id: ${requestId}`);
+    if (colonIdx < 0) throw new Error(`连接请求 ID 格式错误：${requestId}`);
     let chatId = Number(requestId.slice(0, colonIdx));
-    if (!Number.isFinite(chatId)) throw new Error(`Malformed connection request id: ${requestId}`);
+    if (!Number.isFinite(chatId)) throw new Error(`连接请求 ID 格式错误：${requestId}`);
 
     for (let msg of this.impl.storage.chats.list({prefix: `${keyString(chatId)}.`})) {
       if (msg.type === "connectionRequest" && msg.requestId === requestId) {
         return msg as AiChatMessage & {type: "connectionRequest"};
       }
     }
-    throw new Error(`No such connection request: ${requestId}`);
+    throw new Error(`未找到连接请求：${requestId}`);
   }
 
   // Restart a suspended agent turn after its outcome is recorded in chat history (accepted
@@ -7866,7 +7854,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       requestId: string, result: {gatekeeperId: number}): Promise<void> {
     let msg = this.#findConnectionRequest(requestId);
     if (msg.state !== "pending") {
-      throw new Error(`Connection request is not pending: ${requestId}`);
+      throw new Error(`连接请求不处于待处理状态：${requestId}`);
     }
 
     msg.state = "accepted";
@@ -7884,7 +7872,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async denyConnectionRequest(requestId: string): Promise<void> {
     let msg = this.#findConnectionRequest(requestId);
     if (msg.state !== "pending") {
-      throw new Error(`Connection request is not pending: ${requestId}`);
+      throw new Error(`连接请求不处于待处理状态：${requestId}`);
     }
 
     msg.state = "denied";
@@ -7999,7 +7987,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async getChatAttachmentContent(chatId: number, id: string): Promise<Uint8Array> {
     let content = this.impl.storage.chatAttachmentContent.get(validateChatAttachmentId(id));
     if (!content || content.state.type !== "committed" || content.state.chatId !== chatId) {
-      throw new Error("Chat attachment not found.");
+      throw new Error("未找到聊天附件。");
     }
     return content.data;
   }
@@ -8212,7 +8200,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async setChatTitle(chatId: number, title: string): Promise<void> {
     let meta = this.impl.storage.chatMeta.get(chatId);
     if (!meta) {
-      throw new Error("No such chatId: " + chatId);
+      throw new Error("未找到聊天 ID：" + chatId);
     }
     meta.lastActive = this.impl.getChatTimestamp();
     meta.title = title;
@@ -8491,7 +8479,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
     let meta = this.impl.assertChatNotActive(chatId);
     if (!userMeta.aiModel) {
-      throw new Error("No AI model available.");
+      throw new Error("没有可用的 AI 模型。");
     }
 
     let result = this.impl.materializeChatDraft(chatId, meta);
@@ -8557,10 +8545,10 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     screenshot?: BlueprintScreenshotUpload | null;
   }): Promise<void> {
     let record = this.impl.storage.blueprints.get(blueprintId);
-    if (!record) throw new Error("No such blueprint.");
+    if (!record) throw new Error("未找到蓝图。");
 
     if (options.title === undefined && options.description === undefined && !options.updateCode && !options.updateBindings && options.screenshot === undefined) {
-      throw new Error("At least one update option must be provided.");
+      throw new Error("必须至少提供一个更新选项。");
     }
 
     if (options.title !== undefined) {
@@ -8594,7 +8582,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async deleteBlueprint(blueprintId: string): Promise<void> {
     let record = this.impl.storage.blueprints.get(blueprintId);
-    if (!record) throw new Error("No such blueprint.");
+    if (!record) throw new Error("未找到蓝图。");
 
     try {
       await this.impl.deleteBlueprintPropagation(record);
@@ -8608,7 +8596,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async retryBlueprintPublish(blueprintId: string): Promise<void> {
     let record = this.impl.storage.blueprints.get(blueprintId);
-    if (!record) throw new Error("No such blueprint.");
+    if (!record) throw new Error("未找到蓝图。");
     if (!record.dirty) return;  // nothing to retry
 
     // Reconstruct the code snapshot at the original codeVersion, not the current code.
@@ -8644,8 +8632,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
     if (this.impl.storage.prohibitAllSharing.get()) {
       throw new Error(
-          "This workspace has observed sensitive data. To prevent leaks, the workspace cannot be " +
-          "shared.");
+          "此工作区已查看敏感数据。为防止泄露，无法共享此工作区。");
     }
 
     return (await this.impl.getSharingManager()).addCollaborator({
@@ -8703,8 +8690,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       : Promise<{ key: string; linkId: string }> {
     if (this.impl.storage.prohibitAllSharing.get()) {
       throw new Error(
-          "This workspace has observed sensitive data. To prevent leaks, the workspace cannot be " +
-          "shared.");
+          "此工作区已查看敏感数据。为防止泄露，无法共享此工作区。");
     }
 
     return (await this.impl.getSharingManager())
@@ -8714,8 +8700,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async newShareLinkKey(linkId: string): Promise<{ key: string }> {
     if (this.impl.storage.prohibitAllSharing.get()) {
       throw new Error(
-          "This workspace has observed sensitive data. To prevent leaks, the workspace cannot be " +
-          "shared.");
+          "此工作区已查看敏感数据。为防止泄露，无法共享此工作区。");
     }
 
     return (await this.impl.getSharingManager())
@@ -8810,7 +8795,7 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
 
   // Throws "Unauthorized" for any method not available to "use" collaborators.
   #deny(): never {
-    throw new Error("Unauthorized: this collaborator only has permission to use the gadget's UI.");
+    throw new Error("未授权：此协作者只有使用应用界面的权限。");
   }
 
   // --- Allowed methods ---
@@ -8877,7 +8862,7 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
 
   async getGadget(id: WorkpieceId): Promise<RpcStub<GadgetClient>> {
     if (this.impl.getGadgetRecord(id).pending) {  // also validates it exists
-      throw new Error(`No such gadget: ${id}`);
+      throw new Error(`未找到应用：${id}`);
     }
     // @ts-expect-error An RpcTarget implementing the interface works in place of a stub, but the
     //     type system doesn't know this.
@@ -9074,9 +9059,9 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
 
   async exportPdf(chatId?: number): Promise<ReadableStream<Uint8Array>> {
     let browser = this.impl.env.BROWSER;
-    if (!browser) throw new Error("Gadget export is not configured for this deployment.");
+    if (!browser) throw new Error("此部署未配置应用导出功能。");
     let bundle = await this.getUiBundle(chatId);
-    if (!bundle) throw new Error("This Gadget does not have a UI to export.");
+    if (!bundle) throw new Error("此应用没有可导出的界面。");
     let gadget = await this.impl.getGadgetFacet(this.id, chatId);
     let title = this.impl.getGadgetRecord(this.id).title;
     return renderGadgetPdf(browser, bundle.jsCode, title, gadget);
@@ -9090,7 +9075,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
       return {
         name,
         target: edge.target,
-        resourceTitle: gatekeeper?.resourceTitle || "(title unavailable)",
+        resourceTitle: gatekeeper?.resourceTitle || "（标题不可用）",
         vendorId: gatekeeper?.creationSpec?.type === "gatekeeper"
             ? gatekeeper.creationSpec.vendorId
             : undefined,
@@ -9117,7 +9102,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
     // edge and the "changes" message that records (and sequence-stamps) it in one synchronous
     // step, so this path has no crash window (mirroring user-initiated gadget creation).
     if (!this.impl.storage.chatMeta.get(chatId)) {
-      throw new Error(`No such chat: ${chatId}`);
+      throw new Error(`未找到聊天：${chatId}`);
     }
     let author = await this.clientUser.whoami();
     this.impl.bindWorkpiece(this.id, name, target, chatId);
@@ -9159,7 +9144,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
   #getBindingEdge(name: string): {record: GadgetRecord, edge: BindingRecord} {
     let record = this.impl.getGadgetRecord(this.id);
     let edge = record.bindings[name];
-    if (!edge) throw new Error(`No such binding: ${name}`);
+    if (!edge) throw new Error(`未找到绑定：${name}`);
     return {record, edge};
   }
 
@@ -9192,7 +9177,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
   async createBlueprint(title?: string, description?: string,
                         screenshotUpload?: BlueprintScreenshotUpload)
       : Promise<BlueprintGadgetSummary> {
-    if (!this.impl.ownerId) throw new Error("Workspace not initialized.");
+    if (!this.impl.ownerId) throw new Error("工作区尚未初始化。");
 
     // NOTE: It is INTENTIONAL that collaborators can publish blueprints on behalf of the owner.
     //   We may in the future create different collaborator permission levels, in which case we'd
@@ -9202,8 +9187,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
     if (gadget.pending) {
       // A provisional gadget's files live only in its chat's proposed changes; snapshotting its
       // (empty) mainline code would produce a useless blueprint.
-      throw new Error("This gadget is a provisional creation in a chat. Accept the chat's " +
-          "changes before creating a blueprint from it.");
+      throw new Error("此应用是聊天中的临时创建项，请先接受聊天更改，再基于它创建蓝图。");
     }
 
     // Generate 128-bit random ID as hex.
@@ -9283,7 +9267,7 @@ class UseGadgetClientInterface extends RpcTarget implements GadgetClient {
   }
 
   #deny(): never {
-    throw new Error("Unauthorized: this collaborator only has permission to use the gadget's UI.");
+    throw new Error("未授权：此协作者只有使用应用界面的权限。");
   }
 
   // --- Allowed methods ---
@@ -9322,9 +9306,9 @@ class UseGadgetClientInterface extends RpcTarget implements GadgetClient {
   async exportPdf(chatId?: number): Promise<ReadableStream<Uint8Array>> {
     if (chatId !== undefined) this.#deny();
     let browser = this.impl.env.BROWSER;
-    if (!browser) throw new Error("Gadget export is not configured for this deployment.");
+    if (!browser) throw new Error("此部署未配置应用导出功能。");
     let bundle = await this.getUiBundle();
-    if (!bundle) throw new Error("This Gadget does not have a UI to export.");
+    if (!bundle) throw new Error("此应用没有可导出的界面。");
     let gadget = await this.impl.getGadgetFacet(this.id);
     let title = this.impl.getGadgetRecord(this.id).title;
     return renderGadgetPdf(browser, bundle.jsCode, title, gadget);
@@ -9377,12 +9361,12 @@ class GatekeeperClientImpl<Session extends RpcCompatible<Session>>
 
   #getRecord(): GatekeeperRecord {
     let record = this.impl.storage.gatekeepers.get(this.id);
-    if (!record) throw new Error("No such gatekeeper.");
+    if (!record) throw new Error("未找到 Gatekeeper。");
     return record;
   }
 
   async getTitle(): Promise<string> {
-    return this.#getRecord().resourceTitle || "(title unavailable)";
+    return this.#getRecord().resourceTitle || "（标题不可用）";
   }
 
   async setTitle(title: string): Promise<void> {
@@ -9405,7 +9389,7 @@ class GatekeeperClientImpl<Session extends RpcCompatible<Session>>
   async getCreationSpec(): Promise<GatekeeperCreationSpec> {
     let record = this.#getRecord();
     if (!record.creationSpec) {
-      throw new Error("This gatekeeper has no creation spec (created before blueprint support).");
+      throw new Error("此 Gatekeeper 没有创建规范（它创建于支持蓝图之前）。");
     }
     return record.creationSpec;
   }

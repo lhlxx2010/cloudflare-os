@@ -47,7 +47,7 @@ export function paginateManagementSchedules(
       return `${schedule.title}\n${schedule.description}`.toLowerCase().includes(query);
     })
     .toSorted(compareEntries);
-  if (offset > selected.length) throw new TypeError("Invalid management cursor.");
+  if (offset > selected.length) throw new TypeError("管理游标无效。");
 
   const end = Math.min(offset + MANAGEMENT_PAGE_SIZE, selected.length);
   return {
@@ -61,21 +61,21 @@ export function paginateManagementSchedules(
 
 function normalizeQuery(query: string | undefined): string {
   if (query === undefined) return "";
-  if (typeof query !== "string") throw new TypeError("Schedule query must be a string.");
+  if (typeof query !== "string") throw new TypeError("计划查询必须是字符串。");
   const normalized = query.trim().toLowerCase();
   if (normalized.length > MAX_QUERY_LENGTH) {
-    throw new RangeError(`Schedule query must be at most ${MAX_QUERY_LENGTH} characters.`);
+    throw new RangeError(`计划查询最多为 ${MAX_QUERY_LENGTH} 个字符。`);
   }
   return normalized;
 }
 
 function normalizeStatuses(statuses: ScheduleStatus[] | undefined): ScheduleStatus[] {
   if (statuses === undefined) return [...STATUSES];
-  if (!Array.isArray(statuses)) throw new TypeError("Schedule statuses must be an array.");
+  if (!Array.isArray(statuses)) throw new TypeError("计划状态必须是数组。");
   const selected = new Set<ScheduleStatus>();
   for (const status of statuses) {
     if (!(STATUSES as readonly unknown[]).includes(status)) {
-      throw new TypeError("Invalid schedule status.");
+      throw new TypeError("计划状态无效。");
     }
     selected.add(status);
   }
@@ -138,13 +138,13 @@ function decodeCursor(value: string, query: string, statuses: ScheduleStatus[]):
       throw new TypeError();
     }
     if (cursor.query !== query || !sameStatuses(cursor.statuses, statuses)) {
-      throw new TypeError("Cursor does not match the current filters.");
+      throw new TypeError("游标与当前筛选条件不匹配。");
     }
     return cursor.offset!;
   } catch (error) {
-    if (error instanceof TypeError && error.message.startsWith("Cursor does not match"))
+    if (error instanceof TypeError && error.message.startsWith("游标与当前筛选条件不匹配"))
       throw error;
-    throw new TypeError("Invalid management cursor.", { cause: error });
+    throw new TypeError("管理游标无效。", { cause: error });
   }
 }
 

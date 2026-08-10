@@ -122,7 +122,7 @@ describe("BrowserRpcTransport", () => {
     let pending = Array.from({ length: 1024 }, () => transport.send("message"));
     let pendingResults = Promise.allSettled(pending);
 
-    await expect(transport.send("overflow")).rejects.toThrow("send queue overflowed");
+    await expect(transport.send("overflow")).rejects.toThrow("发送队列已溢出");
     expect((await pendingResults).every(result => result.status === "rejected")).toBe(true);
   });
 });
@@ -135,7 +135,7 @@ describe("limitStream", () => {
   it("fails as soon as the cap is exceeded rather than buffering the whole export", async () => {
     let reader = limitStream(streamOf(["abcd", "efgh"]), 6).getReader();
     await expect(reader.read()).resolves.toMatchObject({ done: false });
-    await expect(reader.read()).rejects.toThrow("may not exceed 6 bytes");
+    await expect(reader.read()).rejects.toThrow("不能超过 6 字节");
   });
 });
 
@@ -189,7 +189,7 @@ describe("renderGadgetPdf", () => {
         "Test Gadget",
         { [Symbol.dispose]: () => { gadgetDisposed = true; } } as never,
       );
-      let rejection = expect(result).rejects.toThrow("Browser export timed out.");
+      let rejection = expect(result).rejects.toThrow("浏览器导出超时。");
 
       await vi.advanceTimersByTimeAsync(30_000);
       await rejection;

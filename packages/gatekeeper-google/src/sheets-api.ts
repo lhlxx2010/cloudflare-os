@@ -51,7 +51,7 @@ function columnNumber(column: string): number {
 
 function validateRange(range: string): ValidatedRange {
   if (typeof range !== "string" || range.length === 0 || range.length > MAX_RANGE_LENGTH) {
-    throw new Error(`A1 ranges must contain between 1 and ${MAX_RANGE_LENGTH} characters.`);
+    throw new Error(`A1 范围的长度必须为 1 至 ${MAX_RANGE_LENGTH} 个字符。`);
   }
 
   // A quoted sheet title escapes an apostrophe as two apostrophes. Requiring explicit cell
@@ -61,8 +61,8 @@ function validateRange(range: string): ValidatedRange {
   );
   if (!match) {
     throw new Error(
-      `Invalid or unbounded A1 range "${range}". Use a bounded range such as ` +
-      "`'Sheet name'!A1:F200`.",
+      `A1 范围“${range}”无效或无边界。请使用有边界的范围，例如 ` +
+      "`'工作表名称'!A1:F200`。",
     );
   }
 
@@ -71,25 +71,25 @@ function validateRange(range: string): ValidatedRange {
   let endColumn = columnNumber(match[3] ?? match[1]);
   let endRow = Number(match[4] ?? match[2]);
   if (endColumn < startColumn || endRow < startRow) {
-    throw new Error(`A1 range "${range}" must run from its top-left cell to its bottom-right cell.`);
+    throw new Error(`A1 范围“${range}”必须从左上角单元格延伸至右下角单元格。`);
   }
 
   let rows = endRow - startRow + 1;
   let columns = endColumn - startColumn + 1;
   if (!Number.isSafeInteger(rows) || !Number.isSafeInteger(columns)) {
-    throw new Error(`A1 range "${range}" is too large.`);
+    throw new Error(`A1 范围“${range}”过大。`);
   }
   return { range, rows, columns };
 }
 
 function validateRanges(ranges: string[]): ValidatedRange[] {
   if (!Array.isArray(ranges) || ranges.length === 0 || ranges.length > MAX_RANGES) {
-    throw new Error(`readRanges requires between 1 and ${MAX_RANGES} ranges.`);
+    throw new Error(`readRanges 需要 1 至 ${MAX_RANGES} 个范围。`);
   }
   let validated = ranges.map(validateRange);
   let cells = validated.reduce((total, range) => total + range.rows * range.columns, 0);
   if (!Number.isSafeInteger(cells) || cells > MAX_TOTAL_CELLS) {
-    throw new Error(`A read may request at most ${MAX_TOTAL_CELLS.toLocaleString()} cells.`);
+    throw new Error(`一次读取最多可请求 ${MAX_TOTAL_CELLS.toLocaleString()} 个单元格。`);
   }
   return validated;
 }
@@ -99,7 +99,7 @@ function valueRenderOption(mode: SpreadsheetValueMode | undefined): string {
     case "formatted": return "FORMATTED_VALUE";
     case "raw": return "UNFORMATTED_VALUE";
     case "formula": return "FORMULA";
-    default: throw new Error(`Unknown Google Sheets value mode: ${String(mode)}`);
+    default: throw new Error(`未知的 Google Sheets 值模式：${String(mode)}`);
   }
 }
 
@@ -108,7 +108,7 @@ function normalizeCell(value: unknown): SpreadsheetCellValue {
     return value;
   }
   if (value === null || value === undefined) return null;
-  throw new Error("Google Sheets returned an unsupported cell value.");
+  throw new Error("Google Sheets 返回了不支持的单元格值。");
 }
 
 function normalizeRange(rest: RestValueRange, requested: ValidatedRange): SpreadsheetRange {
@@ -129,7 +129,7 @@ async function readResponseText(response: Response, maxBytes: number): Promise<s
     let declaredBytes = Number(contentLength);
     if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
       await response.body?.cancel().catch(() => {});
-      throw new Error(`Google Sheets response exceeded the ${maxBytes}-byte limit.`);
+      throw new Error(`Google Sheets 响应超过了 ${maxBytes} 字节限制。`);
     }
   }
 
@@ -143,7 +143,7 @@ async function readResponseText(response: Response, maxBytes: number): Promise<s
       if (done) break;
       if (totalBytes + value.byteLength > maxBytes) {
         await reader.cancel().catch(() => {});
-        throw new Error(`Google Sheets response exceeded the ${maxBytes}-byte limit.`);
+        throw new Error(`Google Sheets 响应超过了 ${maxBytes} 字节限制。`);
       }
       chunks.push(value);
       totalBytes += value.byteLength;
@@ -177,7 +177,7 @@ export class GoogleSheetsApi {
     } catch (error) {
       if (!response.ok) {
         throw new Error(
-          `Google Sheets request failed [http=${response.status}]`, { cause: error },
+          `Google Sheets 请求失败 [http=${response.status}]`, { cause: error },
         );
       }
       throw error;
@@ -188,15 +188,15 @@ export class GoogleSheetsApi {
       body = JSON.parse(text);
     } catch {
       if (!response.ok) {
-        throw new Error(`Google Sheets request failed [http=${response.status}]`);
+        throw new Error(`Google Sheets 请求失败 [http=${response.status}]`);
       }
-      throw new Error("Google Sheets returned an invalid JSON response.");
+      throw new Error("Google Sheets 返回了无效的 JSON 响应。");
     }
 
     if (!response.ok) {
       let errorBody = body as GoogleErrorResponse;
       let detail = errorBody?.error?.message ? `: ${errorBody.error.message}` : "";
-      throw new Error(`Google Sheets request failed [http=${response.status}]${detail}`);
+      throw new Error(`Google Sheets 请求失败 [http=${response.status}]${detail}`);
     }
     return body as T;
   }

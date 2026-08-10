@@ -23,8 +23,8 @@ export default {
   render() {
     return <Section>
       <Field
-        label="Whole-account access"
-        description="This binding grants access to the connected ZoomInfo account: lookup, company/contact/intent/scoop/news search, record enrichment (which consumes credits), recommendations, and account intelligence — all subject to the account's ZoomInfo entitlements.">
+        label="整个账户的访问权限"
+        description="此绑定将授予对所连接 ZoomInfo 账户的访问权限，包括查找、公司/联系人/意向/Scoop/新闻搜索、记录扩充（会消耗额度）、推荐和账户情报；所有功能均受该账户 ZoomInfo 权限限制。">
       </Field>
     </Section>;
   },

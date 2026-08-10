@@ -117,7 +117,7 @@ export function scopeAllows(scope: ToolScope, toolName: string, isPortal: boolea
 export function requireCompleteCatalogForToolSelection(truncated: boolean): void {
   if (truncated) {
     throw new Error(
-      "This server's tool catalog is too large to select individual tools. Grant all tools instead.");
+      "此服务器的工具目录过大，无法选择单个工具。请改为授权全部工具。");
   }
 }
 
@@ -133,7 +133,7 @@ export function validateToolScopeAgainstCatalog(
   reportedServers: PortalServer[] = [],
 ): PortalServer | undefined {
   if (catalog.truncated && scope.tools !== undefined) {
-    throw new Error("The current tool catalog is truncated, so this grant cannot be validated.");
+    throw new Error("当前工具目录已截断，因此无法验证此授权。");
   }
 
   let server: PortalServer | undefined;
@@ -144,17 +144,17 @@ export function validateToolScopeAgainstCatalog(
       server = { id: serverId, name: serverId, enabled: true };
     }
     if (!server) {
-      throw new Error(`Server "${serverId}" is absent from the current portal catalog.`);
+      throw new Error(`当前 Portal 目录中没有服务器“${serverId}”。`);
     }
   }
 
   const names = new Set(catalog.tools.map(tool => tool.name));
   for (const name of scope.tools ?? []) {
     if (serverId !== undefined && !toolBelongsToServer(name, serverId)) {
-      throw new Error(`Tool "${name}" does not belong to portal server "${serverId}".`);
+      throw new Error(`工具“${name}”不属于 Portal 服务器“${serverId}”。`);
     }
     if (!names.has(name)) {
-      throw new Error(`Tool "${name}" is absent from the current tool catalog.`);
+      throw new Error(`当前工具目录中没有工具“${name}”。`);
     }
   }
   return server;

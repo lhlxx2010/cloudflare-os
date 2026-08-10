@@ -16,39 +16,39 @@ import type { ScheduleStatus } from "../src/types";
 import { formatCadence, formatOccurrences, formatTiming } from "./format";
 
 export const CREATE_SCHEDULE_PROMPT =
-  "Help me create a scheduled task. Ask me what it should do, which workspace and resources it should use, when it should run, and which timezone to use. Then set up the schedule.";
+  "帮我创建一个定时任务。请询问我要执行什么任务、使用哪个工作区和哪些资源、何时运行，以及使用哪个时区，然后设置该任务。";
 
 const STARTERS = [
   {
-    title: "Daily brief",
-    cadence: "Weekdays at 8:00 AM",
-    description: "Your calendar for the day plus the unread mail that needs a reply",
+    title: "每日简报",
+    cadence: "工作日上午 8:00",
+    description: "汇总当天日历，以及需要回复的未读邮件",
     prompt:
-      "Every weekday at 8:00 AM, send me a short brief of my calendar for the day and the unread email that needs a reply. Ask me which calendar and mailbox to use and which timezone to use, then set up the schedule.",
+      "每个工作日上午 8:00，向我发送一份简短的当日日历与待回复未读邮件简报。请询问我要使用哪个日历、邮箱和时区，然后设置该任务。",
     icon: CalendarBlank,
   },
   {
-    title: "Weekly roundup",
-    cadence: "Fridays at 4:00 PM",
-    description: "Turn the week’s Linear issues and GitHub pull requests into a status update",
+    title: "每周汇总",
+    cadence: "每周五下午 4:00",
+    description: "将本周的 Linear 议题和 GitHub 拉取请求整理为状态更新",
     prompt:
-      "Every Friday at 4:00 PM, turn this week’s Linear issues and GitHub pull requests into a status update. Ask me which Linear team, GitHub repositories, and timezone to use, then set up the schedule.",
+      "每周五下午 4:00，将本周的 Linear 议题和 GitHub 拉取请求整理为状态更新。请询问我要使用哪个 Linear 团队、哪些 GitHub 仓库和哪个时区，然后设置该任务。",
     icon: CalendarBlank,
   },
   {
-    title: "Follow-up monitor",
-    cadence: "Weekdays at 9:00 AM",
-    description: "Flag the Gmail threads that are waiting on your reply",
+    title: "跟进提醒",
+    cadence: "工作日上午 9:00",
+    description: "标记正在等待你回复的 Gmail 会话",
     prompt:
-      "Every weekday at 9:00 AM, flag the Gmail threads that are waiting on my reply. Ask me which mailbox, destination, and timezone to use, then set up the schedule.",
+      "每个工作日上午 9:00，标记正在等待我回复的 Gmail 会话。请询问我要使用哪个邮箱、发送到哪里以及使用哪个时区，然后设置该任务。",
     icon: WarningCircle,
   },
   {
-    title: "Metrics snapshot",
-    cadence: "Mondays at 8:00 AM",
-    description: "Refresh a spreadsheet or query and call out what moved",
+    title: "指标快照",
+    cadence: "每周一上午 8:00",
+    description: "刷新电子表格或查询，并指出发生的变化",
     prompt:
-      "Every Monday at 8:00 AM, refresh a spreadsheet or query and call out what moved. Ask me which data source, destination, and timezone to use, then set up the schedule.",
+      "每周一上午 8:00，刷新电子表格或查询，并指出发生的变化。请询问我要使用哪个数据源、发送到哪里以及使用哪个时区，然后设置该任务。",
     icon: Clock,
   },
 ] as const;
@@ -178,10 +178,10 @@ export default function SchedulerPage({
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-kumo-default">
-            Scheduled tasks
+            定时任务
           </h1>
           <p className="mt-1 text-sm text-kumo-subtle">
-            Wake a workspace and run its code on a schedule you choose.
+            按你设定的时间唤醒工作区并运行其中的代码。
           </p>
         </div>
         <button
@@ -190,7 +190,7 @@ export default function SchedulerPage({
           className="press inline-flex h-9 items-center justify-center gap-2 self-start rounded-lg bg-kumo-brand px-3.5 text-sm font-medium text-white hover:bg-kumo-brand-hover"
           onClick={() => void runHostAction(() => openPrompt(CREATE_SCHEDULE_PROMPT))}
         >
-          <Plus size={16} weight="bold" /> Create schedule
+          <Plus size={16} weight="bold" /> 创建定时任务
         </button>
       </header>
 
@@ -198,18 +198,18 @@ export default function SchedulerPage({
         <>
           <label className="mt-4 flex h-9 items-center gap-2 rounded-lg border border-kumo-line bg-kumo-control px-3 text-kumo-inactive focus-within:ring-2 focus-within:ring-kumo-ring">
             <MagnifyingGlass size={15} />
-            <span className="sr-only">Search scheduled tasks</span>
+            <span className="sr-only">搜索定时任务</span>
             <input
               className="min-w-0 flex-1 bg-transparent text-sm text-kumo-default outline-none placeholder:text-kumo-inactive"
               type="search"
               value={query}
               maxLength={200}
-              placeholder="Search scheduled tasks…"
+              placeholder="搜索定时任务…"
               onChange={(event) => setQuery(event.currentTarget.value)}
             />
           </label>
 
-          <nav className="mt-4 flex gap-5 border-b border-kumo-line" aria-label="Schedule status">
+          <nav className="mt-4 flex gap-5 border-b border-kumo-line" aria-label="任务状态">
             {FILTERS.map((item) => (
               <button
                 key={item.value}
@@ -231,20 +231,20 @@ export default function SchedulerPage({
 
       <section aria-live="polite" aria-busy={loading} className={isEmpty ? undefined : "min-h-32"}>
         {loading ? (
-          <p className="py-12 text-center text-sm text-kumo-subtle">Loading scheduled tasks…</p>
+          <p className="py-12 text-center text-sm text-kumo-subtle">正在加载定时任务…</p>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm text-kumo-danger">Couldn’t load scheduled tasks.</p>
+            <p className="text-sm text-kumo-danger">无法加载定时任务。</p>
             <button
               className="text-sm font-medium text-kumo-link hover:text-kumo-brand-hover"
               onClick={() => void load()}
             >
-              Try again
+              重试
             </button>
           </div>
         ) : isEmpty ? null : schedules.length === 0 ? (
           <p className="py-12 text-center text-sm text-kumo-subtle">
-            No scheduled tasks match these filters.
+            没有符合当前筛选条件的定时任务。
           </p>
         ) : (
           <div className="divide-y divide-kumo-line">
@@ -284,7 +284,7 @@ export default function SchedulerPage({
               className="rounded-lg border border-kumo-line bg-kumo-control px-4 py-2 text-sm font-medium text-kumo-default hover:bg-kumo-tint disabled:opacity-50"
               onClick={() => void load(cursor)}
             >
-              {loadingMore ? "Loading…" : "Load more"}
+              {loadingMore ? "正在加载…" : "加载更多"}
             </button>
           </div>
         )}
@@ -295,7 +295,7 @@ export default function SchedulerPage({
           id="get-started-heading"
           className="text-xs font-medium uppercase tracking-[0.12em] text-kumo-inactive"
         >
-          Get started
+          快速开始
         </h2>
         <div className="mt-3 grid gap-1">
           {STARTERS.map((starter) => {
@@ -346,7 +346,7 @@ function ScheduleRow({
   onOpen: () => void;
 }) {
   const timing = formatTiming(schedule, now);
-  const target = targetTitle ?? "Unavailable workspace";
+  const target = targetTitle ?? "工作区不可用";
   // A workspace the user can no longer see has nothing to open.
   const unavailable = targetTitle === null;
   // Only failed schedules have something to expand: why they need attention. The caret is a sibling
@@ -394,7 +394,7 @@ function ScheduleRow({
             type="button"
             data-action="toggle-diagnostic"
             aria-expanded={expanded}
-            aria-label={`${expanded ? "Hide" : "Show"} why ${schedule.title} needs attention`}
+            aria-label={`${expanded ? "隐藏" : "显示"}${schedule.title}需要处理的原因`}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-kumo-inactive hover:bg-kumo-fill hover:text-kumo-default"
             onClick={onToggle}
           >
@@ -415,10 +415,10 @@ function ScheduleRow({
 }
 
 const FILTERS: ReadonlyArray<{ value: Filter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "dead", label: "Needs attention" },
-  { value: "finished", label: "Finished" },
+  { value: "all", label: "全部" },
+  { value: "active", label: "运行中" },
+  { value: "dead", label: "需要处理" },
+  { value: "finished", label: "已结束" },
 ];
 
 function statusesForFilter(filter: Filter): ScheduleStatus[] | undefined {

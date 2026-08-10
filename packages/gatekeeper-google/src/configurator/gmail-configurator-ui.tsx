@@ -37,13 +37,13 @@ export default {
   render({ values, setValues, clearFields }) {
     const mode = values.mode ?? "all";
     return <Section>
-      <Field label="Mailbox scope" description="Choose whether this connection can access all Gmail messages or a narrower native Gmail view.">
+      <Field label="邮箱范围" description="选择此连接是可以访问全部 Gmail 邮件，还是仅访问范围更小的 Gmail 原生视图。">
         <RadioCards
           value={mode}
           options={[
-            { value: "all", title: "All Gmail", description: "Allow access to the whole mailbox." },
-            { value: "search", title: "Search", description: "Allow messages matching a Gmail search query." },
-            { value: "label", title: "Label", description: "Allow messages with a specific Gmail label." },
+            { value: "all", title: "全部 Gmail 邮件", description: "允许访问整个邮箱。" },
+            { value: "search", title: "搜索条件", description: "允许访问符合 Gmail 搜索条件的邮件。" },
+            { value: "label", title: "标签", description: "允许访问带有指定 Gmail 标签的邮件。" },
           ]}
           onChange={nextMode => {
             if (nextMode !== "all" && nextMode !== "search" && nextMode !== "label") return;
@@ -53,7 +53,7 @@ export default {
         />
       </Field>
 
-      {mode === "search" && <Field label="Search query" description="Use the same query syntax as Gmail search.">
+      {mode === "search" && <Field label="搜索条件" description="使用与 Gmail 搜索相同的查询语法。">
         <TextInput
           name="query"
           value={values.query}
@@ -62,11 +62,11 @@ export default {
         />
       </Field>}
 
-      {mode === "label" && <Field label="Label" description="Use the Gmail label name exactly as it appears in Gmail.">
+      {mode === "label" && <Field label="标签" description="请使用 Gmail 中显示的准确标签名称。">
         <TextInput
           name="label"
           value={values.label}
-          placeholder="Receipts"
+          placeholder="收据"
           onChange={label => setValues({ label })}
         />
       </Field>}

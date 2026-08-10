@@ -23,7 +23,7 @@ const githubViewerLogins = new WeakMap<object, Promise<string>>();
 
 function githubApi(target: object): GitHubApi {
   const getToken = githubTokenGetters.get(target);
-  if (!getToken) throw new Error("GitHub configurator is not initialized.");
+  if (!getToken) throw new Error("GitHub 配置器尚未初始化。");
   return new GitHubApi(getToken);
 }
 
@@ -32,7 +32,7 @@ function viewerLogin(target: object): Promise<string> {
   if (cached) return cached;
   const pending = githubApi(target).getViewerConditional()
     .then(result => {
-      if (result.status === 304) throw new Error("GitHub unexpectedly returned 304 for viewer lookup.");
+      if (result.status === 304) throw new Error("GitHub 在查询当前用户时意外返回了 304。");
       return result.data.login;
     });
   githubViewerLogins.set(target, pending);
@@ -94,7 +94,7 @@ function issueOption(issue: GitHubIssueResponse) {
   return {
     value: String(issue.number),
     title: `#${issue.number} ${issue.title}`,
-    subtitle: issue.user ? `Opened by ${issue.user.login}` : undefined,
+    subtitle: issue.user ? `由 ${issue.user.login} 创建` : undefined,
     meta: issueMeta(issue),
   };
 }
@@ -112,7 +112,7 @@ function pullRequestSearchOption(pullRequest: GitHubIssueResponse) {
   return {
     value: String(pullRequest.number),
     title: `#${pullRequest.number} ${pullRequest.title}`,
-    subtitle: pullRequest.user ? `Opened by ${pullRequest.user.login}` : undefined,
+    subtitle: pullRequest.user ? `由 ${pullRequest.user.login} 创建` : undefined,
     meta: pullRequest.state,
   };
 }

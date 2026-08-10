@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Project" description="Search the projects in your connected Supabase account.">
+      <Field label="项目" description="搜索所连接 Supabase 账户中的项目。">
         <Autocomplete
           name="ref"
           value={values.ref}
-          placeholder="Search projects..."
+          placeholder="搜索项目…"
           loadOptions={query => ui.listProjects(query)}
           onChange={ref => setValues({ ref })}
         />

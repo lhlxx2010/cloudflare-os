@@ -39,7 +39,13 @@ export const CONNECTION_MESSAGES = [
 ]
 
 // Fallback for auth errors thrown without a code (older deployments); codes are authoritative.
-const AUTH_MESSAGES = Object.values(AUTH_ERROR_MESSAGES)
+// Keep the pre-localization English text as well so a Chinese frontend can still classify errors
+// from an older backend during a rolling deployment.
+const AUTH_MESSAGES = [
+  ...Object.values(AUTH_ERROR_MESSAGES),
+  'invalid session token',
+  'Not authenticated with Access.',
+]
 
 const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err))
 

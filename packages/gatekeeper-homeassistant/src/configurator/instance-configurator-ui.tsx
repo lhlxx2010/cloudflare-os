@@ -26,8 +26,8 @@ export default {
   render() {
     return <Section>
       <Field
-        label="Whole instance access"
-        description="This binding grants access to every area, device, entity, and dashboard on the connected Home Assistant instance.">
+        label="整个实例的访问权限"
+        description="此绑定将授予对所连接 Home Assistant 实例中每个区域、设备、实体和仪表板的访问权限。">
       </Field>
     </Section>;
   },

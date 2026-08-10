@@ -92,7 +92,7 @@ export class ContextApiImpl extends RpcTarget implements ContextApi {
       this.#registry().isPublic(collectionId),
     ]);
     if (!owns && !isPublic) {
-      throw new Error("Collection not found or you don't have access.");
+      throw new Error("找不到该集合，或你没有访问权限。");
     }
   }
 
@@ -104,17 +104,17 @@ export class ContextApiImpl extends RpcTarget implements ContextApi {
     ]);
     if (owns) return;
     if (isPublic && this.isAdmin) return;
-    throw new Error("Collection not found or you don't have access.");
+    throw new Error("找不到该集合，或你没有访问权限。");
   }
 
   #assertArtifactsAvailable(): void {
     if (!this.env.ARTIFACTS) {
-      throw new Error("Git-backed Context collections are not enabled.");
+      throw new Error("基于 Git 的上下文集合未启用。");
     }
   }
 
   #assertAdmin(): void {
-    if (!this.isAdmin) throw new Error("Admin access required.");
+    if (!this.isAdmin) throw new Error("需要管理员权限。");
   }
 
   async getViewerInfo(): Promise<{ isAdmin: boolean; supportsGitCollections: boolean }> {
@@ -132,10 +132,10 @@ export class ContextApiImpl extends RpcTarget implements ContextApi {
   ): Promise<ContextCollectionMetadata> {
     if (visibility === "public") this.#assertAdmin();
     if (source !== "web" && source !== "git") {
-      throw new Error(`Unsupported collection source: ${source}`);
+      throw new Error(`不支持的集合来源：${source}`);
     }
     if (source === "git" && !this.env.ARTIFACTS) {
-      throw new Error("Git-backed Context collections are not enabled.");
+      throw new Error("基于 Git 的上下文集合未启用。");
     }
 
     let id = crypto.randomUUID();

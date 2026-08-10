@@ -21,21 +21,21 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Repository" description="Search your repositories, or enter a GitHub URL.">
+      <Field label="仓库" description="搜索你的仓库，或输入 GitHub URL。">
         <Autocomplete
           name="repoFullName"
           value={values.repoFullName}
-          placeholder="Search or paste a repository URL..."
+          placeholder="搜索或粘贴仓库 URL…"
           loadOptions={query => ui.listRepos(query)}
           onChange={repoFullName => setValues({ repoFullName, pullNumber: null })}
         />
       </Field>
 
-      <Field label="Pull Request" description="Choose a pull request in the selected repository.">
+      <Field label="拉取请求" description="在所选仓库中选择一个拉取请求。">
         <Autocomplete
           name="pullNumber"
           value={values.pullNumber}
-          placeholder={values.repoFullName ? "Search pull requests..." : "Choose a repository first"}
+          placeholder={values.repoFullName ? "搜索拉取请求…" : "请先选择仓库"}
           disabled={!values.repoFullName}
           loadOptions={query => ui.listPullRequests(values.repoFullName, query)}
           onChange={pullNumber => setValues({ pullNumber })}

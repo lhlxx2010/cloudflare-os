@@ -84,7 +84,7 @@ describe("portal configurator", () => {
 
     // And it says so, instead of showing a tool list it could not populate.
     const rendered = JSON.stringify(app.render());
-    expect(rendered).toContain("Could not reach the portal");
+    expect(rendered).toContain("无法连接门户");
     expect(rendered).not.toContain("CheckboxList");
   });
 
@@ -103,7 +103,7 @@ describe("portal configurator", () => {
     expect(app.values.server).toBeNull();
     expect(spec.isReady({ values: app.values })).toBe(false);
     await expect(spec.resourceUrl({ values: app.values, ui } as never))
-      .rejects.toThrow(/Choose a server/);
+      .rejects.toThrow(/请先选择此门户背后的服务器/);
   });
 
   it("shows every tool as a disabled preview for an all-tools grant", () => {

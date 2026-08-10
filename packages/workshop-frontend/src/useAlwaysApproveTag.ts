@@ -29,7 +29,7 @@ export function useAlwaysApproveTag(
       return true
     } catch (err) {
       console.error('Failed to enable auto-approval:', err)
-      toasts.add({ title: 'Failed to enable auto-approval', variant: 'error' })
+      toasts.add({ title: '启用自动批准失败', variant: 'error' })
       return false
     } finally {
       setProcessingActions(prev => {

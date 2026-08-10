@@ -15,12 +15,12 @@ export default function AppPreview() {
         {/* App header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <Text variant="heading2" as="h1">Channel Summarizer</Text>
+            <Text variant="heading2" as="h1">频道摘要</Text>
             <p className="text-sm text-kumo-subtle mt-1">
-              Daily digest of your Slack channels, powered by Workers AI
+              由 Workers AI 驱动的 Slack 频道每日摘要
             </p>
           </div>
-          <Badge variant="success">Live</Badge>
+          <Badge variant="success">运行中</Badge>
         </div>
 
         {/* Channel cards */}
@@ -33,7 +33,7 @@ export default function AppPreview() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-sm font-semibold text-kumo-default">{row.channel}</span>
-                  <Badge variant="primary">{row.messages} msgs</Badge>
+                  <Badge variant="primary">{row.messages} 条消息</Badge>
                 </div>
                 <span className="text-xs text-kumo-subtle">{row.lastActive}</span>
               </div>
@@ -43,20 +43,20 @@ export default function AppPreview() {
                   <Circle size={5} className="text-kumo-subtle mt-1.5 flex-shrink-0" weight="fill" />
                   <p className="text-sm text-kumo-subtle">
                     {row.channel === '#general'
-                      ? 'Team discussed Q1 planning timeline and agreed on March 15 deadline for proposals'
+                      ? '团队讨论了第一季度规划时间表，并确定 3 月 15 日为提案截止日期'
                       : row.channel === '#engineering'
-                        ? 'Deployed v2.4.1 hotfix for auth timeout. Monitoring dashboards show latency back to normal'
-                        : 'Active discussion about weekend hackathon projects and lunch plans for Friday'}
+                        ? '已部署 v2.4.1 身份验证超时热修复。监控面板显示延迟已恢复正常'
+                        : '正在积极讨论周末黑客松项目和周五午餐计划'}
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <Circle size={5} className="text-kumo-subtle mt-1.5 flex-shrink-0" weight="fill" />
                   <p className="text-sm text-kumo-subtle">
                     {row.channel === '#general'
-                      ? '3 action items assigned, 2 decisions made'
+                      ? '已分配 3 个行动项，并作出 2 项决定'
                       : row.channel === '#engineering'
-                        ? 'RFC for new caching layer received 5 approvals, moving to implementation'
-                        : '12 participants, trending topics: hackathon, team lunch, offsite'}
+                        ? '新缓存层 RFC 已获得 5 项批准，进入实施阶段'
+                        : '12 人参与，热门话题：黑客松、团队午餐、团建'}
                   </p>
                 </div>
               </div>
@@ -67,7 +67,7 @@ export default function AppPreview() {
         {/* Quiet channels */}
         <div className="mt-6">
           <div className="text-xs font-semibold text-kumo-subtle uppercase tracking-wider mb-3">
-            No new activity
+            暂无新活动
           </div>
           <div className="flex flex-wrap gap-2">
             {sampleDataRows.filter(r => !r.unread).map((row) => (

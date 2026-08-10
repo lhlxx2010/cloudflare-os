@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Entity" description="Choose a single Home Assistant entity (light, sensor, switch, etc).">
+      <Field label="实体" description="选择单个 Home Assistant 实体，例如灯、传感器或开关。">
         <Autocomplete
           name="entityId"
           value={values.entityId}
-          placeholder="Search entities..."
+          placeholder="搜索实体…"
           loadOptions={query => ui.listEntities(query)}
           onChange={entityId => setValues({ entityId })}
         />

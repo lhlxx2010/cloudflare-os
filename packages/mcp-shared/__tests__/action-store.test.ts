@@ -60,7 +60,7 @@ describe("ActionStore", () => {
     // Gadget that queues calls and never collects them grows the Durable Object forever.
     const store = new ActionStore(fakeSql());
     for (let i = 0; i < 50; i++) store.stage("send", { i });
-    expect(() => store.stage("send", { overflow: true })).toThrow(/awaiting approval/);
+    expect(() => store.stage("send", { overflow: true })).toThrow(/等待批准/);
   });
 
   it("rejects arguments that cannot be stored safely", () => {
@@ -68,8 +68,8 @@ describe("ActionStore", () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;
 
-    expect(() => store.stage("send", circular)).toThrow(/JSON-compatible/);
-    expect(() => store.stage("send", { body: "x".repeat(70_000) })).toThrow(/too large/);
+    expect(() => store.stage("send", circular)).toThrow(/兼容 JSON/);
+    expect(() => store.stage("send", { body: "x".repeat(70_000) })).toThrow(/过大/);
   });
 
   it("frees a pending slot however the call was decided", async () => {
@@ -230,7 +230,7 @@ describe("ActionStore", () => {
     }, log);
 
     expect(store.get(staged.id)?.state).toBe("applying");
-    expect(() => store.reject(staged.id)).toThrow(/already being applied/);
+    expect(() => store.reject(staged.id)).toThrow(/正在应用/);
     release();
     await applying;
     expect(store.get(staged.id)?.state).toBe("applied");

@@ -59,7 +59,7 @@ export async function readTextCapped(
       total += value.byteLength;
       if (total > maxBytes) {
         await reader.cancel();
-        throw new Error(`The server's response exceeded ${maxBytes} bytes.`);
+        throw new Error(`服务器响应超过了 ${maxBytes} 字节。`);
       }
       chunks.push(value);
     }
@@ -111,7 +111,7 @@ export async function guardedFetch(
   url: string, init: RequestInit, options: FetchOptions = {},
 ): Promise<Response> {
   if (!isAllowedUrl(url, options)) {
-    throw new Error(`Refusing to contact ${hostForMessage(url)}.`);
+    throw new Error(`已拒绝访问 ${hostForMessage(url)}。`);
   }
 
   let current = url;

@@ -119,10 +119,10 @@ export class LibraryReadSession extends RpcTarget {
     let collectionIds = [...new Set(results.map(r => r.collectionId).filter((id): id is string => !!id))];
     // Authorize after fetching, before returning data.
     await this.#authorize(collectionIds, {
-      title: `Context search: ${query}`,
+      title: `上下文搜索：${query}`,
       description:
-        `Searched the Context Library for \`${query}\`. Returned ${results.length} result(s)` +
-        (collectionIds.length ? ` across ${collectionIds.length} collection(s).` : "."),
+        `在上下文库中搜索 \`${query}\`，返回 ${results.length} 条结果` +
+        (collectionIds.length ? `，来自 ${collectionIds.length} 个集合。` : "。"),
     });
     return results;
   }
@@ -143,11 +143,11 @@ export class LibraryReadSession extends RpcTarget {
           .map(entry => entry.id);
     await this.#authorize(collectionIds, {
       title: opts?.collectionId
-        ? `Context listing: ${opts.collectionId}${opts.path ? "/" + opts.path : ""}`
-        : "Context listing: collections",
+        ? `上下文列表：${opts.collectionId}${opts.path ? "/" + opts.path : ""}`
+        : "上下文列表：集合",
       description: opts?.collectionId
-        ? `Listed contents of Context Library collection \`${opts.collectionId}\`.`
-        : "Listed the user's Context Library collections.",
+        ? `列出了上下文库集合 \`${opts.collectionId}\` 的内容。`
+        : "列出了用户的上下文库集合。",
     });
     return listing;
   }
@@ -166,8 +166,8 @@ export class LibraryReadSession extends RpcTarget {
     if (!doc) return null;
 
     await this.#authorize([collectionId], {
-      title: `Context read: ${doc.name}`,
-      description: `Read Context Library document \`${docId}\`.`,
+      title: `读取上下文：${doc.name}`,
+      description: `读取了上下文库文档 \`${docId}\`。`,
     });
 
     let content = isTextContentType(doc.contentType)

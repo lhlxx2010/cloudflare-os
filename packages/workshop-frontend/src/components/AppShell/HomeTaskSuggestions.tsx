@@ -24,43 +24,43 @@ type TaskSuggestion = {
 const SUGGESTIONS: TaskSuggestion[] = [
   {
     id: 'one-on-one',
-    label: 'Write a 1:1 pre-read',
-    description: 'A doc with a snapshot, things to inspect, and one ask',
+    label: '撰写一对一会谈会前材料',
+    description: '包含现状摘要、待检查事项和一个明确诉求的文档',
     icon: FileText,
     prompt:
-      'Create a document to prepare for my next 1:1 with a direct report: a current snapshot, a coaching frame, things to inspect, carryover items from last time, and one clear ask.',
+      '请创建一份文档，帮助我准备下一次与直属下属的一对一会谈：包括当前情况摘要、辅导框架、待检查事项、上次遗留事项，以及一个明确的诉求。',
   },
   {
     id: 'team-meeting',
-    label: 'Build a team meeting deck',
-    description: 'Slides with progress, risks, and what needs a decision',
+    label: '制作团队会议演示文稿',
+    description: '展示进度、风险和待决事项的幻灯片',
     icon: Presentation,
     prompt:
-      'Create a slide deck for my next team meeting: where things stand, what shipped, risks and blockers, and the decisions I need from the room. Ask me what the team is working on first.',
+      '请为我的下一次团队会议制作一份幻灯片：包括当前进展、已交付内容、风险与阻碍，以及需要现场做出的决策。请先询问团队目前在做什么。',
   },
   {
     id: 'insights',
-    label: 'Find insights in my data',
-    description: 'Turn a spreadsheet or CSV into trends and recommendations',
+    label: '从数据中发现洞察',
+    description: '从电子表格或 CSV 中提炼趋势与建议',
     icon: ChartLineUp,
     prompt:
-      'Turn a dataset I will share (a spreadsheet, CSV, or pasted table) into a narrative analysis: key trends, anomalies, the "so what", and concrete recommendations.',
+      '请将我提供的数据集（电子表格、CSV 或粘贴的表格）整理成一份叙述性分析：包括关键趋势、异常情况、这些发现意味着什么，以及具体建议。',
   },
   {
     id: 'workflow',
-    label: 'Automate a workflow',
-    description: 'Trigger an agent when a new email arrives',
+    label: '自动化工作流程',
+    description: '收到新邮件时自动触发智能体',
     icon: Lightning,
     prompt:
-      'Create an agent workflow that runs automatically when a new email arrives: read the message, decide what to do, and take action or draft a reply. Ask me which inbox to watch and what it should handle.',
+      '请创建一个收到新邮件时自动运行的智能体工作流程：读取邮件、判断该如何处理，然后执行操作或起草回复。请询问我要监控哪个收件箱，以及需要处理哪些内容。',
   },
   {
     id: 'app',
-    label: 'Build a quick tool',
-    description: 'A small interactive app, calculator, or dashboard',
+    label: '快速构建一个工具',
+    description: '小型交互式应用、计算器或仪表盘',
     icon: AppWindow,
     prompt:
-      'Build a small interactive tool I can use right here — a calculator, dashboard, or explorer. Ask me what it should do, then create it.',
+      '请构建一个我可以在这里直接使用的小型交互式工具，例如计算器、仪表盘或数据浏览器。先询问我希望它实现什么功能，然后开始创建。',
   },
 ]
 
@@ -122,9 +122,9 @@ export default function HomeTaskSuggestions({
   const visible = useMemo(pickSuggestions, [])
 
   return (
-    <section aria-label="Example tasks" className="flex flex-col gap-1">
+    <section aria-label="示例任务" className="flex flex-col gap-1">
       <h3 className="px-1 pb-1 text-[12px] font-medium uppercase tracking-[0.06em] text-kumo-inactive">
-        Get started
+        开始使用
       </h3>
       <ul className="flex flex-col gap-0.5">
         {visible.map((suggestion) => (

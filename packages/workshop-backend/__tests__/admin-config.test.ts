@@ -66,13 +66,13 @@ describe("reorderFormats", () => {
   // A repeated id passes both a length and a membership test, so without an explicit uniqueness
   // check it would drop "b" and leave a duplicate that makes every later reorder throw.
   it("refuses a repeated id", () => {
-    expect(() => reorderFormats(promoted, ["a", "a", "c"])).toThrow(/exactly once/);
+    expect(() => reorderFormats(promoted, ["a", "a", "c"])).toThrow(/只能出现一次/);
   });
 
   it("refuses a short list, a long list, and an unknown id", () => {
-    expect(() => reorderFormats(promoted, ["a", "b"])).toThrow(/exactly once/);
-    expect(() => reorderFormats(promoted, ["a", "b", "c", "a"])).toThrow(/exactly once/);
-    expect(() => reorderFormats(promoted, ["a", "b", "z"])).toThrow(/exactly once/);
+    expect(() => reorderFormats(promoted, ["a", "b"])).toThrow(/只能出现一次/);
+    expect(() => reorderFormats(promoted, ["a", "b", "c", "a"])).toThrow(/只能出现一次/);
+    expect(() => reorderFormats(promoted, ["a", "b", "z"])).toThrow(/只能出现一次/);
   });
 });
 

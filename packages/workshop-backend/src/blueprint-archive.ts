@@ -199,7 +199,7 @@ function makeStreamPrefixReader(stream: ReadableStream<Uint8Array>) {
     while (pendingBytes < length) {
       let { done, value } = await reader.read();
       if (done) {
-        throw new Error("Unexpected end of gadget archive.");
+        throw new Error("应用归档文件意外结束。");
       }
       let chunk = value!;
       pending.push(chunk);
@@ -209,13 +209,13 @@ function makeStreamPrefixReader(stream: ReadableStream<Uint8Array>) {
 
   return {
     async readExact(length: number): Promise<Uint8Array> {
-      if (tailTaken) throw new Error("Archive content stream already opened.");
+      if (tailTaken) throw new Error("归档内容流已打开。");
       await fill(length);
       return consume(length);
     },
 
     takeTail(): ReadableStream<Uint8Array> {
-      if (tailTaken) throw new Error("Archive content stream already opened.");
+      if (tailTaken) throw new Error("归档内容流已打开。");
       tailTaken = true;
 
       return new ReadableStream<Uint8Array>({
@@ -250,28 +250,28 @@ export async function parseBlueprintArchive(archive: ReadableStream<Uint8Array>)
   let view = new DataView(prefix.buffer, prefix.byteOffset, prefix.byteLength);
 
   if (view.getBigUint64(0) !== BLUEPRINT_ARCHIVE_MAGIC) {
-    throw new Error("Invalid gadget archive magic number.");
+    throw new Error("应用归档文件标识无效。");
   }
 
   let version = view.getUint32(8);
   if (version !== BLUEPRINT_ARCHIVE_VERSION) {
-    throw new Error(`Unsupported gadget archive version: ${version}.`);
+    throw new Error(`不支持此应用归档版本：${version}。`);
   }
 
   let metadataSize = view.getUint32(12);
   if (metadataSize === 0) {
-    throw new Error("Gadget archive is missing blueprint metadata.");
+    throw new Error("应用归档文件缺少蓝图元数据。");
   }
   if (metadataSize > MAX_BLUEPRINT_METADATA_BYTES) {
-    throw new Error("Gadget archive metadata size is out of range.");
+    throw new Error("应用归档文件的元数据大小超出范围。");
   }
 
   let contentLength = Number(view.getBigUint64(16));
   if (!Number.isSafeInteger(contentLength) || contentLength < 0) {
-    throw new Error("Gadget archive has an invalid content length.");
+    throw new Error("应用归档文件的内容长度无效。");
   }
   if (contentLength > MAX_BLUEPRINT_CONTENT_BYTES) {
-    throw new Error("Gadget archive content is too large.");
+    throw new Error("应用归档文件内容过大。");
   }
 
   let metadataBytes = await reader.readExact(metadataSize);
@@ -279,7 +279,7 @@ export async function parseBlueprintArchive(archive: ReadableStream<Uint8Array>)
   try {
     rawMetadata = JSON.parse(textDecoder.decode(metadataBytes));
   } catch {
-    throw new Error("Gadget archive metadata is not valid JSON.");
+    throw new Error("应用归档文件的元数据不是有效的 JSON。");
   }
 
   let metadata = reviveBlueprintMetadata(rawMetadata);

@@ -23,7 +23,7 @@ function bigQueryConfiguratorListOptions(query: string) {
 
 function googleToken(target: object): Promise<GoogleAccessToken> {
   let getToken = googleTokenGetters.get(target);
-  if (!getToken) throw new Error("Google configurator is not initialized.");
+  if (!getToken) throw new Error("Google 配置器尚未初始化。");
   return getToken();
 }
 
@@ -94,10 +94,10 @@ async function listDriveFiles(
     let text = await response.text();
     if (response.status === 403 && text.includes("Google Drive API has not been used")) {
       throw new Error(
-        `${resourceName} search requires the Google Drive API to be enabled for this OAuth project.`,
+        `搜索 ${resourceName} 需要为此 OAuth 项目启用 Google Drive API。`,
       );
     }
-    throw new Error(`Failed to search ${resourceName}: ${response.status} ${text}`);
+    throw new Error(`搜索 ${resourceName} 失败：${response.status} ${text}`);
   }
   let body = await response.json<{
     files?: {
@@ -111,7 +111,7 @@ async function listDriveFiles(
     let owner = file.owners?.[0];
     let subtitleParts = [
       owner?.displayName ?? owner?.emailAddress,
-      file.modifiedTime ? `Modified ${new Date(file.modifiedTime).toLocaleDateString()}` : undefined,
+      file.modifiedTime ? `修改于 ${new Date(file.modifiedTime).toLocaleDateString()}` : undefined,
     ].filter(Boolean);
     return {
       value: file.id,
@@ -142,7 +142,7 @@ export class CalendarConfiguratorUI extends RpcTarget implements CalendarConfigu
         return calendars.map(calendar => ({
           value: calendar.id,
           title: calendar.summary,
-          subtitle: calendar.primary ? "Primary calendar" : calendar.id,
+          subtitle: calendar.primary ? "主日历" : calendar.id,
           meta: calendar.accessRole,
         }));
       })();

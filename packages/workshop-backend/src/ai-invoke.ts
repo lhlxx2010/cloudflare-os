@@ -71,7 +71,7 @@ export async function completeText(handle: ModelHandle, args: {
   if (message.stopReason === "error" || message.stopReason === "aborted") {
     // Surface a cancellation as the abort reason, like a directly-aborted request would.
     args.signal?.throwIfAborted();
-    const errorMessage = message.errorMessage ?? "The model request failed.";
+    const errorMessage = message.errorMessage ?? "模型请求失败。";
     throw new AgentTurnError(errorMessage, httpStatusFromError(errorMessage, handle));
   }
   return message.content

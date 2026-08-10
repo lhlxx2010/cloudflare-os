@@ -35,8 +35,8 @@ export default {
   render({ values, setValues }) {
     return <Section>
       <Field
-        label="Thread permalink"
-        description="Paste a Slack message link (Copy link on a message). It looks like https://your-workspace.slack.com/archives/C0.../p123..."
+        label="话题永久链接"
+        description="粘贴 Slack 消息链接（在消息上选择“复制链接”），格式类似 https://your-workspace.slack.com/archives/C0.../p123..."
       >
         <TextInput
           name="permalink"

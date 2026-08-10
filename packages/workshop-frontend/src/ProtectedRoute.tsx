@@ -36,7 +36,7 @@ export default function ProtectedRoute({ children, rpcStub }: ProtectedRouteProp
       >
         <Loader size="lg" />
         <div style={{ textAlign: 'center' }}>
-          Loading...
+          正在加载…
         </div>
       </div>
     )
@@ -57,11 +57,11 @@ export default function ProtectedRoute({ children, rpcStub }: ProtectedRouteProp
       >
         <Banner
           variant="error"
-          title={`Authentication error: ${error}`}
+          title={`身份验证错误：${error}`}
           className="mb-4"
         />
         <Button variant="primary" onClick={() => window.location.reload()}>
-          Retry
+          重试
         </Button>
       </div>
     )
@@ -85,7 +85,7 @@ export default function ProtectedRoute({ children, rpcStub }: ProtectedRouteProp
         >
           <Loader size="lg" />
           <div style={{ textAlign: 'center' }}>
-            Authenticating...
+            正在验证身份…
           </div>
         </div>
       )

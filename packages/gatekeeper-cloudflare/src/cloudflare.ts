@@ -34,12 +34,12 @@ const INITIATION_NONCE_LIFETIME_MS = 10 * 60 * 1000;
 const OAUTH_NONCE_LIFETIME_MS = 10 * 60 * 1000;
 const ACCESS_TOKEN_EXPIRY_SAFETY_MS = 60 * 1000;
 
-// Official Cloudflare logomark (orange cloud on a transparent background), as a data URI so it can
+// Cloud logomark recolored in the NINT os blue palette, embedded as a data URI so it can
 // be rendered directly as the vendor/account avatar.
 const CLOUDFLARE_LOGO_URL = "data:image/svg+xml," + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 209.51 94.74">` +
-  `<path fill="#f4801f" d="M143.05,93.42l1.07-3.71c1.27-4.41.8-8.48-1.34-11.48-2-2.76-5.26-4.38-9.25-4.57L58,72.7a1.47,1.47,0,0,1-1.35-2,2,2,0,0,1,1.75-1.34l76.26-1c9-.41,18.84-7.75,22.27-16.71l4.34-11.36a2.68,2.68,0,0,0,.18-1,3.31,3.31,0,0,0-.06-.54,49.67,49.67,0,0,0-95.49-5.14,22.35,22.35,0,0,0-35,23.42A31.73,31.73,0,0,0,.34,93.45a1.47,1.47,0,0,0,1.45,1.27l139.49,0h0A1.83,1.83,0,0,0,143.05,93.42Z"/>` +
-  `<path fill="#f9ab41" d="M168.22,41.15q-1,0-2.1.06a.88.88,0,0,0-.32.07,1.17,1.17,0,0,0-.76.8l-3,10.26c-1.28,4.41-.81,8.48,1.34,11.48a11.65,11.65,0,0,0,9.24,4.57l16.11,1a1.44,1.44,0,0,1,1.14.62,1.5,1.5,0,0,1,.17,1.37,2,2,0,0,1-1.75,1.34l-16.73,1c-9.09.42-18.88,7.75-22.31,16.7l-1.21,3.16a.9.9,0,0,0,.79,1.22h57.63A1.55,1.55,0,0,0,208,93.63a41.34,41.34,0,0,0-39.76-52.48Z"/>` +
+  `<path fill="#1d4ed8" d="M143.05,93.42l1.07-3.71c1.27-4.41.8-8.48-1.34-11.48-2-2.76-5.26-4.38-9.25-4.57L58,72.7a1.47,1.47,0,0,1-1.35-2,2,2,0,0,1,1.75-1.34l76.26-1c9-.41,18.84-7.75,22.27-16.71l4.34-11.36a2.68,2.68,0,0,0,.18-1,3.31,3.31,0,0,0-.06-.54,49.67,49.67,0,0,0-95.49-5.14,22.35,22.35,0,0,0-35,23.42A31.73,31.73,0,0,0,.34,93.45a1.47,1.47,0,0,0,1.45,1.27l139.49,0h0A1.83,1.83,0,0,0,143.05,93.42Z"/>` +
+  `<path fill="#2563eb" d="M168.22,41.15q-1,0-2.1.06a.88.88,0,0,0-.32.07,1.17,1.17,0,0,0-.76.8l-3,10.26c-1.28,4.41-.81,8.48,1.34,11.48a11.65,11.65,0,0,0,9.24,4.57l16.11,1a1.44,1.44,0,0,1,1.14.62,1.5,1.5,0,0,1,.17,1.37,2,2,0,0,1-1.75,1.34l-16.73,1c-9.09.42-18.88,7.75-22.31,16.7l-1.21,3.16a.9.9,0,0,0,.79,1.22h57.63A1.55,1.55,0,0,0,208,93.63a41.34,41.34,0,0,0-39.76-52.48Z"/>` +
   `</svg>`,
 );
 
@@ -76,23 +76,23 @@ function getBasePath(env: Env) {
 }
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en"><body>
+<html lang="zh-CN"><body>
 <script type="text/javascript">window.close();</script>
-<p>Authorization complete. You may close this tab and return to Cloudflare OS.
+<p>授权完成。你可以关闭此标签页并返回 NINT os。
 </body></html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>Authorization Link Expired</title></head>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>授权链接已过期</title></head>
 <body style="font-family: system-ui, sans-serif; text-align: center; padding: 3rem;">
-<h1 style="color:#d97706;">Authorization Link Expired</h1>
-<p>This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-<button onclick="window.close()">Close</button></body></html>`;
+<h1 style="color:#1d4ed8;">授权链接已过期</h1>
+<p>此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+<button onclick="window.close()">关闭</button></body></html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>Configuration Required</title></head>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>需要配置</title></head>
 <body style="font-family: system-ui, sans-serif; text-align: center; padding: 3rem;">
-<h1 style="color:#d97706;">Cloudflare Gatekeeper Not Configured</h1>
-<p>Please see the README.md for instructions on configuring an OAuth client ID and secret.</p>
+<h1 style="color:#1d4ed8;">Cloudflare Gatekeeper 尚未配置</h1>
+<p>请参阅 README.md，了解如何配置 OAuth 客户端 ID 和密钥。</p>
 </body></html>`;
 
 // Main HTTP entrypoint — used only to initiate and complete the OAuth flow.
@@ -101,7 +101,7 @@ export default {
     const url = new URL(req.url);
     const basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     const relPath = url.pathname.slice(basePath.length);
     const path = relPath.slice(1).split("/");
@@ -126,13 +126,13 @@ export default {
         return new Response(`${error}: ${url.searchParams.get("error_description")}`);
       }
       const state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       const colonIdx = state.indexOf(":");
-      if (colonIdx < 0) return new Response("Error: malformed state");
+      if (colonIdx < 0) return new Response("错误：“state”格式不正确");
       const doId = state.slice(0, colonIdx);
       const oauthNonce = state.slice(colonIdx + 1);
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       const stub = ctx.exports.UserAccount.get(ctx.exports.UserAccount.idFromString(doId));
       if (!await stub.acceptAuthCode(code, oauthNonce)) {
@@ -140,7 +140,7 @@ export default {
       }
       return new Response(SELF_CLOSING_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
-    return new Response("Not Found", { status: 404 });
+    return new Response("未找到", { status: 404 });
   },
 };
 
@@ -153,11 +153,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       displayName: "Cloudflare",
       url: "https://cloudflare.com",
       logo: { url: CLOUDFLARE_LOGO_URL },
-      color: "#fbece0",
-      tagline: "Sign in with Cloudflare",
+      color: "#dbeafe",
+      tagline: "使用 Cloudflare 登录",
       description:
-          "Sign in with your Cloudflare account. Usage beyond the free tier can be billed to your " +
-          "own Cloudflare AI Gateway credits.",
+          "使用你的 Cloudflare 账户登录。超出免费额度的用量可能会从你自己的 " +
+          "Cloudflare AI Gateway 额度中计费。",
       providesAuth: true,
     };
   }
@@ -186,7 +186,7 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
 export class UserAccount extends DurableObject<Env> {
   #config() {
     const config = getOAuthConfig(this.env.CLIENT_ID, this.env.CLIENT_SECRET, getBaseUrl(this.env));
-    if (!config) throw new Error("The Cloudflare Gatekeeper is not configured.");
+    if (!config) throw new Error("Cloudflare Gatekeeper 尚未配置。");
     return config;
   }
 
@@ -246,12 +246,12 @@ export class UserAccount extends DurableObject<Env> {
 
     const callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
     if (!callback) {
-      throw new Error("Took too long to complete the authorization. Please try again.");
+      throw new Error("完成授权所用时间过长，请重试。");
     }
 
     const tokens = await exchangeCode(this.#config(), code, stored.verifier);
     if (!tokens || !tokens.refreshToken) {
-      throw new Error("Cloudflare OAuth exchange failed or returned no refresh token.");
+      throw new Error("Cloudflare OAuth 交换失败，或未返回刷新令牌。");
     }
 
     this.ctx.storage.kv.put<string>("refreshToken", tokens.refreshToken);
@@ -373,11 +373,11 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     class: DurableObjectClass<Gatekeeper<any>>;
     resource: SupportedResource;
   }> {
-    throw new Error("The Cloudflare gatekeeper does not provide any resources yet.");
+    throw new Error("Cloudflare Gatekeeper 暂不提供任何资源。");
   }
 
   async startResourceConfigurator(_resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
-    throw new Error("The Cloudflare gatekeeper does not provide any resources yet.");
+    throw new Error("Cloudflare Gatekeeper 暂不提供任何资源。");
   }
 
   async revoke(): Promise<void> {

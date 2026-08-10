@@ -29,17 +29,17 @@ export default function DataTab() {
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-kumo-fill bg-kumo-elevated">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-sm text-kumo-default">channels</span>
-          <Badge variant="secondary">{sampleDataRows.length} rows</Badge>
+          <span className="font-mono text-sm text-kumo-default">频道</span>
+          <Badge variant="secondary">{sampleDataRows.length} 行</Badge>
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
             <span className="text-xs text-kumo-subtle">
-              {selectedIds.size} selected
+              已选择 {selectedIds.size} 行
             </span>
           )}
-          <Button variant="ghost" size="xs">Filter</Button>
-          <Button variant="ghost" size="xs">Sort</Button>
+          <Button variant="ghost" size="xs">筛选</Button>
+          <Button variant="ghost" size="xs">排序</Button>
         </div>
       </div>
 
@@ -52,12 +52,12 @@ export default function DataTab() {
                 checked={selectedIds.size === sampleDataRows.length}
                 indeterminate={selectedIds.size > 0 && selectedIds.size < sampleDataRows.length}
                 onValueChange={toggleAll}
-                aria-label="Select all rows"
+                aria-label="选择所有行"
               />
-              <Table.Head>Channel</Table.Head>
-              <Table.Head>Messages</Table.Head>
-              <Table.Head>Last Active</Table.Head>
-              <Table.Head>Status</Table.Head>
+              <Table.Head>频道</Table.Head>
+              <Table.Head>消息数</Table.Head>
+              <Table.Head>最后活跃</Table.Head>
+              <Table.Head>状态</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -66,7 +66,7 @@ export default function DataTab() {
                 <Table.CheckCell
                   checked={selectedIds.has(row.id)}
                   onValueChange={() => toggleRow(row.id)}
-                  aria-label={`Select ${row.channel}`}
+                  aria-label={`选择 ${row.channel}`}
                 />
                 <Table.Cell>
                   <span className="font-mono text-sm text-kumo-default">{row.channel}</span>
@@ -81,9 +81,9 @@ export default function DataTab() {
                 </Table.Cell>
                 <Table.Cell>
                   {row.unread ? (
-                    <Badge variant="primary">Unread</Badge>
+                    <Badge variant="primary">未读</Badge>
                   ) : (
-                    <Badge variant="secondary">Read</Badge>
+                    <Badge variant="secondary">已读</Badge>
                   )}
                 </Table.Cell>
               </Table.Row>
@@ -95,10 +95,10 @@ export default function DataTab() {
       {/* Footer */}
       <div className="px-4 py-2 border-t border-kumo-fill bg-kumo-elevated flex items-center justify-between">
         <span className="font-mono text-xs text-kumo-subtle">
-          {sampleDataRows.length} rows in channels
+          频道中共 {sampleDataRows.length} 行
         </span>
         <span className="font-mono text-xs text-kumo-subtle">
-          {sampleDataRows.reduce((sum, r) => sum + r.messages, 0).toLocaleString()} total messages
+          共 {sampleDataRows.reduce((sum, r) => sum + r.messages, 0).toLocaleString()} 条消息
         </span>
       </div>
     </div>

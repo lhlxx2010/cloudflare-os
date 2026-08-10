@@ -130,7 +130,7 @@ function toLabelObjects(labelIds: string[], labelMap: Map<string, string>): Gmai
 
 function validateGmailQueryForGrouping(query: string): void {
   if (new TextEncoder().encode(query).byteLength > MAX_GMAIL_QUERY_BYTES) {
-    throw new Error(`Gmail search query must be at most ${MAX_GMAIL_QUERY_BYTES} bytes.`);
+    throw new Error(`Gmail 搜索查询最多为 ${MAX_GMAIL_QUERY_BYTES} 字节。`);
   }
   const stack: string[] = [];
   let quote: string | undefined;
@@ -154,10 +154,10 @@ function validateGmailQueryForGrouping(query: string): void {
       stack.push(char);
     } else if (char === ')' || char === '}') {
       const expected = char === ')' ? '(' : '{';
-      if (stack.pop() !== expected) throw new Error("Gmail query has mismatched grouping delimiters.");
+      if (stack.pop() !== expected) throw new Error("Gmail 查询的分组定界符不匹配。");
     }
   }
-  if (quote || stack.length > 0) throw new Error("Gmail query has unterminated grouping or quotes.");
+  if (quote || stack.length > 0) throw new Error("Gmail 查询中存在未闭合的分组或引号。");
 }
 
 function getBaseUrl(env: Env) {
@@ -172,40 +172,40 @@ function getBasePath(env: Env) {
 // =======================================================================================
 
 const SELF_CLOSING_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <body>
     <script type="text/javascript">window.close();</script>
-    <p>Authorization complete. You may close this tab and return to Cloudflare OS.
+    <p>授权完成。你可以关闭此标签页并返回 NINT os。
   </body>
 </html>`;
 
 const INVALID_LINK_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization Link Expired</title>
+    <title>授权链接已过期</title>
   </head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Authorization Link Expired</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">This authorization link is invalid or has expired. Please return to Cloudflare OS and try again.</p>
-      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #d97706; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">Close</button>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">授权链接已过期</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0 0 1.5rem 0;">此授权链接无效或已过期。请返回 NINT os 后重试。</p>
+      <button onclick="window.close()" style="padding: 0.5rem 1.5rem; background: #1d4ed8; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer;">关闭</button>
     </div>
   </body>
 </html>`;
 
 const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration Required</title>
+    <title>需要配置</title>
   </head>
   <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5;">
     <div style="max-width: 520px; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      <h1 style="color: #d97706; font-size: 1.5rem; margin: 0 0 1rem 0;">Google Gatekeeper Not Configured</h1>
-      <p style="color: #555; line-height: 1.6; margin: 0;">Please see the README.md for instructions on configuring an OAuth client ID and secret so that this Cloudflare OS instance can access Google APIs.</p>
+      <h1 style="color: #1d4ed8; font-size: 1.5rem; margin: 0 0 1rem 0;">Google Gatekeeper 尚未配置</h1>
+      <p style="color: #555; line-height: 1.6; margin: 0;">请参阅 README.md，了解如何配置 OAuth 客户端 ID 和密钥，使此 NINT os 实例能够访问 Google API。</p>
     </div>
   </body>
 </html>`;
@@ -226,38 +226,38 @@ const BIGQUERY_HOST = "bigquery.googleapis.com";
 
 const GMAIL_RESOURCE: SupportedResource = {
   urlPattern: "https://mail.google.com/*",
-  title: "Gmail Mailbox",
-  description: "Read emails and apply labels.",
+  title: "Gmail 邮箱",
+  description: "读取电子邮件并应用标签。",
   grantable: true,
 };
 
 const GOOGLE_DOC_RESOURCE: SupportedResource = {
   urlPattern: "https://docs.google.com/document/d/:docId/*",
-  title: "Google Doc",
+  title: "Google 文档",
   description:
-      "Read and edit documents you choose.",
+      "读取和编辑你选择的文档。",
   grantable: true,
 };
 
 const GOOGLE_SHEETS_RESOURCE: SupportedResource = {
   urlPattern: "https://docs.google.com/spreadsheets/d/:spreadsheetId/*",
-  title: "Google Spreadsheet",
-  description: "Read values from a spreadsheet you choose.",
+  title: "Google 电子表格",
+  description: "读取你选择的电子表格中的值。",
   grantable: true,
 };
 
 const GOOGLE_CALENDAR_RESOURCE: SupportedResource = {
   urlPattern: "https://calendar.google.com/calendar/:calendarId/*",
-  title: "Google Calendar",
+  title: "Google 日历",
   description:
-      "Read and manage a Google Calendar.",
+      "读取和管理 Google 日历。",
   grantable: true,
 };
 
 const BIGQUERY_RESOURCE: SupportedResource = {
   urlPattern: `https://${BIGQUERY_HOST}/:projectId/*`,
   title: "BigQuery",
-  description: "Choose a Google Cloud project, then optionally narrow access to a dataset or table.",
+  description: "选择 Google Cloud 项目，然后可以选择将访问范围缩小到数据集或表。",
   grantable: true,
 };
 
@@ -319,7 +319,7 @@ function validateResourceUrlPatterns(resourceUrlPatterns?: string[]): void {
   let knownPatterns = new Set(RESOURCE_SCOPES.map(entry => entry.resource.urlPattern));
   let unknownPatterns = resourceUrlPatterns.filter(pattern => !knownPatterns.has(pattern));
   if (unknownPatterns.length > 0) {
-    throw new Error(`Unknown grantable resource URL pattern(s): ${unknownPatterns.join(", ")}`);
+    throw new Error(`未知的可授权资源 URL 模式：${unknownPatterns.join(", ")}`);
   }
 }
 
@@ -352,7 +352,7 @@ export default {
     let url = new URL(req.url);
     let basePath = getBasePath(env);
     if (!url.pathname.startsWith(basePath + "/") && url.pathname !== basePath) {
-      throw new Error(`Request path ${url.pathname} does not match BASE_URL path ${basePath}`);
+      throw new Error(`请求路径 ${url.pathname} 与 BASE_URL 路径 ${basePath} 不匹配`);
     }
     let relPath = url.pathname.slice(basePath.length);
     let path = relPath.slice(1).split("/");
@@ -397,14 +397,14 @@ export default {
       }
 
       let state = url.searchParams.get("state");
-      if (!state) return new Response("Error: no 'state' provided");
+      if (!state) return new Response("错误：未提供“state”");
       let colonIdx = state.indexOf(":");
-      if (colonIdx < 0) return new Response("Error: malformed state");
+      if (colonIdx < 0) return new Response("错误：“state”格式不正确");
       let doId = state.slice(0, colonIdx);
       let oauthNonce = state.slice(colonIdx + 1);
 
       let code = url.searchParams.get("code");
-      if (!code) return new Response("Error: no 'code' provided");
+      if (!code) return new Response("错误：未提供“code”");
 
       let userObjectId = ctx.exports.UserAccount.idFromString(doId);
       let stub: DurableObjectStub<UserAccount> = ctx.exports.UserAccount.get(userObjectId);
@@ -419,7 +419,7 @@ export default {
         }
       });
     } else {
-      return new Response("Not Found", {status: 404});
+      return new Response("未找到", {status: 404});
     }
   }
 }
@@ -439,12 +439,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       url: "https://google.com",
       logo: { url: GOOGLE_LOGO_URL },
       color: "#e8f0fe",
-      tagline: "Draft replies, edit docs, read sheets, manage calendars, and analyze data",
+      tagline: "起草回复、编辑文档、读取表格、管理日历并分析数据",
       description:
-          "Connect your Google account to give Cloudflare OS access to Gmail, Google Docs, Google " +
-          "Sheets, Google Calendar, and BigQuery. Build agents that triage email, draft and edit " +
-          "documents, read spreadsheets, find focus time, schedule meetings, or run analytics " +
-          "queries on your data.",
+          "连接你的 Google 账户，让 NINT os 访问 Gmail、Google Docs、Google Sheets、" +
+          "Google Calendar 和 BigQuery。你可以构建用于分流邮件、起草和编辑文档、读取电子表格、" +
+          "寻找专注时间、安排会议或对数据运行分析查询的智能体。",
       providesAuth: true,
     };
   }
@@ -593,7 +592,7 @@ export class UserAccount extends DurableObject<Env> {
 
     let { CLIENT_ID: clientId, CLIENT_SECRET: clientSecret } = this.env;
     if (!clientId || !clientSecret) {
-      throw new Error("The Google Gatekeeper is not configured.");
+      throw new Error("Google Gatekeeper 尚未配置。");
     }
 
     // The credential swap is serialized against minting and revoke, but the callbacks below are
@@ -604,7 +603,7 @@ export class UserAccount extends DurableObject<Env> {
       let callback = this.ctx.storage.kv.get<Fetcher<GatekeeperConnectCallback>>("callback");
       if (!callback) {
         // Must have timed out.
-        throw new Error("Took too long to complete the authorization. Please try again.");
+        throw new Error("完成授权所用时间过长，请重试。");
       }
 
       let response = await exchangeAuthCode(
@@ -612,7 +611,7 @@ export class UserAccount extends DurableObject<Env> {
           AbortSignal.timeout(AUTH_CODE_EXCHANGE_TIMEOUT_MS));
 
       if (!response.refreshToken) {
-        throw new Error("OAuth exchange didn't return refresh token?");
+        throw new Error("OAuth 交换未返回刷新令牌。");
       }
 
       this.ctx.storage.kv.put<string>("refreshToken", response.refreshToken);
@@ -677,11 +676,11 @@ export class UserAccount extends DurableObject<Env> {
   async getAccessToken(opts?: AccessTokenRequest): Promise<GoogleAccessToken> {
     let { CLIENT_ID: clientId, CLIENT_SECRET: clientSecret } = this.env;
     if (!clientId || !clientSecret) {
-      throw new Error("The Google Gatekeeper is not configured.");
+      throw new Error("Google Gatekeeper 尚未配置。");
     }
 
     if (!this.ctx.storage.kv.get<string>("refreshToken")) {
-      throw new Error("no refresh token set");
+      throw new Error("尚未设置刷新令牌");
     }
 
     // Fast path, deliberately outside the lock: the overwhelmingly common case is a valid cached
@@ -709,7 +708,7 @@ export class UserAccount extends DurableObject<Env> {
       // while this call waited for the lock.
       let refreshToken = this.ctx.storage.kv.get<string>("refreshToken");
       if (!refreshToken) {
-        throw new Error("no refresh token set");
+        throw new Error("尚未设置刷新令牌");
       }
 
       // Logged before the exchange so a mint that fails or hangs still leaves a trace. The events
@@ -749,7 +748,7 @@ export class UserAccount extends DurableObject<Env> {
         });
         let current = this.ctx.storage.kv.get<GoogleAccessToken>("accessToken");
         if (current) return current;
-        throw new Error("Google credentials changed while refreshing. Please try again.");
+        throw new Error("刷新期间 Google 凭据发生变化，请重试。");
       }
 
       this.ctx.storage.kv.put<GoogleAccessToken>("accessToken", result.token);
@@ -840,7 +839,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       // Extract document ID from URL path: /document/d/{documentId}/...
       let documentId = parsed.pathname.split("/")[3];
       if (!documentId) {
-        throw new Error("Invalid Google Docs URL: no document ID found");
+        throw new Error("Google Docs URL 无效：未找到文档 ID");
       }
       let props: GoogleDocGatekeeperImplProps = {
         userObjectId: this.ctx.props.userObjectId,
@@ -853,7 +852,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
         parsed.pathname.startsWith("/spreadsheets/d/")) {
       let spreadsheetId = parsed.pathname.split("/")[3];
       if (!spreadsheetId) {
-        throw new Error("Invalid Google Sheets URL: no spreadsheet ID found");
+        throw new Error("Google Sheets URL 无效：未找到电子表格 ID");
       }
       let props: GoogleSheetsGatekeeperImplProps = {
         userObjectId: this.ctx.props.userObjectId,
@@ -868,12 +867,11 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     if (parsed.hostname === "calendar.google.com" && parsed.pathname.startsWith("/calendar/")) {
       let calendarId = decodeURIComponent(parsed.pathname.split("/")[2] ?? "");
       if (!calendarId) {
-        throw new Error("Invalid Google Calendar URL: no calendar ID found");
+        throw new Error("Google Calendar URL 无效：未找到日历 ID");
       }
       if (calendarId === "primary") {
         throw new Error(
-          "Google Calendar bindings must use a stable calendar ID, not the account-relative " +
-          "\"primary\" alias.");
+          "Google Calendar 绑定必须使用稳定的日历 ID，不能使用相对于账户的“primary”别名。");
       }
       // Default to the least-privilege scope unless the URL explicitly opts into all calendars.
       let availabilityMode: CalendarAvailabilityMode =
@@ -891,10 +889,10 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
 
     if (parsed.hostname === BIGQUERY_HOST) {
       if (parsed.protocol !== "https:") {
-        throw new Error(`BigQuery resource URLs must use https: ${url}`);
+        throw new Error(`BigQuery 资源 URL 必须使用 https：${url}`);
       }
       if (parsed.search || parsed.hash) {
-        throw new Error("BigQuery resource URLs must not include query strings or fragments.");
+        throw new Error("BigQuery 资源 URL 不得包含查询字符串或片段。");
       }
 
       // Synthetic path: /<projectId>/<datasetId>/<tableId> (each segment optional after the first).
@@ -902,17 +900,17 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
           .map(segment => decodeURIComponent(segment));
       if (segments.length > 3) {
         throw new Error(
-            "BigQuery resource URLs must be /<projectId>, /<projectId>/<datasetId>, " +
-            "or /<projectId>/<datasetId>/<tableId>.");
+            "BigQuery 资源 URL 必须为 /<projectId>、/<projectId>/<datasetId> " +
+            "或 /<projectId>/<datasetId>/<tableId>。");
       }
       let projectId = segments[0] || undefined;
       let datasetId = segments[1] || undefined;
       let tableId = segments[2] || undefined;
       if (!projectId) {
-        throw new Error("BigQuery resource URLs must include a project ID.");
+        throw new Error("BigQuery 资源 URL 必须包含项目 ID。");
       }
       if (tableId && !datasetId) {
-        throw new Error("Cannot scope to a table without specifying a dataset.");
+        throw new Error("未指定数据集时，无法将范围限制到表。");
       }
 
       let props: BigQueryGatekeeperImplProps = {
@@ -944,7 +942,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     } else if (hash.startsWith("#label/")) {
       const labelName = decodeURIComponent(hash.slice("#label/".length));
       if (!labelName || new TextEncoder().encode(labelName).byteLength > 320) {
-        throw new Error("Gmail label name must be between 1 and 320 bytes.");
+        throw new Error("Gmail 标签名称必须为 1 至 320 字节。");
       }
       props.labelName = labelName;
     } else if (hash && hash !== "#inbox") {
@@ -998,7 +996,7 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
       };
     }
 
-    throw new Error(`Unsupported resource configurator type: ${resourceUrlPattern}`);
+    throw new Error(`不支持的资源配置器类型：${resourceUrlPattern}`);
   }
 
   async revoke(): Promise<void> {
@@ -1267,17 +1265,17 @@ const MAX_GMAIL_VISIBLE_THREAD_MESSAGES = 100;
 
 function validateOutboundInput(to: string[], subject: string, body: string): void {
   if (to.length === 0 || to.length > MAX_GMAIL_RECIPIENTS) {
-    throw new Error(`Email must have between 1 and ${MAX_GMAIL_RECIPIENTS} recipients.`);
+    throw new Error(`电子邮件收件人数必须为 1 至 ${MAX_GMAIL_RECIPIENTS} 人。`);
   }
   if (to.some(address => address.length === 0 ||
       new TextEncoder().encode(address).byteLength > MAX_GMAIL_ADDRESS_BYTES)) {
-    throw new Error("Invalid recipient address length.");
+    throw new Error("收件人地址长度无效。");
   }
   if (new TextEncoder().encode(subject).byteLength > MAX_GMAIL_SUBJECT_BYTES) {
-    throw new Error(`Email subject must be at most ${MAX_GMAIL_SUBJECT_BYTES} UTF-8 bytes.`);
+    throw new Error(`电子邮件主题最多为 ${MAX_GMAIL_SUBJECT_BYTES} 个 UTF-8 字节。`);
   }
   if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-    throw new Error(`Email body must be at most ${MAX_GMAIL_BODY_BYTES} bytes.`);
+    throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
   }
 }
 
@@ -1294,20 +1292,20 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
 
   async listThreads(): Promise<Cursor<GmailThreadEntry>> {
     const scopeDescription = this.#ctx.searchQuery
-      ? "the connected Gmail search scope"
+      ? "已连接的 Gmail 搜索范围"
       : this.#ctx.labelId
-        ? "the connected Gmail label scope"
-        : "the Gmail inbox";
+        ? "已连接的 Gmail 标签范围"
+        : "Gmail 收件箱";
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "List Gmail threads",
+      title: "列出 Gmail 会话",
       description:
-        `Create a cursor for the most recent threads in ${scopeDescription}.` +
+        `为${scopeDescription}中的最新会话创建游标。` +
         (this.#ctx.searchQuery
-          ? `\n\n${formatApprovalField("Search restriction", this.#ctx.searchQuery)}`
+          ? `\n\n${formatApprovalField("搜索限制", this.#ctx.searchQuery)}`
           : "") +
         (this.#ctx.labelName
-          ? `\n\n${formatApprovalField("Required label", this.#ctx.labelName)}`
+          ? `\n\n${formatApprovalField("必需标签", this.#ctx.labelName)}`
           : ""),
     });
 
@@ -1321,7 +1319,7 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
     validateGmailQueryForGrouping(query);
     // A leading boolean operator could bind outside the appended group.
     if (this.#ctx.searchQuery && /^(OR|AND)\b/i.test(query.trim())) {
-      throw new Error("Query cannot start with OR/AND.");
+      throw new Error("查询不能以 OR/AND 开头。");
     }
 
     const effectiveQuery = this.#ctx.searchQuery
@@ -1329,12 +1327,12 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
       : query;
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Search Gmail",
+      title: "搜索 Gmail",
       description:
-        "Create a cursor for Gmail threads matching this effective query.\n\n" +
-        formatApprovalField("Query", effectiveQuery) +
+        "为符合此有效查询的 Gmail 会话创建游标。\n\n" +
+        formatApprovalField("查询", effectiveQuery) +
         (this.#ctx.labelName
-          ? `\n\n${formatApprovalField("Required label", this.#ctx.labelName)}`
+          ? `\n\n${formatApprovalField("必需标签", this.#ctx.labelName)}`
           : ""),
     });
 
@@ -1353,8 +1351,8 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
     // caller already obtained through the scoped session.)
     if (this.#ctx.searchQuery || this.#ctx.labelId) {
       throw new Error(
-        "send() is not available on a search- or label-scoped Gmail binding. " +
-        "Use reply()/forward() on a specific message, or connect the full mailbox.");
+        "限定到搜索或标签的 Gmail 绑定不支持 send()。" +
+        "请对特定邮件使用 reply()/forward()，或连接完整邮箱。");
     }
 
     validateOutboundInput(to, subject, body);
@@ -1363,8 +1361,8 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
       this.#ctx,
       { type: "send", to: message.to, subject: message.subject, body: message.body },
       {
-        title: sanitizeApprovalTitle(`Send email: ${message.subject}`),
-        description: describeOutboundMessage("Send a new email.", message),
+        title: sanitizeApprovalTitle(`发送电子邮件：${message.subject}`),
+        description: describeOutboundMessage("发送一封新电子邮件。", message),
       });
   }
 }
@@ -1383,13 +1381,13 @@ function formatApprovalField(label: string, value: string): string {
 
 function describeOutboundMessage(intro: string, message: GmailOutboundMessage): string {
   let fields = [
-    formatApprovalField("From", message.from),
-    formatApprovalField("To", message.to.join(", ")),
-    ...(message.cc.length > 0 ? [formatApprovalField("Cc", message.cc.join(", "))] : []),
-    formatApprovalField("Subject", message.subject),
-    formatApprovalField("Body", message.body),
+    formatApprovalField("发件人", message.from),
+    formatApprovalField("收件人", message.to.join(", ")),
+    ...(message.cc.length > 0 ? [formatApprovalField("抄送", message.cc.join(", "))] : []),
+    formatApprovalField("主题", message.subject),
+    formatApprovalField("正文", message.body),
     ...message.attachments.map(attachment => formatApprovalField(
-      "Attachment",
+      "附件",
       `${attachment.filename} (${attachment.contentType})\n${attachment.description}`)),
   ];
   return `${intro}\n\n${fields.join("\n\n")}`;
@@ -1400,7 +1398,7 @@ async function submitGmailAction(
     action: GmailAction,
     desc: { title: string; description: string }): Promise<void> {
   if (ctx.pendingActions.list().length >= 100) {
-    throw new Error("Too many pending Gmail actions. Resolve existing actions before adding more.");
+    throw new Error("待处理的 Gmail 操作过多，请先处理现有操作再添加新操作。");
   }
   let actionId = ctx.pendingActions.submit(action);
   try {
@@ -1455,13 +1453,13 @@ class GmailThreadCursorImpl extends RpcTarget implements Cursor<GmailThreadEntry
       pageToken = result.nextPageToken;
       exhausted = !result.nextPageToken;
       if (result.nextPageToken && result.nextPageToken === previousToken) {
-        throw new Error("Gmail returned a repeated thread page token.");
+        throw new Error("Gmail 返回了重复的会话分页令牌。");
       }
       skippedPages++;
     } while (result.threads.length === 0 && !exhausted && skippedPages < 20);
 
     if (result.threads.length === 0) {
-      if (!exhausted) throw new Error("Gmail returned too many empty thread pages.");
+      if (!exhausted) throw new Error("Gmail 返回了过多空白会话页面。");
       this.#pageToken = pageToken;
       this.#exhausted = true;
       return null;
@@ -1484,10 +1482,10 @@ class GmailThreadCursorImpl extends RpcTarget implements Cursor<GmailThreadEntry
     }
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Read ${entries.length} Gmail threads`,
+      title: `读取 ${entries.length} 个 Gmail 会话`,
       description:
-        `Fetch the next page of Gmail threads.\n\n` +
-        formatApprovalField("Subjects", entries.map(entry => entry.info.subject).join("\n")),
+        `获取下一页 Gmail 会话。\n\n` +
+        formatApprovalField("主题", entries.map(entry => entry.info.subject).join("\n")),
     });
 
     this.#pageToken = pageToken;
@@ -1522,8 +1520,8 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
     const info = await this.#ensureInfo();
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Thread info: ${info.subject}`),
-      description: `Get metadata for thread ${this.#threadId}.`,
+      title: sanitizeApprovalTitle(`会话信息：${info.subject}`),
+      description: `获取会话 ${this.#threadId} 的元数据。`,
     });
 
     return info;
@@ -1533,8 +1531,8 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
     const thread = await this.#ctx.gmailApi.getThread(this.#threadId);
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Get messages: ${thread.snippet || "(no snippet)"}`),
-      description: `Get all messages in thread ${this.#threadId}.`,
+      title: sanitizeApprovalTitle(`获取邮件：${thread.snippet || "（无摘要）"}`),
+      description: `获取会话 ${this.#threadId} 中的所有邮件。`,
     });
 
     return thread.messages.map(message =>
@@ -1544,23 +1542,23 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
 
   async messagesVisibleTo(address: string): Promise<GmailMessage[]> {
     if (new TextEncoder().encode(address).byteLength > MAX_GMAIL_ADDRESS_BYTES) {
-      throw new Error(`Email address must be at most ${MAX_GMAIL_ADDRESS_BYTES} bytes.`);
+      throw new Error(`电子邮件地址最多为 ${MAX_GMAIL_ADDRESS_BYTES} 字节。`);
     }
     const [normalizedAddress] = normalizeEmailRecipients([address]);
     const thread = await this.#ctx.gmailApi.getThread(this.#threadId);
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Messages involving ${normalizedAddress}`),
+      title: sanitizeApprovalTitle(`涉及 ${normalizedAddress} 的邮件`),
       description:
-        "List messages in this thread involving the requested address.\n\n" +
-        formatApprovalField("Address", normalizedAddress) + "\n\n" +
-        formatApprovalField("Thread snippet", thread.snippet || "(no snippet)"),
+        "列出此会话中涉及所请求地址的邮件。\n\n" +
+        formatApprovalField("地址", normalizedAddress) + "\n\n" +
+        formatApprovalField("会话摘要", thread.snippet || "（无摘要）"),
     });
 
     if (thread.messages.length > MAX_GMAIL_VISIBLE_THREAD_MESSAGES) {
       throw new Error(
-        `Thread has ${thread.messages.length} messages; messagesVisibleTo() supports at most ` +
-        `${MAX_GMAIL_VISIBLE_THREAD_MESSAGES}.`);
+        `此会话有 ${thread.messages.length} 封邮件；messagesVisibleTo() 最多支持 ` +
+        `${MAX_GMAIL_VISIBLE_THREAD_MESSAGES} 封。`);
     }
 
     const target = normalizedAddress.toLowerCase();
@@ -1590,10 +1588,10 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
       titlePrefix: string,
       intro: string): Promise<void> {
     const info = await this.#ensureInfo();
-    const subject = info.subject || "(no subject)";
+    const subject = info.subject || "（无主题）";
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Read thread before ${titlePrefix.toLowerCase()}: ${subject}`),
-      description: "Read the current Gmail thread metadata needed to prepare this action.",
+      title: sanitizeApprovalTitle(`执行${titlePrefix}前读取会话：${subject}`),
+      description: "读取准备此操作所需的当前 Gmail 会话元数据。",
     });
     await submitGmailAction(
       this.#ctx,
@@ -1602,27 +1600,27 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
         title: sanitizeApprovalTitle(`${titlePrefix}: ${subject}`),
         description:
           `${intro}\n\n` +
-          formatApprovalField("Subject", subject) +
+          formatApprovalField("主题", subject) +
           (info.snippet !== undefined
-            ? `\n\n${formatApprovalField("Snippet", info.snippet)}`
+            ? `\n\n${formatApprovalField("摘要", info.snippet)}`
             : ""),
       });
   }
 
   async archive(): Promise<void> {
-    await this.#submitThreadAction("archive", "Archive", "Remove this thread from the inbox.");
+    await this.#submitThreadAction("archive", "归档", "将此会话从收件箱中移除。");
   }
 
   async trash(): Promise<void> {
-    await this.#submitThreadAction("trash", "Trash", "Move this thread to trash.");
+    await this.#submitThreadAction("trash", "移至垃圾箱", "将此会话移至垃圾箱。");
   }
 
   async markRead(): Promise<void> {
-    await this.#submitThreadAction("markRead", "Mark read", "Mark every message in this thread as read.");
+    await this.#submitThreadAction("markRead", "标为已读", "将此会话中的每封邮件标为已读。");
   }
 
   async markUnread(): Promise<void> {
-    await this.#submitThreadAction("markUnread", "Mark unread", "Mark every message in this thread as unread.");
+    await this.#submitThreadAction("markUnread", "标为未读", "将此会话中的每封邮件标为未读。");
   }
 }
 
@@ -1655,8 +1653,8 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
     const rawInfo = await this.#ctx.gmailApi.parseMessageInfo(raw);
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Message info: ${rawInfo.subject}`),
-      description: `Get metadata for message ${this.#messageId}.`,
+      title: sanitizeApprovalTitle(`邮件信息：${rawInfo.subject}`),
+      description: `获取邮件 ${this.#messageId} 的元数据。`,
     });
 
     // Resolve raw label IDs to GmailLabel objects.
@@ -1674,8 +1672,8 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
 
   async thread(): Promise<GmailThread> {
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: `Get thread for message`,
-      description: `Navigate from message ${this.#messageId} to its parent thread.`,
+      title: `获取邮件所属会话`,
+      description: `从邮件 ${this.#messageId} 转到其所属会话。`,
     });
     return new GmailThreadStub(this.#ctx, this.#threadId);
   }
@@ -1685,8 +1683,8 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
     const { info, content } = await this.#ctx.gmailApi.parseMessage(raw);
 
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: sanitizeApprovalTitle(`Read message: ${info.subject}`),
-      description: `Get body content of message ${this.#messageId}.`,
+      title: sanitizeApprovalTitle(`读取邮件：${info.subject}`),
+      description: `获取邮件 ${this.#messageId} 的正文内容。`,
     });
 
     return content;
@@ -1694,12 +1692,12 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
 
   async reply(body: string): Promise<void> {
     if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`Email body must be at most ${MAX_GMAIL_BODY_BYTES} bytes.`);
+      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
     }
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read message headers to prepare reply",
-      description: "Read the source message headers needed to calculate reply recipients and threading.",
+      title: "读取邮件标头以准备回复",
+      description: "读取计算回复收件人与会话关联所需的源邮件标头。",
     });
     const message = await this.#ctx.gmailApi.buildReplyRaw(original, body, false);
     validateOutboundInput([...message.to, ...message.cc], message.subject, message.body);
@@ -1714,19 +1712,19 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
         sourceWasSent: message.sourceWasSent,
       },
       {
-        title: sanitizeApprovalTitle(`Reply: ${message.subject}`),
-        description: describeOutboundMessage("Send a reply.", message),
+        title: sanitizeApprovalTitle(`回复：${message.subject}`),
+        description: describeOutboundMessage("发送回复。", message),
       });
   }
 
   async replyAll(body: string): Promise<void> {
     if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`Email body must be at most ${MAX_GMAIL_BODY_BYTES} bytes.`);
+      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
     }
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read message headers to prepare reply-all",
-      description: "Read the source message headers needed to calculate reply-all recipients and threading.",
+      title: "读取邮件标头以准备回复全部",
+      description: "读取计算回复全部收件人与会话关联所需的源邮件标头。",
     });
     const message = await this.#ctx.gmailApi.buildReplyRaw(original, body, true);
     validateOutboundInput([...message.to, ...message.cc], message.subject, message.body);
@@ -1741,23 +1739,23 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
         sourceWasSent: message.sourceWasSent,
       },
       {
-        title: sanitizeApprovalTitle(`Reply all: ${message.subject}`),
-        description: describeOutboundMessage("Send a reply to all recipients.", message),
+        title: sanitizeApprovalTitle(`回复全部：${message.subject}`),
+        description: describeOutboundMessage("向所有收件人发送回复。", message),
       });
   }
 
   async forward(to: string[], body?: string): Promise<void> {
     const normalizedTo = normalizeEmailRecipients(to);
     if (normalizedTo.length === 0 || normalizedTo.length > MAX_GMAIL_RECIPIENTS) {
-      throw new Error(`Email must have between 1 and ${MAX_GMAIL_RECIPIENTS} recipients.`);
+      throw new Error(`电子邮件收件人数必须为 1 至 ${MAX_GMAIL_RECIPIENTS} 人。`);
     }
     if (new TextEncoder().encode(body ?? '').byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`Email body must be at most ${MAX_GMAIL_BODY_BYTES} bytes.`);
+      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
     }
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
-      title: "Read message to prepare forward",
-      description: "Read the complete source message and attachment metadata needed to prepare a forward.",
+      title: "读取邮件以准备转发",
+      description: "读取准备转发所需的完整源邮件和附件元数据。",
     });
     const message = await this.#ctx.gmailApi.buildForwardRaw(original, normalizedTo, body);
     validateOutboundInput(message.to, message.subject, message.body);
@@ -1765,9 +1763,9 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
       this.#ctx,
       { type: "forward", sourceMessageId: this.#messageId, to: normalizedTo, body },
       {
-        title: sanitizeApprovalTitle(`Forward: ${message.subject}`),
+        title: sanitizeApprovalTitle(`转发：${message.subject}`),
         description: describeOutboundMessage(
-          "Forward an existing message. The complete original email is attached losslessly.",
+          "转发现有邮件，并无损附上完整原始邮件。",
           message),
       });
   }
@@ -1806,7 +1804,7 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
     let token = await this.#getAccessToken();
     let desc = await getGoogleAccountDescription(token);
     if (!desc.uniqueName) {
-      throw new Error("Google account has no email address");
+      throw new Error("Google 账户没有电子邮件地址");
     }
     this.ctx.storage.kv.put("selfEmail", desc.uniqueName);
     return desc.uniqueName;
@@ -1817,8 +1815,8 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
     if (labelName) {
       return {
         url: `https://mail.google.com/mail/#label/${encodeURIComponent(labelName)}`,
-        title: `Gmail label: ${labelName}`,
-        snippet: `Gmail threads with label: ${labelName}`,
+        title: `Gmail 标签：${labelName}`,
+        snippet: `带有标签 ${labelName} 的 Gmail 会话`,
         suggestedBindingName: "GMAIL_LABEL",
         tsType: "GmailSession",
       };
@@ -1829,7 +1827,7 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
       return {
         url: `https://mail.google.com/mail/#search/${encodeURIComponent(searchQuery)}`,
         title: `Gmail: ${searchQuery}`,
-        snippet: `Gmail threads matching: ${searchQuery}`,
+        snippet: `符合以下条件的 Gmail 会话：${searchQuery}`,
         suggestedBindingName: "GMAIL_SEARCH",
         tsType: "GmailSession",
       };
@@ -1837,8 +1835,8 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
 
     return {
       url: "https://mail.google.com/mail/",
-      title: "Gmail Inbox",
-      snippet: "Your personal Gmail inbox",
+      title: "Gmail 收件箱",
+      snippet: "你的个人 Gmail 收件箱",
       suggestedBindingName: "GMAIL_INBOX",
       tsType: "GmailSession",
     };
@@ -1869,7 +1867,7 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
       const labelMap = await getLabelMap();
       labelId = [...labelMap].find(([, name]) => name === this.ctx.props.labelName)?.[0];
       if (!labelId) {
-        throw new Error(`Gmail label not found: ${this.ctx.props.labelName}`);
+        throw new Error(`未找到 Gmail 标签：${this.ctx.props.labelName}`);
       }
     }
 
@@ -1891,7 +1889,7 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
   async applyAction(actionId: number): Promise<void> {
     const pendingActions = new PendingActionStore<GmailAction>(this.ctx.storage.kv);
     const action = pendingActions.get(actionId);
-    if (!action) throw new Error(`Unknown pending Gmail action: ${actionId}`);
+    if (!action) throw new Error(`未知的待处理 Gmail 操作：${actionId}`);
 
     const selfEmail = await this.#getSelfEmail();
     const gmailApi = new GmailApi(selfEmail, opts => this.#getAccessToken(opts));
@@ -1929,7 +1927,7 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
       }
       default:
         action satisfies never;
-        throw new Error(`unknown action type: ${(action as {type: string}).type}`);
+        throw new Error(`未知的操作类型：${(action as {type: string}).type}`);
     }
 
     pendingActions.remove(actionId);
@@ -1938,14 +1936,14 @@ export class GmailGatekeeperImpl extends DurableObject<Env, GmailGatekeeperImplP
   async rejectAction(actionId: number): Promise<void | {restart?: boolean}> {
     const pendingActions = new PendingActionStore<GmailAction>(this.ctx.storage.kv);
     if (!pendingActions.get(actionId)) {
-      throw new Error(`Unknown pending Gmail action: ${actionId}`);
+      throw new Error(`未知的待处理 Gmail 操作：${actionId}`);
     }
     pendingActions.remove(actionId);
   }
 
   revertAction(action: number):
       Promise<void | {message?: string, canRetry?: boolean, restart?: boolean}> {
-    throw new Error("revert is not implemented");
+    throw new Error("尚未实现撤销");
   }
 
   // Observer tracking — strategy A (private-only). Full access to a mailbox/label/search is too
@@ -2011,7 +2009,7 @@ function previewMarkdown(markdown: string, maxLength: number): string {
 
 function findUniqueMarkdown(markdown: string, oldMarkdown: string, operation: string): number {
   if (oldMarkdown.length === 0) {
-    throw new Error(`${operation}: oldMarkdown must not be empty.`);
+    throw new Error(`${operation}：oldMarkdown 不能为空。`);
   }
 
   let index = markdown.indexOf(oldMarkdown);
@@ -2076,7 +2074,7 @@ function applyGoogleDocActionToMarkdown(markdown: string, action: GoogleDocActio
       return appendMarkdownForSimulation(markdown, action.markdown);
     default:
       action satisfies never;
-      throw new Error(`unknown action type: ${(action as any).type}`);
+      throw new Error(`未知的操作类型：${(action as any).type}`);
   }
 }
 
@@ -2150,7 +2148,7 @@ function materializeGoogleDocAction(snapshot: DocSnapshot, action: GoogleDocActi
 
     default:
       action satisfies never;
-      throw new Error(`unknown action type: ${(action as any).type}`);
+      throw new Error(`未知的操作类型：${(action as any).type}`);
   }
 }
 
@@ -2162,7 +2160,7 @@ type GoogleDocGatekeeperImplProps = {
 // All Google Doc edits (replaceText, appendText, ...) are grouped under a single action kind
 const EDIT_DOCUMENT_ACTION: ActionKind = {
   tag: "editDocument",
-  label: "Document edits",
+  label: "文档编辑",
 };
 
 @validateRpc()
@@ -2186,7 +2184,7 @@ export class GoogleDocGatekeeperImpl
     return {
       url: `https://docs.google.com/document/d/${this.ctx.props.documentId}/edit`,
       title: doc.title,
-      snippet: `Google Doc: ${doc.title}`,
+      snippet: `Google 文档：${doc.title}`,
       suggestedBindingName: "GOOGLE_DOC",
       tsType: "GoogleDocSession",
     };
@@ -2218,7 +2216,7 @@ export class GoogleDocGatekeeperImpl
     let pending = pendingActions.list();
     let pendingIndex = pending.findIndex(({id}) => id === actionId);
     if (pendingIndex === -1) {
-      throw new Error(`Unknown pending Google Doc action: ${actionId}`);
+      throw new Error(`未知的待处理 Google 文档操作：${actionId}`);
     }
     let pendingRecord = pending[pendingIndex];
 
@@ -2232,8 +2230,8 @@ export class GoogleDocGatekeeperImpl
     let firstPending = pending.find(({action}) => !action.invalidatedReason);
     if (firstPending?.id !== actionId) {
       throw new Error(
-        `Google Doc edits must be approved in order. Approve earlier edit ` +
-        `${firstPending?.id} before edit ${actionId}.`);
+        `Google 文档编辑必须按顺序批准。请先批准较早的编辑 ${firstPending?.id}，` +
+        `再批准编辑 ${actionId}。`);
     }
 
     let api = new GoogleDocsApi(opts => this.#getAccessToken(opts));
@@ -2254,7 +2252,7 @@ export class GoogleDocGatekeeperImpl
           pendingActions,
           snapshot.markdown,
           pending.slice(pendingIndex + 1),
-          `Pending Google Doc edits could not be replayed after edit ${actionId} was dropped`);
+          `编辑 ${actionId} 被丢弃后，无法重放待处理的 Google 文档编辑`);
       return;
     }
     if (requests.length > 0) {
@@ -2273,7 +2271,7 @@ export class GoogleDocGatekeeperImpl
           pendingActions,
           refreshedSnapshot.markdown,
           pending.slice(pendingIndex + 1),
-          `Pending Google Doc edits could not be replayed after edit ${actionId} was applied`);
+          `编辑 ${actionId} 应用后，无法重放待处理的 Google 文档编辑`);
     } catch (error) {
       logger.warn("failed to refresh Google Doc simulation after applying action", {
         event: "google.doc.simulation.refresh.failed", error,
@@ -2287,7 +2285,7 @@ export class GoogleDocGatekeeperImpl
     let pending = pendingActions.list();
     let index = pending.findIndex(({id}) => id === actionId);
     if (index === -1) {
-      throw new Error(`Unknown pending Google Doc action: ${actionId}`);
+      throw new Error(`未知的待处理 Google 文档操作：${actionId}`);
     }
 
     let wasActive = !pending[index].action.invalidatedReason;
@@ -2303,7 +2301,7 @@ export class GoogleDocGatekeeperImpl
 
   revertAction(action: number):
       Promise<void | {message?: string, canRetry?: boolean, restart?: boolean}> {
-    throw new Error("revert is not implemented");
+    throw new Error("尚未实现撤销");
   }
 
   // Observer tracking — strategy B (ACL check, single unit). The binding is one document, so we just
@@ -2315,8 +2313,7 @@ export class GoogleDocGatekeeperImpl
     let verifier = user as unknown as Fetcher<GoogleVerifierApi>;
     if (!(await verifier.hasDocAccess(this.ctx.props.documentId))) {
       throw new Error(
-        "This collaborator does not have access to the bound Google Doc, so they cannot be allowed " +
-        "to observe data this workspace read from it.");
+        "此协作者无权访问已绑定的 Google 文档，因此不能查看此工作区从中读取的数据。");
     }
   }
 
@@ -2396,7 +2393,7 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
         this.#pendingActions,
         snapshot.markdown,
         pending,
-        "Pending Google Doc edit could not be replayed against the current document");
+        "无法在当前文档上重放待处理的 Google 文档编辑");
     this.#simulationCache.current = {
       baseRevisionId: snapshot.revisionId,
       pendingFingerprint: googleDocPendingFingerprint(this.#pendingActions.list()),
@@ -2411,8 +2408,8 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
     let {snapshot, pendingActions} = await this.#getSimulatedContent();
 
     await this.#approvalQueue.authorizeObservation({
-      title: "Read Google Doc metadata",
-      description: "Read the title and modification time of the document.",
+      title: "读取 Google 文档元数据",
+      description: "读取文档标题和修改时间。",
     });
 
     // The Docs API doesn't return lastModified directly (that's a Drive API field).
@@ -2421,7 +2418,7 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
     let lastModified = pendingActions.reduce(
         (latest, action) => Math.max(latest, action.submittedAt), snapshot.fetchedAt);
     return {
-      title: snapshot.title ?? "Untitled document",
+      title: snapshot.title ?? "未命名文档",
       lastModified: new Date(lastModified),
     };
   }
@@ -2430,8 +2427,8 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
     let {markdown} = await this.#getSimulatedContent();
 
     await this.#approvalQueue.authorizeObservation({
-      title: "Read Google Doc content",
-      description: "Read the full simulated content of the document as Markdown.",
+      title: "读取 Google 文档内容",
+      description: "以 Markdown 读取文档的完整模拟内容。",
     });
 
     return markdown;
@@ -2461,11 +2458,11 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
 
     try {
       await this.#approvalQueue.submitAction(actionId, {
-        title: "Edit Google Doc",
+        title: "编辑 Google 文档",
         description:
-          `Replace text in the document.\n\n` +
-          `**Old:** ${oldPreview}\n\n` +
-          `**New:** ${newPreview}`,
+          `替换文档中的文本。\n\n` +
+          `**原文本：** ${oldPreview}\n\n` +
+          `**新文本：** ${newPreview}`,
         implementsRevert: false,
         // Group all document edits under one tag
         actionKind: EDIT_DOCUMENT_ACTION,
@@ -2495,8 +2492,8 @@ class GoogleDocSessionImpl extends RpcTarget implements GoogleDocSession {
 
     try {
       await this.#approvalQueue.submitAction(actionId, {
-        title: "Append to Google Doc",
-        description: `Append content to the end of the document:\n\n${preview}`,
+        title: "追加到 Google 文档",
+        description: `将内容追加到文档末尾：\n\n${preview}`,
         implementsRevert: false,
         // Same "editDocument" tag as replaceText
         actionKind: EDIT_DOCUMENT_ACTION,
@@ -2540,7 +2537,7 @@ export class GoogleSheetsGatekeeperImpl
     return {
       url: `https://docs.google.com/spreadsheets/d/${this.ctx.props.spreadsheetId}/edit`,
       title: spreadsheet.title,
-      snippet: `Google Spreadsheet: ${spreadsheet.title} (read-only)`,
+      snippet: `Google 电子表格：${spreadsheet.title}（只读）`,
       suggestedBindingName: "GOOGLE_SHEET",
       tsType: "GoogleSpreadsheetSession",
     };
@@ -2563,13 +2560,13 @@ export class GoogleSheetsGatekeeperImpl
 
   // Read-only — no side-effecting actions.
   async applyAction(_action: number): Promise<void> {
-    throw new Error("Google Sheets is read-only and implements no actions.");
+    throw new Error("Google Sheets 为只读，不提供任何操作。");
   }
   async rejectAction(_action: number): Promise<void> {
-    throw new Error("Google Sheets is read-only and implements no actions.");
+    throw new Error("Google Sheets 为只读，不提供任何操作。");
   }
   revertAction(_action: number): Promise<void> {
-    throw new Error("Google Sheets is read-only and implements no actions.");
+    throw new Error("Google Sheets 为只读，不提供任何操作。");
   }
 
   // Observer tracking — strategy B (ACL check, single unit). Google applies sharing permissions at
@@ -2579,8 +2576,7 @@ export class GoogleSheetsGatekeeperImpl
     let verifier = user as unknown as Fetcher<GoogleVerifierApi>;
     if (!(await verifier.hasSpreadsheetAccess(this.ctx.props.spreadsheetId))) {
       throw new Error(
-        "This collaborator does not have access to the bound Google spreadsheet, so they cannot " +
-        "observe data this workspace read from it.",
+        "此协作者无权访问已绑定的 Google 电子表格，因此不能查看此工作区从中读取的数据。",
       );
     }
   }
@@ -2612,10 +2608,9 @@ class GoogleSpreadsheetSessionImpl extends RpcTarget implements GoogleSpreadshee
   async getSpreadsheet(): Promise<SpreadsheetInfo> {
     let spreadsheet = await this.#api.getSpreadsheet(this.#spreadsheetId);
     await this.#approvalQueue.authorizeObservation({
-      title: "Read Google spreadsheet metadata",
+      title: "读取 Google 电子表格元数据",
       description:
-        `Read metadata for "${spreadsheet.title}", including its ${spreadsheet.sheets.length} ` +
-        "worksheet(s).",
+        `读取“${spreadsheet.title}”的元数据，包括其中 ${spreadsheet.sheets.length} 个工作表。`,
     });
     return spreadsheet;
   }
@@ -2647,11 +2642,10 @@ class GoogleSpreadsheetSessionImpl extends RpcTarget implements GoogleSpreadshee
     );
     await this.#approvalQueue.authorizeObservation({
       title: result.length === 1
-        ? `Read Google Sheets range ${result[0].range}`
-        : `Read ${result.length} Google Sheets ranges`,
+        ? `读取 Google Sheets 范围 ${result[0].range}`
+        : `读取 ${result.length} 个 Google Sheets 范围`,
       description:
-        `Read ${cellCount.toLocaleString()} cell(s) from ${result.length} bounded range(s) in ` +
-        "the connected spreadsheet.",
+        `从已连接电子表格的 ${result.length} 个限定范围中读取 ${cellCount.toLocaleString()} 个单元格。`,
     });
     return result;
   }
@@ -2770,17 +2764,17 @@ function priorCalendarPatch(oldEvent: CalendarEvent, patch: CalendarEventPatch):
 
 function summarizeCalendarPatch(patch: CalendarEventPatch): string {
   let parts: string[] = [];
-  if (patch.title !== undefined) parts.push(`title \u2192 "${patch.title}"`);
-  if (patch.start !== undefined) parts.push(`start \u2192 ${previewCalendarTime(patch.start)}`);
-  if (patch.end !== undefined) parts.push(`end \u2192 ${previewCalendarTime(patch.end)}`);
-  if (patch.location !== undefined) parts.push(`location \u2192 "${patch.location}"`);
-  if (patch.description !== undefined) parts.push("description");
+  if (patch.title !== undefined) parts.push(`标题 → “${patch.title}”`);
+  if (patch.start !== undefined) parts.push(`开始 → ${previewCalendarTime(patch.start)}`);
+  if (patch.end !== undefined) parts.push(`结束 → ${previewCalendarTime(patch.end)}`);
+  if (patch.location !== undefined) parts.push(`地点 → “${patch.location}”`);
+  if (patch.description !== undefined) parts.push("描述");
   if (patch.attendees !== undefined) {
-    parts.push(`attendees \u2192 ${patch.attendees.map(a => a.email).join(", ") || "(none)"}`);
+    parts.push(`参与者 → ${patch.attendees.map(a => a.email).join(", ") || "（无）"}`);
   }
-  if (patch.transparency !== undefined) parts.push(`transparency \u2192 ${patch.transparency}`);
-  if (patch.visibility !== undefined) parts.push(`visibility \u2192 ${patch.visibility}`);
-  return parts.length ? parts.join("; ") : "(no changes)";
+  if (patch.transparency !== undefined) parts.push(`透明度 → ${patch.transparency}`);
+  if (patch.visibility !== undefined) parts.push(`可见性 → ${patch.visibility}`);
+  return parts.length ? parts.join("；") : "（无更改）";
 }
 
 function applyPendingCalendarActions(
@@ -2816,16 +2810,16 @@ function applyPendingCalendarActions(
 
 function validateEventTimes(start: CalendarTime, end: CalendarTime): void {
   if (start.kind !== end.kind) {
-    throw new Error("Event start and end must both be all-day (date) or both be timed (dateTime).");
+    throw new Error("事件开始和结束必须同时为全天（date）或同时为定时（dateTime）。");
   }
   let startMs = start.kind === "date" ? Date.parse(start.date) : start.dateTime.valueOf();
   let endMs = end.kind === "date" ? Date.parse(end.date) : end.dateTime.valueOf();
-  if (!(endMs > startMs)) throw new Error("Event end must be after start.");
+  if (!(endMs > startMs)) throw new Error("事件结束时间必须晚于开始时间。");
 }
 
 function summarizePeople(people: string[]): string {
   if (people.length <= 5) return people.join(", ");
-  return `${people.slice(0, 5).join(", ")}, and ${people.length - 5} more`;
+  return `${people.slice(0, 5).join(", ")}，另有 ${people.length - 5} 个`;
 }
 
 export class GoogleCalendarGatekeeperImpl
@@ -2851,12 +2845,12 @@ export class GoogleCalendarGatekeeperImpl
     let api = new GoogleCalendarApi(opts => this.#getAccessToken(opts));
     let calendar = await api.getCalendar(this.ctx.props.calendarId);
     let availability = this.ctx.props.availabilityMode === "allVisible"
-        ? " Availability lookup covers all calendars visible to the account."
-        : " Availability lookup is limited to this calendar.";
+        ? "空闲状态查询涵盖此账户可见的所有日历。"
+        : "空闲状态查询仅限此日历。";
     return {
       url: `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(this.ctx.props.calendarId)}`,
-      title: `Calendar: ${calendar.summary}`,
-      snippet: `Google Calendar: ${calendar.summary}.${availability}`,
+      title: `日历：${calendar.summary}`,
+      snippet: `Google 日历：${calendar.summary}。${availability}`,
       suggestedBindingName: "GOOGLE_CALENDAR",
       tsType: "GoogleCalendarSession",
     };
@@ -2888,7 +2882,7 @@ export class GoogleCalendarGatekeeperImpl
     let pendingActions = new PendingActionStore<GoogleCalendarAction>(this.ctx.storage.kv);
     let action = pendingActions.get(actionId);
     if (!action) {
-      throw new Error(`Unknown pending Google Calendar action: ${actionId}`);
+      throw new Error(`未知的待处理 Google Calendar 操作：${actionId}`);
     }
 
     let api = new GoogleCalendarApi(opts => this.#getAccessToken(opts));
@@ -2922,7 +2916,7 @@ export class GoogleCalendarGatekeeperImpl
       }
       default: {
         const _exhaustive: never = action;
-        throw new Error(`unknown action type: ${String(_exhaustive)}`);
+        throw new Error(`未知的操作类型：${String(_exhaustive)}`);
       }
     }
   }
@@ -2938,8 +2932,7 @@ export class GoogleCalendarGatekeeperImpl
         this.ctx.storage.kv.get<GoogleCalendarRevertInfo>(this.#revertKey(actionId));
     if (!revertInfo) {
       return {
-        message: "This Google Calendar action can no longer be reverted automatically. " +
-            "Undo it manually from Google Calendar.",
+        message: "此 Google Calendar 操作已无法自动撤销，请在 Google Calendar 中手动撤销。",
       };
     }
 
@@ -3031,8 +3024,7 @@ export class GoogleCalendarGatekeeperImpl
     let verifier = user as unknown as Fetcher<GoogleVerifierApi>;
     if (!(await verifier.hasCalendarWriterAccess(this.ctx.props.calendarId))) {
       throw new Error(
-        "This collaborator does not have writer access to the bound Google Calendar, so they " +
-        "cannot be allowed to observe its event details.");
+        "此协作者没有已绑定 Google Calendar 的写入权限，因此不能查看其中的事件详情。");
     }
     let checked = new Set<string>();
     while (true) {
@@ -3049,8 +3041,8 @@ export class GoogleCalendarGatekeeperImpl
       for (let [index, calendarId] of calendarIds.entries()) {
         if (!availabilityAccess[index]) {
           throw new Error(
-            `This collaborator cannot see free/busy availability for ${calendarId}, whose ` +
-            "availability this workspace has read, so they cannot be allowed to observe it.");
+            `此协作者无法查看 ${calendarId} 的空闲/忙碌状态，而此工作区已读取该日历的可用时间，` +
+            "因此不能允许其查看这些数据。");
         }
       }
       for (let calendarId of calendarIds) checked.add(calendarId);
@@ -3094,8 +3086,8 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
   async getCalendar(): Promise<GoogleCalendarInfo> {
     let calendar = await this.#api.getCalendar(this.#calendarId);
     await this.#approvalQueue.authorizeObservation({
-      title: "Read Google Calendar metadata",
-      description: `Read metadata for Google Calendar ${calendar.summary} (${calendar.id}).`,
+      title: "读取 Google Calendar 元数据",
+      description: `读取 Google Calendar ${calendar.summary}（${calendar.id}）的元数据。`,
     });
     return calendar;
   }
@@ -3106,11 +3098,11 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
     let simulated = applyPendingCalendarActions(events, this.#pendingActions.list(), opts);
 
     await this.#approvalQueue.authorizeObservation({
-      title: "List Google Calendar events",
+      title: "列出 Google Calendar 事件",
       description:
-          `List ${simulated.length} event(s) on calendar ${this.#calendarId} from ` +
-          `${opts.timeMin.toISOString()} to ${opts.timeMax.toISOString()}.` +
-          (opts.includeDescriptions ? " Event descriptions are included." : ""),
+          `列出日历 ${this.#calendarId} 从 ${opts.timeMin.toISOString()} 到 ` +
+          `${opts.timeMax.toISOString()} 的 ${simulated.length} 个事件。` +
+          (opts.includeDescriptions ? "包含事件描述。" : ""),
     });
 
     return simulated;
@@ -3124,19 +3116,18 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
   }): Promise<PersonAvailability[]> {
     validateCalendarTimeWindow(opts.timeMin, opts.timeMax, 90);
     let people = [...new Set(opts.people.map(person => person.trim()).filter(Boolean))];
-    if (people.length === 0) throw new Error("At least one person or calendar is required.");
-    if (people.length > 50) throw new Error("At most 50 people/calendars can be checked at once.");
+    if (people.length === 0) throw new Error("至少需要一个人员或日历。");
+    if (people.length > 50) throw new Error("一次最多可检查 50 个人员/日历。");
     if (people.includes("primary")) {
       throw new Error(
-        "Availability checks must use a stable calendar ID or email address, not the " +
-        "account-relative \"primary\" alias.");
+        "可用时间检查必须使用稳定的日历 ID 或电子邮件地址，不能使用相对于账户的“primary”别名。" );
     }
 
     let foreign = people.filter(id => id !== this.#calendarId);
     if (foreign.length > 0 && this.#availabilityMode === "thisCalendar") {
       throw new Error(
-          "This connection only allows availability for the bound calendar. Reconnect with " +
-          "\"All calendars visible to me\" to check other calendars' availability.");
+          "此连接仅允许检查已绑定日历的可用时间。请重新连接并选择“我可见的所有日历”，" +
+          "以检查其他日历的可用时间。");
     }
 
     let availability = await this.#api.freeBusy({...opts, people});
@@ -3148,11 +3139,10 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
         : {pendingSets: [], commit() {}};
 
     await this.#approvalQueue.authorizeObservation({
-      title: "Check Google Calendar availability",
+      title: "检查 Google Calendar 可用时间",
       description:
-          `Check free/busy availability for ${summarizePeople(people)} from ` +
-          `${opts.timeMin.toISOString()} to ${opts.timeMax.toISOString()}. ` +
-          "Only busy time blocks are returned; event details are not read.",
+          `检查 ${summarizePeople(people)} 从 ${opts.timeMin.toISOString()} 到 ` +
+          `${opts.timeMax.toISOString()} 的空闲/忙碌状态。仅返回忙碌时间段，不读取事件详情。`,
       excludeObservers: check.excludeObservers,
     });
     check.commit();
@@ -3164,7 +3154,7 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
     event: CalendarEventDraft,
     opts?: { sendUpdates?: CalendarSendUpdates },
   ): Promise<void> {
-    if (!event.title.trim()) throw new Error("Event title is required.");
+    if (!event.title.trim()) throw new Error("事件标题为必填项。");
     validateEventTimes(event.start, event.end);
     let action: GoogleCalendarAction = {
       type: "createEvent",
@@ -3177,12 +3167,12 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
 
     try {
       await this.#approvalQueue.submitAction(actionId, {
-        title: `Create calendar event: ${event.title}`,
+        title: `创建日历事件：${event.title}`,
         description:
-            `Create event **${event.title}** on calendar ${this.#calendarId} from ` +
-            `${previewCalendarTime(event.start)} to ${previewCalendarTime(event.end)}.` +
-            (event.attendees?.length ? ` Attendees: ${event.attendees.map(a => a.email).join(", ")}.` : "") +
-            ` Send updates: ${action.sendUpdates}.`,
+            `在日历 ${this.#calendarId} 上创建事件 **${event.title}**，时间为 ` +
+            `${previewCalendarTime(event.start)} 至 ${previewCalendarTime(event.end)}。` +
+            (event.attendees?.length ? `参与者：${event.attendees.map(a => a.email).join(", ")}。` : "") +
+            `发送更新：${action.sendUpdates}。`,
         implementsRevert: true,
       });
     } catch (error) {
@@ -3196,8 +3186,8 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
     patch: CalendarEventPatch,
     opts?: { sendUpdates?: CalendarSendUpdates },
   ): Promise<void> {
-    if (!eventId.trim()) throw new Error("eventId is required.");
-    if (Object.keys(patch).length === 0) throw new Error("patch must change at least one field.");
+    if (!eventId.trim()) throw new Error("eventId 为必填项。");
+    if (Object.keys(patch).length === 0) throw new Error("patch 必须至少修改一个字段。");
     if (patch.start !== undefined || patch.end !== undefined) {
       // Validate the resulting start/end pair. If only one side is patched, fetch the event to
       // get the other side.
@@ -3222,11 +3212,10 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
 
     try {
       await this.#approvalQueue.submitAction(actionId, {
-        title: `Update calendar event ${eventId}`,
+        title: `更新日历事件 ${eventId}`,
         description:
-            `Update event ${eventId} on calendar ${this.#calendarId}: ` +
-            `${summarizeCalendarPatch(patch)}. ` +
-            `Send updates: ${action.sendUpdates}.`,
+            `更新日历 ${this.#calendarId} 上的事件 ${eventId}：` +
+            `${summarizeCalendarPatch(patch)}。发送更新：${action.sendUpdates}。`,
         implementsRevert: true,
       });
     } catch (error) {
@@ -3274,14 +3263,14 @@ export class BigQueryGatekeeperImpl
     let label = t ? `${p}.${d}.${t}` : d ? `${p}.${d}` : p ?? null;
     return {
       url: `https://${BIGQUERY_HOST}${path}`,
-      title: label ? `BigQuery (${label})` : "BigQuery",
+      title: label ? `BigQuery（${label}）` : "BigQuery",
       snippet: t
-          ? `Query BigQuery table "${p}.${d}.${t}" (read-only)`
+          ? `查询 BigQuery 表“${p}.${d}.${t}”（只读）`
           : d
-              ? `Query BigQuery dataset "${p}.${d}" (read-only)`
+              ? `查询 BigQuery 数据集“${p}.${d}”（只读）`
               : p
-                  ? `Query BigQuery datasets in project "${p}" (read-only)`
-                  : "Browse BigQuery projects and datasets (read-only)",
+                  ? `查询项目“${p}”中的 BigQuery 数据集（只读）`
+                  : "浏览 BigQuery 项目和数据集（只读）",
       suggestedBindingName: "BIGQUERY",
       tsType: "BigQuerySession",
     };
@@ -3311,7 +3300,7 @@ export class BigQueryGatekeeperImpl
   async applyAction(_action: number): Promise<void> {}
   async rejectAction(_action: number): Promise<void> {}
   revertAction(_action: number): Promise<void> {
-    throw new Error("BigQuery gatekeeper has no writable actions to revert");
+    throw new Error("BigQuery Gatekeeper 没有可撤销的写入操作");
   }
 
   // -------------------------------------------------------------------------
@@ -3405,9 +3394,8 @@ export class BigQueryGatekeeperImpl
       for (let [index, d] of datasets.entries()) {
         if (!access[index]) {
           throw new Error(
-            `This collaborator does not have access to the BigQuery dataset ` +
-            `\`${d.projectId}.${d.datasetId}\`, whose data this workspace has read, so they cannot be ` +
-            `allowed to observe it.`);
+            `此协作者无权访问 BigQuery 数据集 \`${d.projectId}.${d.datasetId}\`，` +
+            `而此工作区已读取其中的数据，因此不能允许其查看这些数据。`);
         }
         checked.add(`${d.projectId}/${d.datasetId}`);
       }
@@ -3482,16 +3470,16 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   #billingProject(): string {
     if (this.#scopedProjectId) return this.#scopedProjectId;
     throw new Error(
-      "This session is not scoped to a project. Connect to a specific BigQuery project " +
-      "(e.g. https://bigquery.googleapis.com/my-project) to run queries.");
+      "此会话未限定到项目。请连接到特定 BigQuery 项目（例如 " +
+      "https://bigquery.googleapis.com/my-project）后再运行查询。");
   }
 
   #effectiveDataset(opts: { defaultDataset?: string } | undefined): string | undefined {
     if (this.#scopedDatasetId) {
       if (opts?.defaultDataset && opts.defaultDataset !== this.#scopedDatasetId) {
         throw new Error(
-          `Cannot override defaultDataset to "${opts.defaultDataset}" — this connection is ` +
-          `scoped to "${this.#scopedDatasetId}".`);
+          `无法将 defaultDataset 覆盖为“${opts.defaultDataset}”；` +
+          `此连接限定到“${this.#scopedDatasetId}”。`);
       }
       return this.#scopedDatasetId;
     }
@@ -3502,7 +3490,7 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   // and observing which error class fires (out-of-scope vs. not-found vs. DML-rejected).
   // The data is protected; the namespace is partly leaky.
   #checkScopedTables(referenced: string[]): void {
-    if (!this.#scopedProjectId) throw new Error("BigQuery queries require a project-scoped binding.");
+    if (!this.#scopedProjectId) throw new Error("BigQuery 查询需要限定到项目的绑定。");
     // Empty referencedTables is fine for project-only scope (e.g. `SELECT 1`,
     // `SELECT CURRENT_TIMESTAMP()`) — there are no tables to scope-check. Only require
     // at least one referenced table when the binding narrows to a specific dataset or
@@ -3510,31 +3498,29 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     if (referenced.length === 0) {
       if (this.#scopedDatasetId || this.#scopedTableId) {
         throw new Error(
-          "BigQuery dry run did not report any referenced tables; refusing to execute because " +
-          "resource scope cannot be verified.");
+          "BigQuery 试运行未报告任何引用的表；由于无法验证资源范围，已拒绝执行。");
       }
       return;
     }
     for (let ref of referenced) {
       let parts = ref.split(".");
       if (parts.length !== 3) {
-        throw new Error(`Could not parse referenced table "${ref}".`);
+        throw new Error(`无法解析引用的表“${ref}”。`);
       }
       let [proj, ds, tbl] = parts;
       if (proj !== this.#scopedProjectId) {
         throw new Error(
-          `Query references project "${proj}" but this connection is scoped to ` +
-          `"${this.#scopedProjectId}".`);
+          `查询引用了项目“${proj}”，但此连接限定到“${this.#scopedProjectId}”。`);
       }
       if (this.#scopedDatasetId && ds !== this.#scopedDatasetId) {
         throw new Error(
-          `Query references dataset "${proj}.${ds}" but this connection is scoped to ` +
-          `"${this.#scopedProjectId}.${this.#scopedDatasetId}".`);
+          `查询引用了数据集“${proj}.${ds}”，但此连接限定到` +
+          `“${this.#scopedProjectId}.${this.#scopedDatasetId}”。`);
       }
       if (this.#scopedTableId && tbl !== this.#scopedTableId) {
         throw new Error(
-          `Query references table "${ref}" but this connection is scoped to ` +
-          `"${this.#scopedProjectId}.${this.#scopedDatasetId}.${this.#scopedTableId}".`);
+          `查询引用了表“${ref}”，但此连接限定到` +
+          `“${this.#scopedProjectId}.${this.#scopedDatasetId}.${this.#scopedTableId}”。`);
       }
     }
   }
@@ -3547,13 +3533,13 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     referencedRoutines?: string[];
   }): void {
     if (estimate.hasScript || estimate.statementType === "SCRIPT") {
-      throw new Error("Only single-statement read-only SELECT queries are allowed.");
+      throw new Error("仅允许单条只读 SELECT 查询。");
     }
     if (estimate.ddlOperationPerformed) {
-      throw new Error("DDL statements are not allowed.");
+      throw new Error("不允许 DDL 语句。");
     }
     if (estimate.hasDmlStats) {
-      throw new Error("DML statements are not allowed.");
+      throw new Error("不允许 DML 语句。");
     }
     // Allowlist (fail-closed): require an explicit SELECT statementType. BigQuery's dry-run
     // doesn't always populate statementType for every form, so a missing value should be
@@ -3561,16 +3547,15 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     // guards above didn't trip.
     if (!estimate.statementType) {
       throw new Error(
-        "BigQuery dry run did not report a statement type; refusing to execute.");
+        "BigQuery 试运行未报告语句类型，已拒绝执行。");
     }
     if (estimate.statementType !== "SELECT") {
       throw new Error(
-        `Only read-only SELECT queries are allowed (got ${estimate.statementType}).`);
+        `仅允许只读 SELECT 查询（收到 ${estimate.statementType}）。`);
     }
     if (estimate.referencedRoutines && estimate.referencedRoutines.length > 0) {
       throw new Error(
-        "Queries that reference routines are not allowed because their data access cannot " +
-        "be scoped by referencedTables.");
+        "不允许引用例程的查询，因为无法通过 referencedTables 限定其数据访问范围。");
     }
   }
 
@@ -3592,22 +3577,21 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     this.#checkScopedTables(estimate.referencedTables);
     if (estimate.bytesProcessed > maxBytes) {
       throw new Error(
-        `Query would process ${(estimate.bytesProcessed / 1e9).toFixed(2)} GB, exceeding the ` +
-        `limit of ${(maxBytes / 1e9).toFixed(2)} GB. Pass a higher \`maximumBytesBilled\` to ` +
-        `override.`);
+        `查询将处理 ${(estimate.bytesProcessed / 1e9).toFixed(2)} GB，超过 ` +
+        `${(maxBytes / 1e9).toFixed(2)} GB 的限制。可传入更高的 \`maximumBytesBilled\` 覆盖此限制。`);
     }
 
     let preview = sql.replace(/\s+/g, " ").trim().slice(0, 200);
     await this.#authorizeDatasets(
       BigQuerySessionImpl.#datasetsFromReferencedTables(estimate.referencedTables), {
-      title: `BigQuery query: ${preview}`,
+      title: `BigQuery 查询：${preview}`,
       description:
-        `SQL preview: \`${preview}\`${sql.length > preview.length ? "..." : ""}\n` +
-        (defaultDataset ? `Default dataset: \`${defaultDataset}\`\n` : "") +
-        `Billing project: \`${billingProject}\`\n` +
-        `Referenced tables: ${estimate.referencedTables.join(", ")}\n` +
-        `Estimated bytes processed: ${estimate.bytesProcessed.toLocaleString()}\n` +
-        `Maximum bytes billed: ${maxBytes.toLocaleString()}.`,
+        `SQL 预览：\`${preview}\`${sql.length > preview.length ? "..." : ""}\n` +
+        (defaultDataset ? `默认数据集：\`${defaultDataset}\`\n` : "") +
+        `计费项目：\`${billingProject}\`\n` +
+        `引用的表：${estimate.referencedTables.join(", ")}\n` +
+        `预计处理字节数：${estimate.bytesProcessed.toLocaleString()}\n` +
+        `最大计费字节数：${maxBytes.toLocaleString()}。`,
       prohibitAllSharing: true,
     });
 
@@ -3636,10 +3620,10 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     let preview = sql.replace(/\s+/g, " ").trim().slice(0, 100);
     await this.#authorizeDatasets(
       BigQuerySessionImpl.#datasetsFromReferencedTables(estimate.referencedTables), {
-      title: `BigQuery dry run: ${preview}`,
+      title: `BigQuery 试运行：${preview}`,
       description:
-        `Estimated bytes processed: ${estimate.bytesProcessed.toLocaleString()}\n` +
-        `Referenced tables: ${estimate.referencedTables.join(", ") || "(none)"}`,
+        `预计处理字节数：${estimate.bytesProcessed.toLocaleString()}\n` +
+        `引用的表：${estimate.referencedTables.join(", ") || "（无）"}`,
       prohibitAllSharing: true,
     });
 
@@ -3650,8 +3634,8 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     let result: BigQueryProject = { projectId: this.#scopedProjectId! };
     // Echoes the project id the Gadget was bound to — reveals no dataset data, so no attribution.
     await this.#authorizeDatasets([], {
-      title: "Get BigQuery project",
-      description: `Returned the scoped project: \`${this.#scopedProjectId}\`.`,
+      title: "获取 BigQuery 项目",
+      description: `返回限定范围的项目：\`${this.#scopedProjectId}\`。`,
       prohibitAllSharing: true,
     });
     return result;
@@ -3660,19 +3644,18 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   async listDatasets(projectId?: string): Promise<BigQueryDataset[]> {
     if (this.#scopedProjectId && projectId && projectId !== this.#scopedProjectId) {
       throw new Error(
-        `Cannot list datasets in "${projectId}" — this connection is scoped to ` +
-        `"${this.#scopedProjectId}".`);
+        `无法列出“${projectId}”中的数据集；此连接限定到“${this.#scopedProjectId}”。`);
     }
     let p = this.#scopedProjectId ?? projectId;
     if (!p) {
-      throw new Error("listDatasets requires a projectId when the session is unscoped.");
+      throw new Error("会话未限定范围时，listDatasets 需要 projectId。");
     }
 
     if (this.#scopedDatasetId) {
       let dataset = await this.#api.getDataset(p, this.#scopedDatasetId);
       await this.#authorizeDatasets([{ projectId: p, datasetId: this.#scopedDatasetId }], {
-        title: `List datasets in ${p}`,
-        description: `Returned scoped dataset \`${p}.${this.#scopedDatasetId}\` (1 dataset).`,
+        title: `列出 ${p} 中的数据集`,
+        description: `返回限定范围的数据集 \`${p}.${this.#scopedDatasetId}\`（1 个数据集）。`,
         prohibitAllSharing: true,
       });
       return [dataset];
@@ -3681,8 +3664,8 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     let result = await this.#api.listDatasets(p);
     // Listing reveals each dataset's existence/name, so attribute to all of them.
     await this.#authorizeDatasets(result.map(ds => ({ projectId: p, datasetId: ds.datasetId })), {
-      title: `List datasets in ${p}`,
-      description: `Listed ${result.length} dataset(s) in \`${p}\`.`,
+      title: `列出 ${p} 中的数据集`,
+      description: `列出 \`${p}\` 中的 ${result.length} 个数据集。`,
       prohibitAllSharing: true,
     });
     return result;
@@ -3691,24 +3674,22 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   async listTables(datasetId?: string, projectId?: string): Promise<BigQueryTable[]> {
     if (this.#scopedProjectId && projectId && projectId !== this.#scopedProjectId) {
       throw new Error(
-        `Cannot list tables in project "${projectId}" — this connection is scoped to ` +
-        `"${this.#scopedProjectId}".`);
+        `无法列出项目“${projectId}”中的表；此连接限定到“${this.#scopedProjectId}”。`);
     }
     if (this.#scopedDatasetId && datasetId && datasetId !== this.#scopedDatasetId) {
       throw new Error(
-        `Cannot list tables in dataset "${datasetId}" — this connection is scoped to ` +
-        `"${this.#scopedDatasetId}".`);
+        `无法列出数据集“${datasetId}”中的表；此连接限定到“${this.#scopedDatasetId}”。`);
     }
     let p = this.#scopedProjectId ?? projectId;
     let d = this.#scopedDatasetId ?? datasetId;
-    if (!p) throw new Error("listTables requires a projectId when the session is unscoped.");
-    if (!d) throw new Error("listTables requires a datasetId when the session is unscoped.");
+    if (!p) throw new Error("会话未限定范围时，listTables 需要 projectId。");
+    if (!d) throw new Error("会话未限定范围时，listTables 需要 datasetId。");
 
     if (this.#scopedTableId) {
       let { table } = await this.#api.getTable(p, d, this.#scopedTableId);
       await this.#authorizeDatasets([{ projectId: p, datasetId: d }], {
-        title: `List tables in ${p}.${d}`,
-        description: `Returned scoped table \`${p}.${d}.${this.#scopedTableId}\` (1 table).`,
+        title: `列出 ${p}.${d} 中的表`,
+        description: `返回限定范围的表 \`${p}.${d}.${this.#scopedTableId}\`（1 张表）。`,
         prohibitAllSharing: true,
       });
       return [table];
@@ -3716,8 +3697,8 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
 
     let result = await this.#api.listTables(p, d);
     await this.#authorizeDatasets([{ projectId: p, datasetId: d }], {
-      title: `List tables in ${p}.${d}`,
-      description: `Listed ${result.length} table(s) in \`${p}.${d}\`.`,
+      title: `列出 ${p}.${d} 中的表`,
+      description: `列出 \`${p}.${d}\` 中的 ${result.length} 张表。`,
       prohibitAllSharing: true,
     });
     return result;
@@ -3730,31 +3711,28 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   ): Promise<{ table: BigQueryTable; schema: BigQueryField[] }> {
     if (this.#scopedProjectId && projectId && projectId !== this.#scopedProjectId) {
       throw new Error(
-        `Cannot describe table in project "${projectId}" — this connection is scoped to ` +
-        `"${this.#scopedProjectId}".`);
+        `无法描述项目“${projectId}”中的表；此连接限定到“${this.#scopedProjectId}”。`);
     }
     if (this.#scopedDatasetId && datasetId && datasetId !== this.#scopedDatasetId) {
       throw new Error(
-        `Cannot describe table in dataset "${datasetId}" — this connection is scoped to ` +
-        `"${this.#scopedDatasetId}".`);
+        `无法描述数据集“${datasetId}”中的表；此连接限定到“${this.#scopedDatasetId}”。`);
     }
     if (this.#scopedTableId && tableId && tableId !== this.#scopedTableId) {
       throw new Error(
-        `Cannot describe table "${tableId}" — this connection is scoped to ` +
-        `"${this.#scopedTableId}".`);
+        `无法描述表“${tableId}”；此连接限定到“${this.#scopedTableId}”。`);
     }
     let p = this.#scopedProjectId ?? projectId;
     let d = this.#scopedDatasetId ?? datasetId;
     let t = this.#scopedTableId ?? tableId;
-    if (!p) throw new Error("describeTable requires a projectId when the session is unscoped.");
-    if (!d) throw new Error("describeTable requires a datasetId when the session is unscoped.");
-    if (!t) throw new Error("describeTable requires a tableId when the session is unscoped.");
+    if (!p) throw new Error("会话未限定范围时，describeTable 需要 projectId。");
+    if (!d) throw new Error("会话未限定范围时，describeTable 需要 datasetId。");
+    if (!t) throw new Error("会话未限定范围时，describeTable 需要 tableId。");
 
     let result = await this.#api.getTable(p, d, t);
     await this.#authorizeDatasets([{ projectId: p, datasetId: d }], {
-      title: `Describe ${p}.${d}.${t}`,
+      title: `描述 ${p}.${d}.${t}`,
       description:
-        `Described table \`${p}.${d}.${t}\` (${result.schema.length} columns).`,
+        `描述表 \`${p}.${d}.${t}\`（${result.schema.length} 列）。`,
       prohibitAllSharing: true,
     });
     return result;

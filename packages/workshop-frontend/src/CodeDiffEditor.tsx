@@ -21,6 +21,13 @@ interface CodeDiffEditorProps {
 
 type DiffLayoutPreference = 'stacked' | 'split'
 
+const DIFF_STATUS_LABELS: Record<DiffModel['status'], string> = {
+  Added: '已添加',
+  Deleted: '已删除',
+  Modified: '已修改',
+  Unchanged: '未更改',
+}
+
 const DIFF_LAYOUT_STORAGE_KEY = 'gadgets:workshop:diffLayout'
 const SPLIT_DIFF_MIN_WIDTH = 1100
 
@@ -407,7 +414,7 @@ export default function CodeDiffEditor({
         className="flex items-center justify-center bg-kumo-base text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-subtle"
         style={{ height }}
       >
-        {!filename ? 'Select a file to view changes' : 'Loading diff...'}
+        {!filename ? '选择一个文件以查看更改' : '正在加载差异…'}
       </div>
     )
   }
@@ -423,8 +430,8 @@ export default function CodeDiffEditor({
             <button
               type="button"
               className={layoutButtonClass(diffLayoutPreference === 'stacked')}
-              title="Stacked diff"
-              aria-label="Use stacked diff layout"
+              title="上下对比"
+              aria-label="使用上下对比布局"
               aria-pressed={diffLayoutPreference === 'stacked'}
               onClick={() => setDiffLayoutPreference('stacked')}
             >
@@ -433,8 +440,8 @@ export default function CodeDiffEditor({
             <button
               type="button"
               className={layoutButtonClass(diffLayoutPreference === 'split' && canSplitDiff, !canSplitDiff)}
-              title={canSplitDiff ? 'Split diff' : 'Split diff needs more space'}
-              aria-label="Use split diff layout"
+              title={canSplitDiff ? '并排对比' : '需要更大空间才能并排对比'}
+              aria-label="使用并排对比布局"
               aria-pressed={diffLayoutPreference === 'split' && canSplitDiff}
               disabled={!canSplitDiff}
               onClick={() => setDiffLayoutPreference('split')}
@@ -447,7 +454,7 @@ export default function CodeDiffEditor({
             style={{ fontFamily: monoFont }}
           >
             {model.status !== 'Modified' && (
-              <span className="text-[10px] font-medium text-kumo-subtle">{model.status}</span>
+              <span className="text-[10px] font-medium text-kumo-subtle">{DIFF_STATUS_LABELS[model.status]}</span>
             )}
             <span className="text-kumo-danger">-{model.deletions}</span>
             <span className="text-kumo-success">+{model.additions}</span>

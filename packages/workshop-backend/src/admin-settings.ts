@@ -189,12 +189,12 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
     featureable: boolean;
   }> {
     if (isReservedBlueprintKey(blueprintId)) {
-      throw new Error('Blueprint not found.');
+      throw new Error('未找到蓝图。');
     }
 
     let raw = await this.env.BLUEPRINTS.get(blueprintId);
     if (!raw) {
-      throw new Error('Blueprint not found.');
+      throw new Error('未找到蓝图。');
     }
 
     let kvRecord = parseBlueprintKvRecord(raw);
@@ -233,7 +233,7 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
   async setBlueprintFeatured(blueprintId: string, featured: boolean): Promise<void> {
     let { owner, publicInfo, featureable } = await this.#getOwnerBlueprint(blueprintId);
     if (!featureable || !owner) {
-      throw new Error('Blueprint not featureable.');
+      throw new Error('此蓝图无法设为精选。');
     }
 
     await owner.setBlueprintFeatured(blueprintId, featured);
@@ -353,7 +353,7 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
   async promoteFormat(blueprintId: string): Promise<void> {
     let record = await readBlueprintKvRecord(this.env, blueprintId);
     if (!record) {
-      throw new Error("Blueprint not found.");
+      throw new Error("未找到蓝图。");
     }
     await this.#mutateFormats(formats => {
       // Idempotent so retrying after a KV mirror failure reaches #mutateFormats()'s repair write.
@@ -376,7 +376,7 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
     // position.
     if (FORMAT_BLUEPRINTS.some(entry => entry.blueprintId === blueprintId)) {
       throw new Error(
-          "This format ships with the deployment, so it can't be removed. Turn it off instead.");
+          "此格式随部署提供，无法移除；请改为将其关闭。");
     }
     await this.#mutateFormats(formats => {
       let next = formats.filter(f => f.blueprintId !== blueprintId);
@@ -472,7 +472,7 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
       });
     } else {
       if (mode === "optional") {
-        throw new Error(`"${vendorId}" is not an auto-provisioning gatekeeper; use 'enabled' or 'disabled'.`);
+        throw new Error(`“${vendorId}”不是自动提供的 Gatekeeper，请使用“enabled”或“disabled”。`);
       }
       await this.#mutateAdminConfig(config => {
         let disabled = new Set(config.disabledGatekeepers);
@@ -568,7 +568,7 @@ export class AdminApiImpl extends RpcTarget implements AdminApi {
 
   async setSiteName(name: string): Promise<void> {
     if (name.length > MAX_SITE_NAME_LENGTH) {
-      throw new Error(`Site name too long (max ${MAX_SITE_NAME_LENGTH} characters).`);
+      throw new Error(`站点名称过长（最多 ${MAX_SITE_NAME_LENGTH} 个字符）。`);
     }
     await this.admin.updateAdminConfig({ siteName: name });
   }
@@ -580,7 +580,7 @@ export class AdminApiImpl extends RpcTarget implements AdminApi {
 
   async setInstanceInstructions(text: string): Promise<void> {
     if (text.length > MAX_INSTANCE_INSTRUCTIONS_LENGTH) {
-      throw new Error(`Instructions too long (max ${MAX_INSTANCE_INSTRUCTIONS_LENGTH} characters).`);
+      throw new Error(`说明过长（最多 ${MAX_INSTANCE_INSTRUCTIONS_LENGTH} 个字符）。`);
     }
     await this.admin.updateAdminConfig({ instanceInstructions: text });
   }
@@ -591,31 +591,31 @@ export class AdminApiImpl extends RpcTarget implements AdminApi {
 
   setGatekeeperMode(vendorId: string, mode: AmbientGatekeeperMode): Promise<void> {
     if (!isAmbientGatekeeperMode(mode)) {
-      throw new Error(`Invalid gatekeeper mode: ${mode}`);
+      throw new Error(`Gatekeeper 模式无效：${mode}`);
     }
     return this.admin.setGatekeeperMode(vendorId, mode);
   }
 
   async setAnnouncement(text: string): Promise<void> {
     if (text.length > MAX_ANNOUNCEMENT_LENGTH) {
-      throw new Error(`Announcement too long (max ${MAX_ANNOUNCEMENT_LENGTH} characters).`);
+      throw new Error(`公告过长（最多 ${MAX_ANNOUNCEMENT_LENGTH} 个字符）。`);
     }
     await this.admin.updateAdminConfig({ announcement: text });
   }
 
   async setBanner(text: string, color: BannerColor): Promise<void> {
     if (text.length > MAX_ANNOUNCEMENT_LENGTH) {
-      throw new Error(`Banner too long (max ${MAX_ANNOUNCEMENT_LENGTH} characters).`);
+      throw new Error(`横幅内容过长（最多 ${MAX_ANNOUNCEMENT_LENGTH} 个字符）。`);
     }
     if (!isBannerColor(color)) {
-      throw new Error(`Invalid banner color: ${color}`);
+      throw new Error(`横幅颜色无效：${color}`);
     }
     await this.admin.updateAdminConfig({ banner: { text, color } });
   }
 
   async setAccentColor(color: string): Promise<void> {
     if (color !== "" && !isHexColor(color)) {
-      throw new Error(`Invalid accent color: ${color}`);
+      throw new Error(`强调色无效：${color}`);
     }
     await this.admin.updateAdminConfig({ accentColor: color });
   }

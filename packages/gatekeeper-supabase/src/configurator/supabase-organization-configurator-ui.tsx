@@ -17,11 +17,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Organization" description="Search the organizations in your connected Supabase account.">
+      <Field label="组织" description="搜索所连接 Supabase 账户中的组织。">
         <Autocomplete
           name="slug"
           value={values.slug}
-          placeholder="Search organizations..."
+          placeholder="搜索组织…"
           loadOptions={query => ui.listOrganizations(query)}
           onChange={slug => setValues({ slug })}
         />

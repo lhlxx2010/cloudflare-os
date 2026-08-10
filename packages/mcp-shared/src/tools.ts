@@ -188,7 +188,7 @@ const MAX_INLINE_TEXT = 120;
 function plainInline(text: string, max = MAX_INLINE_TEXT): string {
   const cleaned = text.replace(/[`*_[\]()#>|]/g, "").replace(/\s+/g, " ").trim();
   const clipped = cleaned.length > max ? `${cleaned.slice(0, max)}\u2026` : cleaned;
-  return clipped || "(unnamed)";
+  return clipped || "（未命名）";
 }
 
 // Renders a tool call as the Markdown an approver reads before deciding.
@@ -207,33 +207,31 @@ export function describeCall(args: {
   try {
     rendered = defuseFences(JSON.stringify(args.toolArgs, null, 2));
   } catch {
-    rendered = "(arguments could not be displayed)";
+    rendered = "（无法显示参数）";
   }
   if (rendered.length > MAX_ARGUMENTS) {
-    rendered = `${rendered.slice(0, MAX_ARGUMENTS)}\n... (truncated)`;
+    rendered = `${rendered.slice(0, MAX_ARGUMENTS)}\n…（已截断）`;
   }
 
   const provenance = args.mode === "read"
     ? args.classifiedBy === "server-annotation"
-      ? "The server declares this tool read-only, so it runs without approval. That claim comes " +
-        "from the server itself."
-      : "Treated as read-only by this deployment."
-    : "Treated as an action because the server did not declare it read-only. Nothing has been " +
-      "sent yet.";
+      ? "服务器声明此工具为只读，因此无需批准即可运行。此声明由服务器自身提供。"
+      : "此部署将该工具视为只读。"
+    : "由于服务器未声明此工具为只读，因此将其视为操作。目前尚未发送任何内容。";
 
   const description = [
     `**${plainInline(args.serverName)}** \u2192 ${codeSpan(args.tool.name)}`,
     "",
     args.tool.description
       ? quoteUntrusted(args.tool.description, MAX_DESCRIPTION)
-      : "_The server provided no description for this tool._",
+      : "_服务器未提供此工具的说明。_",
     "",
-    "Arguments:",
+    "参数：",
     "```json",
     rendered,
     "```",
     "",
-    `Endpoint: ${codeSpan(args.endpoint)}`,
+    `端点：${codeSpan(args.endpoint)}`,
     "",
     provenance,
   ].join("\n");

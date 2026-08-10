@@ -152,13 +152,13 @@ describe("requirePortalServerScope", () => {
     // The configurator will not build such a URL, but the configurator is not what mints the facet
     // -- an agent passes its own `resourceUrl` to `requestConnection`, and any URL under the
     // portal's origin gets here.
-    expect(() => requirePortalServerScope({})).toThrow(/name one of the servers/);
+    expect(() => requirePortalServerScope({})).toThrow(/指定.*某个服务器/);
   });
 
   it("refuses a tool pin with no server, which is not a shape this connector offers", () => {
     // Narrow, but unanchored. Every documented grant here is `#server=<id>` with an optional tool
     // pin refining it, and the boundary should accept exactly the shapes the form can produce.
-    expect(() => requirePortalServerScope({ tools: ["gh_a"] })).toThrow(/name one of the servers/);
+    expect(() => requirePortalServerScope({ tools: ["gh_a"] })).toThrow(/指定.*某个服务器/);
   });
 
   it("accepts a server scope, with or without a tool pin", () => {

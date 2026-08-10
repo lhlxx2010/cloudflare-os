@@ -16,11 +16,11 @@ export default {
 
   render({ values, setValues, ui }) {
     return <Section>
-      <Field label="Spreadsheet" description="Search recent spreadsheets from Drive.">
+      <Field label="电子表格" description="搜索 Drive 中最近使用的电子表格。">
         <Autocomplete
           name="spreadsheetId"
           value={values.spreadsheetId}
-          placeholder="Search recent spreadsheets..."
+          placeholder="搜索最近使用的电子表格…"
           loadOptions={query => ui.listSpreadsheets(query)}
           onChange={spreadsheetId => setValues({ spreadsheetId })}
         />

@@ -25,8 +25,8 @@ describe('FrontendErrorBoundary', () => {
         <Broken />
       </FrontendErrorBoundary>,
     ))
-    expect(container.textContent).toContain('Something went wrong')
-    expect(container.querySelector('button')?.textContent).toContain('Reload')
+    expect(container.textContent).toContain('出现了一些问题')
+    expect(container.querySelector('button')?.textContent).toContain('重新加载')
     expect(reportIssue).toHaveBeenCalledWith('workshop.react-render', expect.any(Error),
       expect.objectContaining({ captureMechanism: 'react', handled: false }))
     container.remove()

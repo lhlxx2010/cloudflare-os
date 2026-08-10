@@ -12,13 +12,22 @@ import AdminFormatsPanel from './components/format/AdminFormatsPanel'
 
 // Preset accent colors offered in the Theme section ('' = default brand).
 const ACCENT_PRESETS: { label: string; value: string }[] = [
-  { label: 'Default', value: '' },
-  { label: 'Blue', value: '#3b82f6' },
-  { label: 'Green', value: '#16a34a' },
-  { label: 'Purple', value: '#7c3aed' },
-  { label: 'Pink', value: '#db2777' },
-  { label: 'Teal', value: '#0d9488' },
+  { label: '默认', value: '' },
+  { label: '蓝色', value: '#3b82f6' },
+  { label: '绿色', value: '#16a34a' },
+  { label: '紫色', value: '#7c3aed' },
+  { label: '粉色', value: '#db2777' },
+  { label: '青色', value: '#0d9488' },
 ]
+
+const BANNER_COLOR_LABELS: Record<BannerColor, string> = {
+  neutral: '中性',
+  info: '信息',
+  success: '成功',
+  warning: '警告',
+  danger: '危险',
+  brand: '品牌',
+}
 
 // Swatch background per banner color, matching AnnouncementBanner's accent styles.
 const BANNER_SWATCH: Record<BannerColor, string> = {
@@ -33,7 +42,7 @@ const BANNER_SWATCH: Record<BannerColor, string> = {
 export default function AdminPage() {
   const { authenticatedApi, isAdmin } = useAuthenticatedApi()
   const toasts = useKumoToastManager()
-  useDocumentTitle('Admin')
+  useDocumentTitle('管理后台')
 
   // The admin capability (minted once via getAdminApi; null until loaded / for non-admins). Wrapped
   // in an object so useState doesn't treat the (callable) RPC stub as a state updater function.
@@ -173,7 +182,7 @@ export default function AdminPage() {
     try {
       await admin.api.setResourceEnabled(vendorId, urlPattern, enabled)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Update failed'
+      const message = err instanceof Error ? err.message : '更新失败'
       toasts.add({ title: message, variant: 'error' })
       await reloadResources().catch(() => {})
     } finally {
@@ -195,7 +204,7 @@ export default function AdminPage() {
     try {
       await admin.api.setGatekeeperMode(vendorId, enabled ? 'enabled' : 'disabled')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Update failed'
+      const message = err instanceof Error ? err.message : '更新失败'
       toasts.add({ title: message, variant: 'error' })
       await reloadResources().catch(() => {})
     } finally {
@@ -217,7 +226,7 @@ export default function AdminPage() {
     try {
       await admin.api.setGatekeeperMode(vendorId, mode)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Update failed'
+      const message = err instanceof Error ? err.message : '更新失败'
       toasts.add({ title: message, variant: 'error' })
       await reloadResources().catch(() => {})
     } finally {
@@ -235,9 +244,9 @@ export default function AdminPage() {
     try {
       await admin.api.setAnnouncement(announcementDraft)
       setSavedAnnouncement(announcementDraft)
-      toasts.add({ title: 'Announcement saved', variant: 'success' })
+      toasts.add({ title: '顶部通知已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save announcement'
+      const message = err instanceof Error ? err.message : '保存顶部通知失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingAnnouncement(false)
@@ -253,9 +262,9 @@ export default function AdminPage() {
     try {
       await admin.api.setBanner(bannerTextDraft, bannerColorDraft)
       setSavedBanner({ text: bannerTextDraft, color: bannerColorDraft })
-      toasts.add({ title: 'Banner saved', variant: 'success' })
+      toasts.add({ title: '公告横幅已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save banner'
+      const message = err instanceof Error ? err.message : '保存公告横幅失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingBanner(false)
@@ -270,9 +279,9 @@ export default function AdminPage() {
     try {
       await admin.api.setAccentColor(accentDraft)
       setSavedAccent(accentDraft)
-      toasts.add({ title: 'Accent color saved', variant: 'success' })
+      toasts.add({ title: '强调色已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save accent color'
+      const message = err instanceof Error ? err.message : '保存强调色失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingAccent(false)
@@ -287,7 +296,7 @@ export default function AdminPage() {
       await admin.api.setSignupsEnabled(enabled)
     } catch (err) {
       setSignupsEnabled(!enabled) // revert
-      const message = err instanceof Error ? err.message : 'Update failed'
+      const message = err instanceof Error ? err.message : '更新失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingSignups(false)
@@ -300,9 +309,9 @@ export default function AdminPage() {
     try {
       await admin.api.setSiteName(siteNameDraft)
       setSavedSiteName(siteNameDraft)
-      toasts.add({ title: 'Site name saved', variant: 'success' })
+      toasts.add({ title: '站点名称已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save site name'
+      const message = err instanceof Error ? err.message : '保存站点名称失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingSiteName(false)
@@ -319,9 +328,9 @@ export default function AdminPage() {
       const data = await prepareSiteLogo(file)
       const logo = await admin.api.setSiteLogo(data)
       setSiteLogoUrl(logo ? cacheBustSiteLogoUrl(logo.url) : null)
-      toasts.add({ title: 'Logo saved', variant: 'success' })
+      toasts.add({ title: '站点标志已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save logo'
+      const message = err instanceof Error ? err.message : '保存站点标志失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingSiteLogo(false)
@@ -334,9 +343,9 @@ export default function AdminPage() {
     try {
       await admin.api.setSiteLogo(null)
       setSiteLogoUrl(null)
-      toasts.add({ title: 'Default logo restored', variant: 'success' })
+      toasts.add({ title: '已恢复默认站点标志', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove logo'
+      const message = err instanceof Error ? err.message : '移除站点标志失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingSiteLogo(false)
@@ -349,9 +358,9 @@ export default function AdminPage() {
     try {
       await admin.api.setInstanceInstructions(instructionsDraft)
       setSavedInstructions(instructionsDraft)
-      toasts.add({ title: 'System prompt instructions saved', variant: 'success' })
+      toasts.add({ title: '系统提示词指令已保存', variant: 'success' })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save instructions'
+      const message = err instanceof Error ? err.message : '保存指令失败'
       toasts.add({ title: message, variant: 'error' })
     } finally {
       setSavingInstructions(false)
@@ -362,7 +371,7 @@ export default function AdminPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
         <ShieldWarning size={32} className="mx-auto text-kumo-subtle mb-3" />
-        <p className="text-sm text-kumo-default">You don't have access to this page.</p>
+        <p className="text-sm text-kumo-default">你无权访问此页面。</p>
       </div>
     )
   }
@@ -370,7 +379,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <p className="text-kumo-subtle">Loading admin settings...</p>
+        <p className="text-kumo-subtle">正在加载管理设置…</p>
       </div>
     )
   }
@@ -378,9 +387,9 @@ export default function AdminPage() {
   if (loadError || !admin) {
     return (
       <div className="mx-auto w-full max-w-[1040px] px-4 sm:px-8 py-16 text-center">
-        <p className="text-sm text-kumo-danger">Something went wrong loading admin settings.</p>
+        <p className="text-sm text-kumo-danger">加载管理设置时出现问题。</p>
         <button onClick={() => window.location.reload()} className="text-kumo-brand mt-2 text-sm underline">
-          Try again
+          重试
         </button>
       </div>
     )
@@ -389,9 +398,9 @@ export default function AdminPage() {
   return (
     <div className="mx-auto w-full max-w-[1040px] px-4 sm:px-8 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-kumo-default">Admin</h1>
+        <h1 className="text-2xl font-semibold text-kumo-default">管理后台</h1>
         <p className="text-sm text-kumo-subtle mt-1">
-          Deployment-wide settings. Changes apply to all users on their next connection.
+          管理整个部署的设置。更改将在用户下次连接时生效。
         </p>
       </div>
 
@@ -400,10 +409,10 @@ export default function AdminPage() {
         value={activeTab}
         onValueChange={setActiveTab}
         tabs={[
-          { value: 'general', label: 'General' },
-          { value: 'gatekeepers', label: 'Gatekeepers' },
-          { value: 'formats', label: 'Formats' },
-          { value: 'access', label: 'Access' },
+          { value: 'general', label: '常规' },
+          { value: 'gatekeepers', label: '连接器' },
+          { value: 'formats', label: '格式' },
+          { value: 'access', label: '访问权限' },
         ]}
       />
 
@@ -424,9 +433,9 @@ export default function AdminPage() {
               <UserPlus size={18} className="text-kumo-subtle" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold text-kumo-strong">Allow new sign-ups</h2>
+              <h2 className="text-lg font-semibold text-kumo-strong">允许新用户注册</h2>
               <p className="text-sm text-kumo-subtle mt-0.5">
-                When off, existing users can still log in but no new accounts can be created.
+                关闭后，现有用户仍可登录，但无法创建新账户。
               </p>
             </div>
             <Switch
@@ -441,10 +450,10 @@ export default function AdminPage() {
       {/* Site name */}
       {activeTab === 'general' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Site name</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">站点名称</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            Shown next to the logo in the top bar. Leave empty to use the default
-            (&ldquo;{DEFAULT_SITE_NAME}&rdquo;). Applies on each user&rsquo;s next connection.
+            显示在顶部栏的站点标志旁。留空将使用默认名称
+            （“{DEFAULT_SITE_NAME}”）。更改将在用户下次连接时生效。
           </p>
 
           <Input
@@ -462,7 +471,7 @@ export default function AdminPage() {
                 onClick={() => setSiteNameDraft(savedSiteName)}
                 disabled={savingSiteName}
               >
-                Reset
+                重置
               </Button>
             )}
             <Button
@@ -472,7 +481,7 @@ export default function AdminPage() {
               loading={savingSiteName}
               disabled={siteNameDraft === savedSiteName}
             >
-              Save
+              保存
             </Button>
           </div>
         </div>
@@ -481,11 +490,10 @@ export default function AdminPage() {
       {/* Site logo */}
       {activeTab === 'general' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Logo</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">站点标志</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            Shown in the app chrome, sign-in screens, and browser tab. Images are scaled without
-            cropping and converted to a static PNG. Square images work best. Applies on each
-            user&rsquo;s next connection.
+            显示在应用界面、登录页面和浏览器标签页中。图片会在不裁剪的情况下缩放，
+            并转换为静态 PNG。方形图片效果最佳。更改将在用户下次连接时生效。
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -510,7 +518,7 @@ export default function AdminPage() {
                 loading={savingSiteLogo}
                 disabled={savingSiteLogo}
               >
-                {siteLogoUrl ? 'Change logo' : 'Upload logo'}
+                {siteLogoUrl ? '更换标志' : '上传标志'}
               </Button>
               {siteLogoUrl && (
                 <Button
@@ -519,7 +527,7 @@ export default function AdminPage() {
                   onClick={handleRemoveSiteLogo}
                   disabled={savingSiteLogo}
                 >
-                  Restore default
+                  恢复默认
                 </Button>
               )}
             </div>
@@ -530,11 +538,10 @@ export default function AdminPage() {
       {/* Theme / accent color */}
       {activeTab === 'general' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Theme</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">主题</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            Accent color used for buttons, links, and highlights. Changes preview live here; click
-            Save to apply for everyone (on their next connection). Backgrounds keep the default
-            warm theme.
+            设置按钮、链接和高亮所使用的强调色。更改会在此处实时预览；点击“保存”后，
+            将在所有用户下次连接时生效。背景仍使用默认主题。
           </p>
 
           <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -570,10 +577,10 @@ export default function AdminPage() {
                 onChange={(e) => setAccentDraft(e.target.value)}
                 className="w-9 h-9 rounded-md border border-kumo-line bg-transparent cursor-pointer p-0.5"
               />
-              Custom
+              自定义
             </label>
             <span className="text-xs font-mono text-kumo-subtle">
-              {accentDraft || `${DEFAULT_ACCENT_COLOR} (default)`}
+              {accentDraft || `${DEFAULT_ACCENT_COLOR}（默认）`}
             </span>
             <div className="flex-1" />
             {accentDirty && (
@@ -583,7 +590,7 @@ export default function AdminPage() {
                 onClick={() => setAccentDraft(savedAccent)}
                 disabled={savingAccent}
               >
-                Reset
+                重置
               </Button>
             )}
             <Button
@@ -593,7 +600,7 @@ export default function AdminPage() {
               loading={savingAccent}
               disabled={!accentDirty}
             >
-              Save
+              保存
             </Button>
           </div>
         </div>
@@ -602,11 +609,10 @@ export default function AdminPage() {
       {/* Full-width banner */}
       {activeTab === 'general' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Banner</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">公告横幅</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            A dismissible bar across the very top of the app (logged in or not). Markdown is
-            supported, so you can include links. Leave empty to hide it. Applies on each
-            user&rsquo;s next connection.
+            在应用最顶部显示一条可关闭的公告，无论是否登录均可见。支持 Markdown，
+            因此可以加入链接。留空即可隐藏。更改将在用户下次连接时生效。
           </p>
 
           <Textarea
@@ -614,18 +620,18 @@ export default function AdminPage() {
             value={bannerTextDraft}
             onValueChange={setBannerTextDraft}
             rows={1}
-            placeholder={'e.g. \uD83C\uDF89 New: blueprints now support imports \u2014 [learn more](https://example.com).'}
+            placeholder={'例如：\uD83C\uDF89 新功能：蓝图现已支持导入 — [了解详情](https://example.com)。'}
             maxLength={MAX_ANNOUNCEMENT_LENGTH}
             error={
               bannerTextDraft.length > MAX_ANNOUNCEMENT_LENGTH
-                ? `Too long by ${bannerTextDraft.length - MAX_ANNOUNCEMENT_LENGTH} characters`
+                ? `超出 ${bannerTextDraft.length - MAX_ANNOUNCEMENT_LENGTH} 个字符`
                 : undefined
             }
           />
 
           <div className="mt-4 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-medium text-kumo-subtle mb-2">Type</p>
+              <p className="text-xs font-medium text-kumo-subtle mb-2">类型</p>
               <div className="flex flex-wrap items-center gap-2">
                 {BANNER_COLORS.map((c) => {
                   const selected = bannerColorDraft === c
@@ -644,7 +650,7 @@ export default function AdminPage() {
                         className="w-4 h-4 rounded-full border border-kumo-line"
                         style={{ background: BANNER_SWATCH[c] }}
                       />
-                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                      {BANNER_COLOR_LABELS[c]}
                     </button>
                   )
                 })}
@@ -662,7 +668,7 @@ export default function AdminPage() {
                   }}
                   disabled={savingBanner}
                 >
-                  Reset
+                  重置
                 </Button>
               )}
               <Button
@@ -672,7 +678,7 @@ export default function AdminPage() {
                 loading={savingBanner}
                 disabled={!bannerDirty || bannerTextDraft.length > MAX_ANNOUNCEMENT_LENGTH}
               >
-                Save
+                保存
               </Button>
             </div>
           </div>
@@ -682,11 +688,10 @@ export default function AdminPage() {
       {/* Top-bar notice */}
       {activeTab === 'general' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Top-bar notice</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">顶部栏通知</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            Shown centered in the top navigation bar. Markdown is supported, so you can include
-            links. Keep it short — it renders on a single line. Leave empty to show nothing. Applies
-            on each user&rsquo;s next connection.
+            居中显示在顶部导航栏中。支持 Markdown，因此可以加入链接。请保持简短，
+            内容将以单行显示。留空则不显示。更改将在用户下次连接时生效。
           </p>
 
           <Textarea
@@ -694,18 +699,18 @@ export default function AdminPage() {
             value={announcementDraft}
             onValueChange={setAnnouncementDraft}
             rows={1}
-            placeholder={'e.g. Heads up: scheduled maintenance Saturday \u2014 see [status](https://status.example.com).'}
+            placeholder={'例如：请注意：周六计划维护 — 查看[状态](https://status.example.com)。'}
             maxLength={MAX_ANNOUNCEMENT_LENGTH}
             error={
               announcementDraft.length > MAX_ANNOUNCEMENT_LENGTH
-                ? `Too long by ${announcementDraft.length - MAX_ANNOUNCEMENT_LENGTH} characters`
+                ? `超出 ${announcementDraft.length - MAX_ANNOUNCEMENT_LENGTH} 个字符`
                 : undefined
             }
           />
 
           <div className="flex items-center justify-between mt-3">
             <span className="text-xs text-kumo-subtle">
-              {announcementDraft.length.toLocaleString()} / {MAX_ANNOUNCEMENT_LENGTH.toLocaleString()} characters
+              {announcementDraft.length.toLocaleString()} / {MAX_ANNOUNCEMENT_LENGTH.toLocaleString()} 个字符
             </span>
             <div className="flex items-center gap-2">
               {announcementDraft !== savedAnnouncement && (
@@ -715,7 +720,7 @@ export default function AdminPage() {
                   onClick={() => setAnnouncementDraft(savedAnnouncement)}
                   disabled={savingAnnouncement}
                 >
-                  Reset
+                  重置
                 </Button>
               )}
               <Button
@@ -728,7 +733,7 @@ export default function AdminPage() {
                   announcementDraft.length > MAX_ANNOUNCEMENT_LENGTH
                 }
               >
-                Save
+                保存
               </Button>
             </div>
           </div>
@@ -738,10 +743,10 @@ export default function AdminPage() {
       {/* Agent system prompt additions */}
       {activeTab === 'general' && (
       <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-kumo-strong mb-1">Agent instructions</h2>
+        <h2 className="text-lg font-semibold text-kumo-strong mb-1">智能体指令</h2>
         <p className="text-sm text-kumo-subtle mb-5">
-          Extra instructions added to every agent&rsquo;s system prompt on this deployment. Use this
-          for instance-specific context, conventions, or guardrails.
+          添加到此部署中每个智能体系统提示词的额外指令。可用于补充实例专属背景、
+          约定或约束规则。
         </p>
 
         <Textarea
@@ -749,18 +754,18 @@ export default function AdminPage() {
           value={instructionsDraft}
           onValueChange={setInstructionsDraft}
           rows={6}
-          placeholder={'e.g. ACME Corp is a logistics company that helps small businesses ship\ninternationally. Our team builds internal tools and dashboards to track shipments.'}
+          placeholder={'例如：ACME Corp 是一家帮助小企业开展国际运输的物流公司。\n我们的团队构建内部工具和仪表盘来跟踪货运。'}
           maxLength={MAX_INSTANCE_INSTRUCTIONS_LENGTH}
           error={
             instructionsDraft.length > MAX_INSTANCE_INSTRUCTIONS_LENGTH
-              ? `Too long by ${instructionsDraft.length - MAX_INSTANCE_INSTRUCTIONS_LENGTH} characters`
+              ? `超出 ${instructionsDraft.length - MAX_INSTANCE_INSTRUCTIONS_LENGTH} 个字符`
               : undefined
           }
         />
 
         <div className="flex items-center justify-between mt-3">
           <span className="text-xs text-kumo-subtle">
-            {instructionsDraft.length.toLocaleString()} / {MAX_INSTANCE_INSTRUCTIONS_LENGTH.toLocaleString()} characters
+            {instructionsDraft.length.toLocaleString()} / {MAX_INSTANCE_INSTRUCTIONS_LENGTH.toLocaleString()} 个字符
           </span>
           <div className="flex items-center gap-2">
             {instructionsDraft !== savedInstructions && (
@@ -770,7 +775,7 @@ export default function AdminPage() {
                 onClick={() => setInstructionsDraft(savedInstructions)}
                 disabled={savingInstructions}
               >
-                Reset
+                重置
               </Button>
             )}
             <Button
@@ -783,7 +788,7 @@ export default function AdminPage() {
                 instructionsDraft.length > MAX_INSTANCE_INSTRUCTIONS_LENGTH
               }
             >
-              Save
+              保存
             </Button>
           </div>
         </div>
@@ -793,17 +798,15 @@ export default function AdminPage() {
       {/* Gatekeeper resources */}
       {activeTab === 'gatekeepers' && (
         <div className="bg-kumo-elevated border border-kumo-line rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-kumo-strong mb-1">Gatekeepers</h2>
+          <h2 className="text-lg font-semibold text-kumo-strong mb-1">连接器</h2>
           <p className="text-sm text-kumo-subtle mb-5">
-            Turn connectors and resource types on or off for each service. Auto-provisioned
-            gatekeepers (like the Context Library) have three modes &mdash; disabled, optional, or
-            enabled for everyone. Changes are soft: they don&rsquo;t revoke access a gadget already
-            holds.
+            为每项服务启用或停用连接器及资源类型。自动配置的连接器（如上下文库）
+            有三种模式：停用、可选或为所有人启用。更改采用软配置，不会撤销应用已获得的访问权限。
           </p>
 
           {resourceVendors.length === 0 && (
             <p className="text-sm text-kumo-subtle">
-              No configurable gatekeepers are installed on this deployment.
+              此部署未安装可配置的连接器。
             </p>
           )}
 
@@ -815,9 +818,9 @@ export default function AdminPage() {
               if (vendor.autoProvisions) {
                 const mode = vendor.ambientMode ?? 'optional'
                 const options: { value: AmbientGatekeeperMode; label: string; hint: string }[] = [
-                  { value: 'disabled', label: 'Disabled', hint: 'Off for everyone' },
-                  { value: 'optional', label: 'Optional', hint: 'Users can add it themselves' },
-                  { value: 'enabled', label: 'Enabled', hint: 'On for everyone automatically' },
+                  { value: 'disabled', label: '停用', hint: '对所有人关闭' },
+                  { value: 'optional', label: '可选', hint: '用户可以自行添加' },
+                  { value: 'enabled', label: '启用', hint: '自动为所有人开启' },
                 ]
                 return (
                   <div key={vendor.vendorId}>
@@ -833,7 +836,7 @@ export default function AdminPage() {
                         {vendor.displayName}
                       </h3>
                       <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-kumo-tint text-kumo-subtle border border-kumo-line">
-                        auto-provisioned
+                        自动配置
                       </span>
                     </div>
                     <div className="flex gap-2 px-3 py-1">
@@ -886,12 +889,12 @@ export default function AdminPage() {
                     {vendor.displayName}
                     {!vendor.enabled && (
                       <span className="ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-kumo-tint text-kumo-subtle border border-kumo-line">
-                        disabled
+                        已停用
                       </span>
                     )}
                   </h3>
                   <span className="text-xs text-kumo-subtle">
-                    {vendor.enabled ? 'Enabled' : 'Off'}
+                    {vendor.enabled ? '已启用' : '已关闭'}
                   </span>
                   <span onClick={(e) => e.stopPropagation()}>
                     <Switch
@@ -943,7 +946,7 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <p className="text-xs text-kumo-subtle px-3 py-1">
-                    {vendor.resources.length} resource{vendor.resources.length === 1 ? '' : 's'} hidden while disabled.
+                    停用期间将隐藏 {vendor.resources.length} 种资源。
                   </p>
                 )}
               </div>

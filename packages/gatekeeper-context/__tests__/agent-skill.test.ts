@@ -60,13 +60,13 @@ name: incident-response
 description: Incident response.
 ---
 Instructions
-`)).toThrow("Skill manifest filename must be SKILL.md.");
+`)).toThrow("Skill 清单文件名必须是 SKILL.md。");
   });
 
   it.each([
-    ["Bad", "Skill name must use lowercase letters, numbers, and single hyphens."],
-    ["bad--name", "Skill name must use lowercase letters, numbers, and single hyphens."],
-    ["", "Skill name is required."],
+    ["Bad", "Skill 名称只能使用小写字母、数字和单个连字符。"],
+    ["bad--name", "Skill 名称只能使用小写字母、数字和单个连字符。"],
+    ["", "Skill 名称为必填项。"],
   ])("rejects invalid name %s", (name, message) => {
     expect(() => parseSkillManifest(`skills/${name || "empty"}/SKILL.md`, `---
 name: ${name}
@@ -82,7 +82,7 @@ name: example
 description: "${description}"
 ---
 Instructions
-`)).toThrow("Skill description is required.");
+`)).toThrow("Skill 描述为必填项。");
   });
 
   it("accepts frontmatter from uploaded files with a BOM or fence whitespace", () => {
@@ -114,13 +114,13 @@ Instructions
 
   it("rejects malformed frontmatter with an actionable diagnostic", () => {
     expect(() => parseSkillManifest("skills/example/SKILL.md", "# Missing frontmatter"))
-      .toThrow("Skill manifest must start with YAML frontmatter.");
+      .toThrow("Skill 清单必须以 YAML frontmatter 开头。");
     expect(() => parseSkillManifest("skills/example/SKILL.md", "---\nname: example\n"))
-      .toThrow("Skill manifest frontmatter is not closed.");
+      .toThrow("Skill 清单的 frontmatter 未闭合。");
     expect(() => parseSkillManifest("skills/example/SKILL.md", "---\nname: [\n---\nBody"))
-      .toThrow("Skill frontmatter is not valid YAML.");
+      .toThrow("Skill 的 frontmatter 不是有效的 YAML。");
     expect(() => parseSkillManifest("skills/example/SKILL.md", "---\n[]\n---\nBody"))
-      .toThrow("Skill frontmatter must be a mapping.");
+      .toThrow("Skill 的 frontmatter 必须是映射。");
   });
 
   it("accepts skill bodies larger than 10,000 characters", () => {

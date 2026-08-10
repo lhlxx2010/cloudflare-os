@@ -92,9 +92,9 @@ const logger = createLogger<McpLogFields>({
 const PORTAL_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(PORTAL_LOGO_SVG)}`;
 const PORTAL_AVATAR: AvatarImage = { url: PORTAL_LOGO_URL };
 
-// Cloudflare orange, matching the Cloudflare Gateway glyph used as the mark. A deployment fronting
+// NINT blue, matching the deployment's primary UI accent. A deployment fronting
 // some other aggregator should change both together.
-const PORTAL_COLOR = "#f6821f";
+const PORTAL_COLOR = "#1d4ed8";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -150,8 +150,8 @@ async function continueConnect(
   const config = readPortalConfig(env);
   if (!config) {
     return htmlResponse(errorPageHtml(
-      "No MCP server portal is configured",
-      "Ask an administrator to set this deployment's MCP server portal URL."), 503);
+      "尚未配置 MCP Server Portal",
+      "请联系管理员设置此部署的 MCP Server Portal URL。"), 503);
   }
 
   let outcome: ConnectOutcome;
@@ -160,7 +160,7 @@ async function continueConnect(
   } catch (err) {
     logger.warn("connect failed", { event: "connect.failed", error: err });
     return htmlResponse(errorPageHtml(
-      "Could not connect", err instanceof Error ? err.message : String(err)), 502);
+      "无法连接", err instanceof Error ? err.message : String(err)), 502);
   }
 
   if (outcome.kind === "invalid") return htmlResponse(INVALID_LINK_HTML, 400);
@@ -181,11 +181,11 @@ export class GatekeeperVendor extends WorkerEntrypoint<Env> implements Gatekeepe
       logo: PORTAL_AVATAR,
       color: PORTAL_COLOR,
       tagline: config
-        ? `Connect a server behind ${hostOf(config.endpoint)}`
-        : "No MCP server portal is configured",
+        ? `连接 ${hostOf(config.endpoint)} 后的服务器`
+        : "尚未配置 MCP Server Portal",
       description:
-        "Use the MCP servers this organization has approved, through its MCP server portal. Reads " +
-        "happen straight away. Anything that writes waits for your approval.",
+        "通过组织的 MCP Server Portal 使用组织已批准的 MCP 服务器。读取操作会立即执行，" +
+        "任何写入操作都需要等待你的批准。",
     };
   }
 
@@ -273,7 +273,7 @@ export class GatekeeperUserImpl
   }> {
     const config = readPortalConfig(this.env);
     if (!config) {
-      throw new Error("This deployment has no MCP server portal configured.");
+      throw new Error("此部署尚未配置 MCP Server Portal。");
     }
     const server = await this.#account().getServer();
     const resource = portalResource(config);
@@ -283,11 +283,11 @@ export class GatekeeperUserImpl
     // frozen on the account while the deployment believes it configured a different one.
     if (!sameEndpoint(server.endpoint, config.endpoint)) {
       throw new Error(
-        `This connection is for ${hostOf(server.endpoint)}, but this deployment's portal is now ` +
-        `${hostOf(config.endpoint)}. Reconnect the account.`);
+        `此连接对应 ${hostOf(server.endpoint)}，但此部署的 Portal 现已改为 ` +
+        `${hostOf(config.endpoint)}。请重新连接账户。`);
     }
     if (portalAuthRequiresReconnect(server.auth, config.auth)) {
-      throw new Error("This deployment's portal authentication changed. Reconnect the account.");
+      throw new Error("此部署的 Portal 认证配置已更改。请重新连接账户。");
     }
 
     // The account holds credentials for one portal, so a resource URL naming any other endpoint is
@@ -297,11 +297,10 @@ export class GatekeeperUserImpl
     const requested = new URL(url, server.endpoint);
     if (!sameEndpoint(requested.toString(), config.endpoint)) {
       throw new Error(
-        `This connection is for ${config.endpoint}, not ` +
-        `${endpointOfResourceUrl(requested)}.`);
+        `此连接对应 ${config.endpoint}，而不是 ${endpointOfResourceUrl(requested)}。`);
     }
     if (!matchesResourceUrlPattern(resource.urlPattern, requested.toString())) {
-      throw new Error(`"${url}" does not match this connection's resource type.`);
+      throw new Error(`“${url}”与此连接的资源类型不匹配。`);
     }
 
     // The fragment records how much of the portal this binding may call; see `scope.ts`. A grant
@@ -404,12 +403,11 @@ class McpServerConfiguratorUI extends RpcTarget implements McpServerConfigurator
         value: upstream.id,
         title: upstream.name,
         subtitle: truncated
-          ? `Catalog truncated \u00b7 ${owned.length} shown, ${reads} shown read-only`
-          : `${owned.length} tool${owned.length === 1 ? "" : "s"} \u00b7 ` +
-            `${reads} read-only, ${owned.length - reads} need approval`,
+          ? `目录已截断 \u00b7 显示 ${owned.length} 个工具，其中 ${reads} 个只读`
+          : `${owned.length} 个工具 \u00b7 ${reads} 个只读，${owned.length - reads} 个需要批准`,
         // A server can be configured but switched off for this session, making a grant onto it valid
         // but presently empty, which the person choosing should see.
-        meta: upstream.enabled ? undefined : "disabled in portal",
+        meta: upstream.enabled ? undefined : "已在 Portal 中禁用",
       };
     });
   }
@@ -440,7 +438,7 @@ class McpServerConfiguratorUI extends RpcTarget implements McpServerConfigurator
         title: tool.title ?? (serverId ? tool.name.slice(serverId.length + 1) : tool.name),
         subtitle: tool.description?.split(/\r?\n/)[0],
         // Surfaced here so the person granting can see, per tool, whether calls will interrupt them.
-        meta: classifyTool(tool, trust).mode === "read" ? "read-only" : "needs approval",
+        meta: classifyTool(tool, trust).mode === "read" ? "只读" : "需要批准",
       }));
   }
 }
@@ -503,16 +501,13 @@ export class McpGatekeeperImpl
     const { scope } = this.ctx.props;
     const label = this.#scopeLabel();
 
-    const counts = `${reads} read-only, ${tools.length - reads} requiring approval`;
-    const plural = tools.length === 1 ? "" : "s";
+    const counts = `${reads} 个只读，${tools.length - reads} 个需要批准`;
     const snippet = scope.tools
-      ? `${scope.tools.length} named MCP tool${scope.tools.length === 1 ? "" : "s"} on ` +
-        `${label} \u2014 ${counts}. Other tools are refused.`
+      ? `${label} 上指定的 ${scope.tools.length} 个 MCP 工具 \u2014 ${counts}。其他工具将被拒绝。`
       : scope.serverId
-      ? `All ${tools.length} MCP tool${plural} of the ` +
-        `${this.ctx.props.scopeServerName ?? scope.serverId} server on ` +
-        `${this.ctx.props.serverName} \u2014 ${counts}. Other servers on it are refused.`
-      : `All ${tools.length} MCP tool${plural} on ${label} \u2014 ${counts}.`;
+      ? `${this.ctx.props.serverName} 上 ${this.ctx.props.scopeServerName ?? scope.serverId} 服务器的全部 ` +
+        `${tools.length} 个 MCP 工具 \u2014 ${counts}。其上的其他服务器将被拒绝。`
+      : `${label} 上的全部 ${tools.length} 个 MCP 工具 \u2014 ${counts}。`;
 
     return {
       url: this.resourceUrl,

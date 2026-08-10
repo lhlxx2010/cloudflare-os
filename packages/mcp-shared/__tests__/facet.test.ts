@@ -61,5 +61,5 @@ it("builds tool methods and falls back to the plain session when catalog loading
 
 it("keeps facets owner-only using the connector's resource label", async () => {
   await expect(facet().addObserver("observer", {} as never))
-    .rejects.toThrow(/test server.*only be opened by its owner/s);
+    .rejects.toThrow(/test server.*只能由其所有者打开/s);
 });

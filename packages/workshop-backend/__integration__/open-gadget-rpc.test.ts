@@ -14,8 +14,8 @@ type CodedError = Error & { code?: unknown };
 
 const PASSWORD_HASH = new Uint8Array([1, 2, 3]);
 const EXPECTED_MESSAGES: Record<OpenGadgetErrorCode, string> = {
-  [OPEN_GADGET_ERROR_CODES.workspaceNotFound]: "Workspace not found.",
-  [OPEN_GADGET_ERROR_CODES.workspaceAccessDenied]: "You don't have access to this workspace.",
+  [OPEN_GADGET_ERROR_CODES.workspaceNotFound]: "未找到工作区。",
+  [OPEN_GADGET_ERROR_CODES.workspaceAccessDenied]: "你无权访问此工作区。",
 };
 
 function username(prefix: string): string {

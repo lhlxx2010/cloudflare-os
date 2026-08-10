@@ -7,7 +7,7 @@ export const Route = createFileRoute('/explore')({
 })
 
 function ExplorePage() {
-  useDocumentTitle('Explore')
+  useDocumentTitle('探索')
 
   return <BlueprintsPage />
 }

@@ -188,7 +188,7 @@ function makeUserStorage(storage: DurableObjectStorage) {
       created: false,
       profile: <AiChatAuthorInfo>{
         type: "user",
-        name: "User",
+        name: "用户",
         id: "user@example.com",
       },
       quickModel: <string | null>null,
@@ -228,8 +228,8 @@ function unavailableGatekeeperVendorInfo(id: string): GatekeeperVendorInfo {
     description: {
       displayName: id,
       url: "",
-      tagline: "Temporarily unavailable",
-      description: "This gatekeeper could not be loaded.",
+      tagline: "暂时不可用",
+      description: "无法加载此 Gatekeeper。",
     },
     supportedResources: [],
   };
@@ -311,7 +311,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async authenticateFromCfAccess(email: string, allowCreate: boolean): Promise<boolean> {
     if (!this.storage.created.get()) {
       if (!allowCreate) {
-        throw new Error("New sign-ups are currently disabled on this deployment.");
+        throw new Error("此部署目前已关闭新用户注册。");
       }
       // Create on first use.
       this.storage.created.put(true);
@@ -417,12 +417,12 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async changePassword(oldHash: Uint8Array, newHash: Uint8Array): Promise<void> {
     let actualHashHash = this.storage.passwordHashHash.get();
     if (!actualHashHash) {
-      throw new Error("This account does not use password login.");
+      throw new Error("此账户未使用密码登录。");
     }
 
     let oldHashHash = new Uint8Array(await crypto.subtle.digest('SHA-256', oldHash));
     if (!bytesEqual(oldHashHash, actualHashHash)) {
-      throw new Error("Incorrect password.");
+      throw new Error("密码不正确。");
     }
 
     let newHashHash = new Uint8Array(await crypto.subtle.digest('SHA-256', newHash));
@@ -527,7 +527,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async addModel(profile: AiChatAuthorInfo, config: AiModelConfig): Promise<void> {
     let gwConfig = getAiGatewayConfig(this.env);
     if (gwConfig && !gwConfig.providers.has(config.provider)) {
-      throw new Error(`Provider "${config.provider}" is not available in AI Gateway mode.`);
+      throw new Error(`AI Gateway 模式下无法使用提供商“${config.provider}”。`);
     }
 
     profile.type = "agent";
@@ -540,7 +540,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
     if (gwConfig) {
       for (let [provider, models] of Object.entries(SUGGESTED_MODELS)) {
         if (gwConfig.providers.has(provider) && id in models) {
-          throw new Error(`Cannot delete built-in model "${models[id].name}".`);
+          throw new Error(`无法删除内置模型“${models[id].name}”。`);
         }
       }
     }
@@ -571,7 +571,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       let gwConfig = getAiGatewayConfig(this.env);
       let exists = !!this.storage.aiModels.get(id) || !!gwConfig?.resolveModel(id);
       if (!exists) {
-        throw new Error(`No such model: ${id}`);
+        throw new Error(`未找到模型：${id}`);
       }
     }
     this.storage.preferredModel.put(id);
@@ -677,7 +677,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       if (!result.aiModel) {
         result.aiModel = this.storage.aiModels.get(modelId);
       }
-      if (!result.aiModel) throw new Error(`No such model: ${modelId}`);
+      if (!result.aiModel) throw new Error(`未找到模型：${modelId}`);
     }
 
     // Resolve the quick model (used for lightweight tasks like title generation).
@@ -719,7 +719,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async updateTitle(gadgetId: string, title: string) {
     let record = this.storage.gadgets.get(gadgetId);
     if (!record) {
-      throw new Error("No such workspace belonging to user.");
+      throw new Error("未找到属于此用户的工作区。");
     }
     record.title = title;
     this.storage.gadgets.put(record);
@@ -728,7 +728,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async updatePinned(gadgetId: string, pinned: boolean) {
     let record = this.storage.gadgets.get(gadgetId);
     if (!record) {
-      throw new Error("No such workspace belonging to user.");
+      throw new Error("未找到属于此用户的工作区。");
     }
     record.pinned = pinned;
     this.storage.gadgets.put(record);
@@ -908,7 +908,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async addBlueprintToLibrary(id: string): Promise<void> {
     let kvRecord = await readBlueprintKvRecord(this.env, id);
     if (!kvRecord) {
-      throw new Error("Blueprint not found.");
+      throw new Error("未找到蓝图。");
     }
 
     let existing = this.storage.libraryBlueprints.get(id);
@@ -948,7 +948,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
   async deleteOwnedBlueprint(id: string): Promise<void> {
     if (isReservedBlueprintKey(id)) {
-      throw new Error("Blueprint not found.");
+      throw new Error("未找到蓝图。");
     }
 
     let publishedRecord = this.storage.blueprints.get(id);
@@ -957,12 +957,12 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
     let kvRecord = await readBlueprintKvRecord(this.env, id);
 
     if (!publishedRecord && !uploadedRecord && !kvRecord) {
-      throw new Error("Blueprint not found.");
+      throw new Error("未找到蓝图。");
     }
 
     if (kvRecord) {
       if (kvRecord.ownerId !== this.ctx.id.toString()) {
-        throw new Error("You don't own this blueprint.");
+        throw new Error("你不是此蓝图的所有者。");
       }
 
       // Delete all R2 objects with the blueprint ID prefix.
@@ -1000,7 +1000,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async setBlueprintFeatured(id: string, featured: boolean): Promise<void> {
     let record = this.storage.blueprints.get(id);
     if (!record) {
-      throw new Error("No such blueprint.");
+      throw new Error("未找到蓝图。");
     }
 
     record.featured = featured;
@@ -1110,10 +1110,10 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   async connectAccount(vendorId: string, resourceUrlPatterns?: string[]): Promise<{url: string}> {
     let vendor = this.vendors.get(vendorId);
     if (!vendor) {
-      throw new Error("No such service: " + vendorId);
+      throw new Error("未找到服务：" + vendorId);
     }
     if ((await readAdminConfig(this.env)).disabledGatekeepers.includes(vendorId.toLowerCase())) {
-      throw new Error(`The "${vendorId}" gatekeeper is disabled on this deployment.`);
+      throw new Error(`此部署已禁用“${vendorId}”Gatekeeper。`);
     }
 
     let accountId = this.storage.nextAccountId.get();
@@ -1212,15 +1212,15 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
   async #provisionAmbientAccount(vendorId: string): Promise<void> {
     let vendor = this.vendors.get(vendorId);
-    if (!vendor) throw new Error("No such service: " + vendorId);
+    if (!vendor) throw new Error("未找到服务：" + vendorId);
 
     if (ambientGatekeeperMode(await readAdminConfig(this.env), vendorId) === "disabled") {
-      throw new Error(`The "${vendorId}" gatekeeper is disabled on this deployment.`);
+      throw new Error(`此部署已禁用“${vendorId}”Gatekeeper。`);
     }
 
     let description = await vendor.describe();
     if (!description.autoProvisionsAccount) {
-      throw new Error(`The "${vendorId}" gatekeeper can't be added this way.`);
+      throw new Error(`无法通过此方式添加“${vendorId}”Gatekeeper。`);
     }
 
     if (this.#hasAccountForVendor(vendorId)) return;  // already added
@@ -1322,13 +1322,13 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
   // fresh by the caller so admin-gated features reflect the user's current status.
   async startAccountAppUi(accountId: number, context: AppUiContext): Promise<GatekeeperUiFrame> {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record?.description.providesUi) throw new Error("No such app.");
+    if (!record?.description.providesUi) throw new Error("未找到此应用。");
     return (record.account as unknown as SingletonAccountStub).startAppUi(context);
   }
 
   async ensureAccountResources(accountId: number, resourceUrlPatterns: string[]): Promise<{url?: string}> {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record) throw new Error("No such account.");
+    if (!record) throw new Error("未找到此账户。");
     return record.account.ensureResources(resourceUrlPatterns);
   }
 
@@ -1461,7 +1461,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       if (account.autoProvisioned) {
         // A forced ("enabled") ambient account can't be removed by the user — the admin controls it.
         if (shouldAutoProvisionAccount(await readAdminConfig(this.env), account.vendorId)) {
-          throw new Error("This account is provided automatically and can't be disconnected.");
+          throw new Error("此账户由系统自动提供，无法断开连接。");
         }
         // An opt-in ("optional") ambient account: the user added it, so let them remove it. revoke()
         // gives the gatekeeper a chance to delete its own per-user storage (e.g. the account's
@@ -1498,7 +1498,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
   async reconnectAccount(accountId: number): Promise<{url: string}> {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record) throw new Error("No such account.");
+    if (!record) throw new Error("未找到此账户。");
     return record.account.reconnect();
   }
 
@@ -1506,7 +1506,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       accountId: number,
       resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record) throw new Error("No such account.");
+    if (!record) throw new Error("未找到此账户。");
     return record.account.startResourceConfigurator(resourceUrlPattern);
   }
 
@@ -1599,7 +1599,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
   async markCredentialsExpired(accountId: number) {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record) throw new Error("No such account.");
+    if (!record) throw new Error("未找到此账户。");
 
     if (!record.credentialsExpired) {
       record.credentialsExpired = true;
@@ -1609,7 +1609,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
 
   async markCredentialsRestored(accountId: number, expiresAt?: Date) {
     let record = this.storage.connectedAccounts.get(accountId);
-    if (!record) throw new Error("No such account.");
+    if (!record) throw new Error("未找到此账户。");
 
     // Re-fetch description since the user may have re-authed with different info.
     record.description = await record.account.describe();
@@ -1622,7 +1622,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       : Promise<{class: DurableObjectClass<Gatekeeper<any>>, vendorId: string,
                   typeUrlPattern: string}> {
     let account = this.storage.connectedAccounts.get(accountId);
-    if (!account) throw new Error("No such account.");
+    if (!account) throw new Error("未找到此账户。");
     let {class: cls, resource} = await account.account.getGatekeeperClassFor(url);
 
     // Block whole gatekeepers + disabled resources at this single core-side chokepoint where a
@@ -1632,14 +1632,14 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
     let vendorId = account.vendorId.toLowerCase();
     if (config.disabledGatekeepers.includes(vendorId)) {
       throw new Error(
-          `The "${account.vendorId}" gatekeeper is disabled on this deployment by an administrator.`);
+          `管理员已在此部署中禁用“${account.vendorId}”Gatekeeper。`);
     }
 
     // Blocking here prevents minting a new capability to a disabled resource even if the request
     // bypasses the (separately filtered) picker/agent listings.
     if (isResourceDisabled(config, vendorId, resource.urlPattern)) {
       throw new Error(
-          `The "${resource.title}" resource is disabled on this deployment by an administrator.`);
+          `管理员已在此部署中禁用“${resource.title}”资源。`);
     }
 
     return {class: cls, vendorId: account.vendorId, typeUrlPattern: resource.urlPattern};
@@ -1662,7 +1662,7 @@ export class UserDurableObject extends DurableObject<Cloudflare.Env> {
       console.error(
           `getVerifier: account ${accountId} vendor "${account.vendorId}" ` +
           `!= expected "${expectedVendorId}"`);
-      throw new Error("Invalid account selection for this service.");
+      throw new Error("为此服务选择的账户无效。");
     }
     return await account.account.getVerifier();
   }
@@ -1717,7 +1717,7 @@ export function normalizeUsername(username: string) {
   username = username.toLowerCase();
 
   if (!username.match(/^[a-z][a-z0-9_]*$/)) {
-    throw new Error("Invalid username. Must be alphanumeric starting with a letter.")
+    throw new Error("用户名无效。必须以字母开头，且只能包含字母、数字和下划线。")
   }
 
   return username;

@@ -33,7 +33,7 @@ export function validateSpawnerEnv(rows: SpawnerEnvRow[]): string | null {
       return err instanceof Error ? err.message : String(err)
     }
     if (seen.has(row.name)) {
-      return `Two bindings are both named "${row.name}".`
+      return `有两个绑定都命名为“${row.name}”。`
     }
     seen.add(row.name)
   }
@@ -79,12 +79,12 @@ export function AgentSpawnerConfigForm({
   return (
     <section className="grid gap-4">
       <ConnectionConfigField
-        label="Display name"
-        description="Name this agent capability for this connection."
+        label="显示名称"
+        description="为此连接中的智能体能力命名。"
       >
         <WorkshopInput
-          aria-label="Agent display name"
-          placeholder="e.g. Email Responder"
+          aria-label="智能体显示名称"
+          placeholder="例如：邮件回复助手"
           value={displayName}
           onChange={(e) => onDisplayNameChange(e.target.value)}
           className="w-full"
@@ -92,23 +92,23 @@ export function AgentSpawnerConfigForm({
       </ConnectionConfigField>
 
       <ConnectionConfigField
-        label="Model"
-        description="Choose the model spawned agents will use."
+        label="模型"
+        description="选择新建智能体要使用的模型。"
       >
         <Select
-          aria-label="Agent model"
+          aria-label="智能体模型"
           className="w-full text-sm [&_button]:!h-9"
           container={selectContainer}
-          placeholder="Select a model"
+          placeholder="请选择模型"
           value={modelId}
           onValueChange={(v) => onModelIdChange(v as string | null)}
           renderValue={(id) => {
-            if (id === null) return 'None (no agent)'
+            if (id === null) return '无（不使用智能体）'
             return availableModels.find((m) => m.id === id)?.name ?? String(id)
           }}
         >
           <Select.Option value={null as any}>
-            None (no agent)
+            无（不使用智能体）
           </Select.Option>
           {availableModels.map(model => (
             <Select.Option key={model.id} value={model.id}>
@@ -117,30 +117,30 @@ export function AgentSpawnerConfigForm({
           ))}
         </Select>
         <p className="mt-1 text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-          Choose "None" to create conversations without an agent.
+          选择“无”可创建不使用智能体的对话。
         </p>
       </ConnectionConfigField>
 
       <ConnectionConfigField
-        label="Agent bindings"
-        description="What spawned agents may use, and the names they see it under."
+        label="智能体绑定"
+        description="新建的智能体可以使用哪些资源，以及它们看到的资源名称。"
       >
         {env.length === 0 ? (
           <p className="text-[12px] leading-4 font-normal tracking-[-0.2px] text-kumo-subtle">
-            Nothing is available to offer spawned agents here. Create the agent from a gadget's
-            Connections tab to give it access to that gadget and its resources.
+            此处没有可提供给新建智能体的内容。请从应用的“连接”标签页创建智能体，
+            以便它访问该应用及其资源。
           </p>
         ) : (
           <div className="grid gap-2">
             {env.map((row, index) => (
               <div key={`${row.target}:${index}`} className="flex items-center gap-2">
                 <Checkbox
-                  aria-label={`Give spawned agents access to ${row.targetTitle}`}
+                  aria-label={`允许新建智能体访问 ${row.targetTitle}`}
                   checked={row.enabled}
                   onCheckedChange={(checked) => updateRow(index, { enabled: checked === true })}
                 />
                 <WorkshopInput
-                  aria-label={`Binding name for ${row.targetTitle}`}
+                  aria-label={`${row.targetTitle} 的绑定名称`}
                   value={row.name}
                   disabled={!row.enabled}
                   onChange={(e) => updateRow(index, { name: e.target.value })}

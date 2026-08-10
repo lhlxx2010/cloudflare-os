@@ -47,7 +47,7 @@ describe("McpClient.listTools", () => {
     // and the cursor never ends. Without a page cap the loop runs until the Worker is killed.
     const calls = stubPages([{ tools: [], nextCursor: "more" }]);
     const client = new McpClient("https://mcp.example.com/mcp", async () => null);
-    await expect(client.listTools(200)).rejects.toThrow(/kept paginating/);
+    await expect(client.listTools(200)).rejects.toThrow(/分页超过/);
     expect(calls()).toBeLessThanOrEqual(50);
   });
 
@@ -99,7 +99,7 @@ describe("McpClient.listTools", () => {
       status: 200, headers: { "Content-Type": "application/json" },
     }));
     const client = new McpClient("https://mcp.example.com/mcp", async () => null);
-    await expect(client.callTool("anything", {})).rejects.toThrow(/too large/);
+    await expect(client.callTool("anything", {})).rejects.toThrow(/过大/);
   });
 
   it("returns an SSE response without waiting for the stream to close", async () => {
