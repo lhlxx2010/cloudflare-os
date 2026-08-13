@@ -38,6 +38,7 @@ import { SharingManager, SharingCaller, CollaboratorRecord, ShareKeyRecord } fro
 import { AutoApprovalDrainer } from "./auto-approval";
 import { collectSlashCommands, invokeSlashCommand } from "./slash-commands";
 import { createWorkshopLogger, obsContext, traced } from "./observability";
+import { wrapDoStubForTelemetry } from "./do-telemetry";
 import type { ChatGatewayRpcTarget, SubmitExternalMessageResult } from "@gadgets/workshop-shared/external-message-gateway";
 import {
   assertChatAttachmentSupportedByProvider,
@@ -6469,11 +6470,11 @@ export class OverseerDurableObject extends DurableObject<Cloudflare.Env> {
     if (role === "use") {
       // "use" collaborators get a restricted capability exposing only the gadget UI.
       return new UseOverseerInterface(
-          this.impl, owner, clientUser, profileId, userId, notifyClosed.dup());
+          this.impl, profileId, userId, notifyClosed.dup());
     }
 
     return new OverseerClientInterface(
-        this.impl, owner, clientUser, profileId, userId, isOwner, notifyClosed.dup(),
+        this.impl, profileId, userId, isOwner, notifyClosed.dup(),
         ensureCapsules);
   }
 
@@ -7110,10 +7111,8 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   #clientProfilePromise: Promise<AiChatAuthorInfo> | undefined;
 
   constructor(private impl: OverseerImpl,
-              private owner: DurableObjectStub<UserDurableObject>,
-              private clientUser: DurableObjectStub<UserDurableObject>,
               private clientProfileId: string,
-              clientUserId: string,
+              private clientUserId: string,
               private isOwner: boolean,
               private notifyClosed: NativeRpcStub<() => void>,
               // Ambient capsule reconciliation started during open(); listSlashCommands() waits for
@@ -7122,7 +7121,22 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     super();
     this.#leavePresence = joinSessionPresence(
         this.impl, this.clientProfileId, "build", () => this.#getClientProfile());
-    this.#leaveOutputsFanout = this.impl.joinOutputsFanout(clientUserId);
+    this.#leaveOutputsFanout = this.impl.joinOutputsFanout(this.clientUserId);
+  }
+
+  // We create a new stub for every call so that we don't have to worry about detecting when a
+  // stub has become broken (see AuthenticatedApiImpl.#user in server.ts).
+  get #owner(): DurableObjectStub<UserDurableObject> {
+    if (!this.impl.ownerId) throw new Error("Workspace has been deleted.");
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.impl.ownerId)),
+        this.impl.logger);
+  }
+
+  get #clientUser(): DurableObjectStub<UserDurableObject> {
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.clientUserId)),
+        this.impl.logger);
   }
 
   #leavePresence: () => void;
@@ -7142,7 +7156,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async #getClientProfile(): Promise<AiChatAuthorInfo> {
     if (!this.#clientProfilePromise) {
-      this.#clientProfilePromise = this.clientUser.whoami().catch((err: unknown) => {
+      this.#clientProfilePromise = this.#clientUser.whoami().catch((err: unknown) => {
         this.#clientProfilePromise = undefined;
         throw err;
       });
@@ -7162,7 +7176,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       defaultGadgetId: this.impl.defaultGadgetId,
     };
     if (!this.isOwner) {
-      result.owner = await this.owner.whoami();
+      result.owner = await this.#owner.whoami();
     }
     return result;
   }
@@ -7183,7 +7197,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
     // For collaborators, include owner info.
     if (!this.isOwner) {
-      metadata.owner = await this.owner.whoami();
+      metadata.owner = await this.#owner.whoami();
     }
 
     let titleSubscriber = {
@@ -7233,11 +7247,11 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async setTitle(title: string): Promise<void> {
     this.impl.storage.title.put(title);
-    await this.owner.updateTitle(this.impl.ctx.id.toString(), title);
+    await this.#owner.updateTitle(this.impl.ctx.id.toString(), title);
   }
 
   async setPinned(pinned: boolean): Promise<void> {
-    await this.clientUser.updatePinned(this.impl.ctx.id.toString(), pinned);
+    await this.#clientUser.updatePinned(this.impl.ctx.id.toString(), pinned);
   }
 
   async subscribeToWorkpieces(subscriber: RpcStub<WorkpiecesSubscriber>): Promise<RpcStub<{}>> {
@@ -7264,7 +7278,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       let taken = new Set(
           [...this.impl.storage.gadgets.list()].map(gadget => gadget.bindingName));
       for (let name of chatNames ?? []) taken.add(name);
-      let userMeta = await this.clientUser.getChatContext(null);
+      let userMeta = await this.#clientUser.getChatContext(null);
       if (userMeta.quickModel) {
         bindingName = await this.impl.generateBindingName(
             title, taken, {config: userMeta.quickModel, initiator: userMeta.profile});
@@ -7297,14 +7311,14 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     }
     // @ts-expect-error An RpcTarget implementing the interface works in place of a stub, but the
     //     type system doesn't know this.
-    return new GadgetClientImpl(this.impl, record.id, this.clientUser);
+    return new GadgetClientImpl(this.impl, record.id, this.clientUserId);
   }
 
   async getGadget(id: WorkpieceId): Promise<RpcStub<GadgetClient>> {
     this.impl.getGadgetRecord(id);  // validate it exists
     // @ts-expect-error An RpcTarget implementing the interface works in place of a stub, but the
     //     type system doesn't know this.
-    return new GadgetClientImpl(this.impl, id, this.clientUser);
+    return new GadgetClientImpl(this.impl, id, this.clientUserId);
   }
 
   async deleteSelf(): Promise<void> {
@@ -7315,7 +7329,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
     this.impl.recordGadgetAnalytics({
       event_name: "gadget_deleted",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
     });
 
     this.impl.destroyAllLiveChats();
@@ -7333,7 +7347,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     }
 
     await this.impl.ctx.blockConcurrencyWhile(async () => {
-      await this.owner.deleteGadget(this.impl.ctx.id.toString());
+      await this.#owner.deleteGadget(this.impl.ctx.id.toString());
       await this.impl.ctx.storage.deleteAll();
       this.impl.scheduleRevocationRestart();
       this.impl.ownerId = undefined;
@@ -7442,7 +7456,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     let gatekeeperId = await result.getId();
     this.impl.recordGadgetAnalytics({
       event_name: "connection_created",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
       gatekeeper_id: gatekeeperId,
       connection_type: connectionType,
       vendor_id: vendorId,
@@ -7452,7 +7466,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async newGatekeeper(accountId: number, resourceUrl: string)
       : Promise<GatekeeperClient<any> | null> {
     let {class: cls, vendorId, typeUrlPattern} =
-        await this.clientUser.getGatekeeperClassFor(accountId, resourceUrl);
+        await this.#clientUser.getGatekeeperClassFor(accountId, resourceUrl);
     let creationSpec: GatekeeperCreationSpec = {
       type: "gatekeeper",
       vendorId,
@@ -7465,7 +7479,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   }
 
   async newAiModelGatekeeper(modelId: string): Promise<GatekeeperClient<any>> {
-    let chatMeta = await this.clientUser.getChatContext(modelId);
+    let chatMeta = await this.#clientUser.getChatContext(modelId);
     let props: LanguageModelGatekeeperProps = {
       userId: chatMeta.profile.id,
       modelId,
@@ -7511,7 +7525,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     let props: AgentSpawnerBindingProps = {
       overseerId: this.impl.ctx.id.toString(),
       config,
-      creatorUserId: this.clientUser.id.toString(),
+      creatorUserId: this.#clientUser.id.toString(),
     };
 
     // Resolve model provider/name for blueprint metadata.
@@ -7520,7 +7534,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       config,
     };
     if (config.modelId) {
-      let chatMeta = await this.clientUser.getChatContext(config.modelId);
+      let chatMeta = await this.#clientUser.getChatContext(config.modelId);
       if (chatMeta.aiModel) {
         creationSpec.modelProvider = chatMeta.aiModel.config.provider;
         creationSpec.modelName = chatMeta.aiModel.config.model;
@@ -7828,7 +7842,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       }
     }
 
-    let userMeta = await this.clientUser.getChatContext(modelId);
+    let userMeta = await this.#clientUser.getChatContext(modelId);
     if (!userMeta.aiModel) return;  // No model resolved; nothing to resume.
 
     let preparation = this.impl.waitForChatMessagePreparation(chatId);
@@ -7847,7 +7861,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     this.impl.storage.chatMeta.put(fresh);
 
     this.impl.startAgent(chatId, userMeta.aiModel, userMeta.profile,
-                         this.clientUser.id.toString());
+                         this.#clientUser.id.toString());
   }
 
   async acceptConnectionRequest(
@@ -7945,7 +7959,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   }
 
   async listModels(): Promise<AiChatAuthorInfo[]> {
-    return this.clientUser.listModels();
+    return this.#clientUser.listModels();
   }
 
   async listSlashCommands(): Promise<SlashCommandChoice[]> {
@@ -7959,7 +7973,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   ): Promise<ChatAttachmentHandle> {
     let provider: AiModelConfig["provider"] | undefined;
     if (modelId !== null) {
-      provider = (await this.clientUser.getChatContext(modelId)).aiModel?.config.provider;
+      provider = (await this.#clientUser.getChatContext(modelId)).aiModel?.config.provider;
     }
     attachment = validateChatAttachmentUpload(
       attachment,
@@ -8183,8 +8197,8 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   async newChat(initialMessage: string | SlashCommandRequest, chosenModelId: string | null,
                 capsules?: CapsuleSpecifier[], attachments?: ChatAttachmentHandle[],
                 formats?: MessageFormatRef[]): Promise<number> {
-    let userMeta = await this.clientUser.getChatContext(chosenModelId);
-    return this.impl.newChat(this.clientUser, userMeta, initialMessage, capsules, attachments,
+    let userMeta = await this.#clientUser.getChatContext(chosenModelId);
+    return this.impl.newChat(this.#clientUser, userMeta, initialMessage, capsules, attachments,
                              undefined, undefined, formats);
   }
 
@@ -8192,9 +8206,9 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       chatId: number, message: string | SlashCommandRequest, chosenModelId: string | null,
       capsules?: CapsuleSpecifier[], attachments?: ChatAttachmentHandle[],
       formats?: MessageFormatRef[]): Promise<void> {
-    let userMeta = await this.clientUser.getChatContext(chosenModelId);
+    let userMeta = await this.#clientUser.getChatContext(chosenModelId);
     return this.impl.sendChatMessage(
-        this.clientUser, userMeta, chatId, message, capsules, attachments, undefined, formats);
+        this.#clientUser, userMeta, chatId, message, capsules, attachments, undefined, formats);
   }
 
   async setChatTitle(chatId: number, title: string): Promise<void> {
@@ -8209,7 +8223,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 
   async mergeChanges(chatId: number, mergeThrough: number | null,
                      options?: { includeDraft?: boolean }): Promise<void> {
-    let userMeta = await this.clientUser.getChatContext(null);
+    let userMeta = await this.#clientUser.getChatContext(null);
 
     let meta = this.impl.assertChatNotActive(chatId);
     if (options?.includeDraft) {
@@ -8308,7 +8322,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     }
     this.impl.recordGadgetAnalytics({
       event_name: "gadget_interaction",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
       chat_id: chatId,
       interaction_type: "code_merged",
     });
@@ -8475,7 +8489,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
   }
 
   async retryAgent(chatId: number, modelId: string): Promise<void> {
-    let userMeta = await this.clientUser.getChatContext(modelId);
+    let userMeta = await this.#clientUser.getChatContext(modelId);
 
     let meta = this.impl.assertChatNotActive(chatId);
     if (!userMeta.aiModel) {
@@ -8490,7 +8504,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     this.impl.storage.chatMeta.put(meta);
 
     this.impl.startAgent(chatId, userMeta.aiModel, userMeta.profile,
-                         this.clientUser.id.toString());
+                         this.#clientUser.id.toString());
   }
 
   async finalizeChatDraft(chatId: number): Promise<void> {
@@ -8725,7 +8739,7 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
         // Check if the creator is the owner (requires an RPC to the owner's DO).
         let ownerProfileId = await this.impl.getOwnerProfileId();
         if (ownerProfileId === record.createdBy) {
-          createdBy = await this.owner.whoami();
+          createdBy = await this.#owner.whoami();
         }
         // Check if the creator is a collaborator (resolved locally).
         if (!createdBy) {
@@ -8772,15 +8786,27 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
 @validateRpc()
 class UseOverseerInterface extends RpcTarget implements Overseer {
   constructor(private impl: OverseerImpl,
-              private owner: DurableObjectStub<UserDurableObject>,
-              private clientUser: DurableObjectStub<UserDurableObject>,
               private clientProfileId: string,
-              clientUserId: string,
+              private clientUserId: string,
               private notifyClosed: NativeRpcStub<() => void>) {
     super();
     this.#leavePresence = joinSessionPresence(
-        this.impl, this.clientProfileId, "use", () => this.clientUser.whoami());
-    this.#leaveOutputsFanout = this.impl.joinOutputsFanout(clientUserId);
+        this.impl, this.clientProfileId, "use", () => this.#clientUser.whoami());
+    this.#leaveOutputsFanout = this.impl.joinOutputsFanout(this.clientUserId);
+  }
+
+  // Fresh stub per call; see OverseerClientInterface.#clientUser.
+  get #owner(): DurableObjectStub<UserDurableObject> {
+    if (!this.impl.ownerId) throw new Error("Workspace has been deleted.");
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.impl.ownerId)),
+        this.impl.logger);
+  }
+
+  get #clientUser(): DurableObjectStub<UserDurableObject> {
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.clientUserId)),
+        this.impl.logger);
   }
 
   #leavePresence: () => void;
@@ -8804,7 +8830,7 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
     return {
       id: this.impl.ctx.id.toString(),
       title: this.impl.storage.title.get(),
-      owner: await this.owner.whoami(),
+      owner: await this.#owner.whoami(),
       role: "use",
       defaultGadgetId: this.impl.defaultGadgetId,
     };
@@ -8818,7 +8844,7 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
     let metadata: GadgetMetadata = {
       id: this.impl.ctx.id.toString(),
       title: this.impl.storage.title.get(),
-      owner: await this.owner.whoami(),
+      owner: await this.#owner.whoami(),
       role: "use",
       defaultGadgetId: this.impl.defaultGadgetId,
     };
@@ -8866,7 +8892,7 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
     }
     // @ts-expect-error An RpcTarget implementing the interface works in place of a stub, but the
     //     type system doesn't know this.
-    return new UseGadgetClientInterface(this.impl, id, this.clientUser);
+    return new UseGadgetClientInterface(this.impl, id, this.clientUserId);
   }
 
   // --- Denied methods (build-only) ---
@@ -8998,8 +9024,15 @@ class UseOverseerInterface extends RpcTarget implements Overseer {
 @validateRpc()
 class GadgetClientImpl extends RpcTarget implements GadgetClient {
   constructor(private impl: OverseerImpl, private id: WorkpieceId,
-      private clientUser: DurableObjectStub<UserDurableObject>) {
+      private clientUserId: string) {
     super();
+  }
+
+  // Fresh stub per call; see OverseerClientInterface.#clientUser.
+  get #clientUser(): DurableObjectStub<UserDurableObject> {
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.clientUserId)),
+        this.impl.logger);
   }
 
   async getId(): Promise<WorkpieceId> {
@@ -9050,7 +9083,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
   async connectToGadget(chatId?: number): Promise<RpcStub<any>> {
     this.impl.recordGadgetAnalytics({
       event_name: "gadget_interaction",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
       chat_id: chatId,
       interaction_type: "gadget_ui_connected",
     });
@@ -9104,7 +9137,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
     if (!this.impl.storage.chatMeta.get(chatId)) {
       throw new Error(`未找到聊天：${chatId}`);
     }
-    let author = await this.clientUser.whoami();
+    let author = await this.#clientUser.whoami();
     this.impl.bindWorkpiece(this.id, name, target, chatId);
     this.impl.addChatMessages(chatId, author, [{
       type: "changes",
@@ -9236,7 +9269,7 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
 
     this.impl.recordGadgetAnalytics({
       event_name: "blueprint_created",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
       blueprint_id: id,
     });
 
@@ -9262,8 +9295,15 @@ class GadgetClientImpl extends RpcTarget implements GadgetClient {
 @validateRpc()
 class UseGadgetClientInterface extends RpcTarget implements GadgetClient {
   constructor(private impl: OverseerImpl, private id: WorkpieceId,
-      private clientUser: DurableObjectStub<UserDurableObject>) {
+      private clientUserId: string) {
     super();
+  }
+
+  // Fresh stub per call; see OverseerClientInterface.#clientUser.
+  get #clientUser(): DurableObjectStub<UserDurableObject> {
+    return wrapDoStubForTelemetry(
+        this.impl.users.get(this.impl.users.idFromString(this.clientUserId)),
+        this.impl.logger);
   }
 
   #deny(): never {
@@ -9297,7 +9337,7 @@ class UseGadgetClientInterface extends RpcTarget implements GadgetClient {
 
     this.impl.recordGadgetAnalytics({
       event_name: "gadget_interaction",
-      user_id: this.clientUser.id.toString(),
+      user_id: this.#clientUser.id.toString(),
       interaction_type: "gadget_ui_connected",
     });
     return this.impl.getGadgetFacet(this.id, undefined);

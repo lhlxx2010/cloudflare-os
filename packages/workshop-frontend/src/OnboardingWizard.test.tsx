@@ -16,7 +16,10 @@ const testState = vi.hoisted(() => {
   }
   state.authenticatedApi = {
     listGatekeeperVendors: async () => state.vendors,
-    subscribeConnectedAccounts: async () => ({ [Symbol.dispose]() {} }),
+    subscribeConnectedAccounts: () => Object.assign(
+      Promise.resolve({ [Symbol.dispose]() {} }),
+      { [Symbol.dispose]() {} },
+    ),
     listModels: state.listModels,
     getAiConfig: state.getAiConfig,
     setPreferredModel: state.setPreferredModel,
