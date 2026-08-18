@@ -2,7 +2,7 @@ import type { AiChatAuthorInfo } from "@gadgets/workshop-shared/api";
 
 const LAST_SELECTED_MODEL_KEY = "lastSelectedModel";
 
-// Sentinel used for UI values and localStorage so an explicit null choice can persist.
+/** Sentinel used for UI values and localStorage so an explicit null choice can persist. */
 export const NO_AGENT_OPTION_VALUE = "__gadgets_no_agent__";
 
 export function getStoredSelectedModel(
@@ -29,9 +29,11 @@ export function persistSelectedModel(modelId: string | null): void {
   );
 }
 
-// Model selection is browser-local rather than account-scoped. Clear it after a new account's
-// onboarding so an earlier account's explicit "No agent" or model choice cannot leak across the
-// login boundary; the normal picker initialization will then choose the first available model.
+/**
+ * Model selection is browser-local rather than account-scoped. Clear it after a new account's
+ * onboarding so an earlier account's explicit "No agent" or model choice cannot leak across the
+ * login boundary; the normal picker initialization will then choose the first available model.
+ */
 export function clearStoredSelectedModel(): void {
   localStorage.removeItem(LAST_SELECTED_MODEL_KEY);
 }

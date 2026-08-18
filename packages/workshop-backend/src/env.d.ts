@@ -6,8 +6,9 @@ import type { ProductAnalyticsRecord } from "./analytics";
 declare global {
   namespace Cloudflare {
     interface Env {
-      // Deployment-wide admin usernames.
-      ADMINS?: string[];
+      // Deployment-wide admin usernames: a JSON binding, or the same array as a JSON string
+      // (which is what a secret binding, can carry).
+      ADMINS?: string[] | string;
 
       // Administrator account whose own AI model configurations are shared with all users. The
       // username must also appear in ADMINS. Credentials remain in that user's Durable Object.
@@ -51,8 +52,10 @@ declare global {
       >;
       FRONTEND_ERROR_RATE_LIMITER?: RateLimit;
 
-      // Browser Run binding used to render Gadget exports. Optional for self-hosted deployments.
-      BROWSER?: BrowserRun;
+      // The Browser Run binding (BROWSER) used to render Gadget exports is intentionally NOT
+      // redeclared here: wrangler's generated types make it required, and TypeScript 7 rejects
+      // weakening it to optional in a merged augmentation. Self-hosted deployments may omit the
+      // binding, so use sites read it as `BrowserRun | undefined` and null-check.
 
       // ---------------------------------------------------------------------------------------------
       // Optional features: sign-in via authentication gatekeepers + AI Gateway billing (free-tier

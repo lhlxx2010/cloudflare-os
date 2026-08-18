@@ -7,7 +7,7 @@ interface HookToggleProps {
   size?: 'sm' | 'base' | 'lg'
 }
 
-// Enable/disable toggle for bound hooks. Used in the Connections tab, Activity log, and inline chat.
+/** Enable/disable toggle for bound hooks. Used in the Connections tab, Activity log, and inline chat. */
 export function HookToggle({ enabled, disabled = false, onToggle, size = 'sm' }: HookToggleProps) {
   return (
     <Tooltip content={enabled ? '禁用此钩子。' : '启用此钩子。'} asChild>

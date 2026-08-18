@@ -56,8 +56,10 @@ export function uploadBatchTone(batch: UploadBatch): UploadBatchTone {
   return batch.failed === 0 ? "success" : "error";
 }
 
-// File paths are rendered as plain React text, but control characters are replaced so a local file
-// name cannot distort the status list or its accessible text.
+/**
+ * File paths are rendered as plain React text, but control characters are replaced so a local file
+ * name cannot distort the status list or its accessible text.
+ */
 export function safeUploadPath(path: string): string {
   const safe = Array.from(path, (character) => {
     const codePoint = character.codePointAt(0)!;

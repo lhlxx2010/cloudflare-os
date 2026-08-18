@@ -22,9 +22,11 @@ import { completeText } from "./ai-invoke.js";
 import { bridgePdfAttachments } from "./chat-attachment-pdf.js";
 import type { UserAiModelRecord, UserDurableObject } from "./user.js";
 
- // Routing to bill a user's own Cloudflare account for inference (BYOK path once the free tier is
- // exhausted). Defined here to avoid a backend->ai-gateway-billing type import cycle at runtime.
- // Inference is routed through the account's "default" AI Gateway.
+ /**
+  * Routing to bill a user's own Cloudflare account for inference (BYOK path once the free tier is
+  * exhausted). Defined here to avoid a backend->ai-gateway-billing type import cycle at runtime.
+  * Inference is routed through the account's "default" AI Gateway.
+  */
  export interface UserGatewayRouting {
    accountId: string;
    apiKey: string;
@@ -59,10 +61,12 @@ type ModelRoutingOptions = {
  * handle-level knobs.
  */
 export type ModelStreamOptions = SimpleStreamOptions & {
-  // When false, suppress the handle's per-API thinking/reasoning defaults so the request runs
-  // without extended thinking (as far as the model allows). Used by completeText(): one-shot
-  // calls -- titles, binding names, compaction summaries, gadget model bindings -- should be
-  // quick, and none of them benefit from cross-step reasoning. Default: true.
+  /**
+   * When false, suppress the handle's per-API thinking/reasoning defaults so the request runs
+   * without extended thinking (as far as the model allows). Used by completeText(): one-shot
+   * calls -- titles, binding names, compaction summaries, gadget model bindings -- should be
+   * quick, and none of them benefit from cross-step reasoning. Default: true.
+   */
   thinking?: boolean;
 };
 
@@ -73,24 +77,30 @@ export type ModelStreamOptions = SimpleStreamOptions & {
  * failures; failures surface as a final AssistantMessage with stopReason "error"/"aborted".
  */
 export type ModelHandle = {
-  // pi model descriptor (plain data; pi dispatches purely on `model.api`).
+  /** pi model descriptor (plain data; pi dispatches purely on `model.api`). */
   model: Model<Api>;
 
-  // Streams a response. Merges the handle's routing/auth and per-API options into whatever
-  // per-call options the caller (e.g. the agent loop) passes. Assignable to pi-agent-core's
-  // StreamFn (the extra ModelStreamOptions knobs are optional).
+  /**
+   * Streams a response. Merges the handle's routing/auth and per-API options into whatever
+   * per-call options the caller (e.g. the agent loop) passes. Assignable to pi-agent-core's
+   * StreamFn (the extra ModelStreamOptions knobs are optional).
+   */
   stream: (model: Model<Api>, context: Context, options?: ModelStreamOptions)
       => AssistantMessageEventStream;
 
-  // Route for retrieving this model's AI Gateway logs for cost accounting. Absent when requests
-  // don't flow through an AI Gateway (direct provider access, direct Workers AI REST).
+  /**
+   * Route for retrieving this model's AI Gateway logs for cost accounting. Absent when requests
+   * don't flow through an AI Gateway (direct provider access, direct Workers AI REST).
+   */
   aiGatewayLogRoute?: AiGatewayLogRoute;
 
-  // Status and AI Gateway log id of the most recent HTTP response observed by `stream`. Reset at
-  // the start of every request and set from pi's onResponse callback (which fires only once a
-  // response arrives -- an SDK-level failure leaves this undefined), so consumers must read it
-  // right after the request they care about completes. Turns run requests sequentially, so this
-  // is safe.
+  /**
+   * Status and AI Gateway log id of the most recent HTTP response observed by `stream`. Reset at
+   * the start of every request and set from pi's onResponse callback (which fires only once a
+   * response arrives -- an SDK-level failure leaves this undefined), so consumers must read it
+   * right after the request they care about completes. Turns run requests sequentially, so this
+   * is safe.
+   */
   lastResponse?: { status: number; aiGatewayLogId?: string };
 };
 
@@ -621,15 +631,19 @@ function getModelDirect(config: AiModelConfig, sessionAffinity?: string): ModelH
 
 /** Durable props for a Gadget-bound language model capability. */
 export type LanguageModelGatekeeperProps = {
-  // Resolve the model through this user on every session so shared administrator configuration
-  // and key changes take effect without rewriting every existing Gadget binding.
+  /**
+   * Resolve the model through this user on every session so shared administrator configuration and
+   * key changes take effect without rewriting every existing Gadget binding.
+   */
   userId: string,
   modelId: string,
   initiator: AiChatAuthorInfo,
   metadata?: GatewayMetadataContext,
 } | {
-  // Legacy props written before model bindings became reference-based. Retained so existing local
-  // Durable Objects can still start; newly-created bindings never persist model credentials.
+  /**
+   * Legacy props written before model bindings became reference-based. Retained so existing local
+   * Durable Objects can still start; newly-created bindings never persist model credentials.
+   */
   displayName: string,
   config: AiModelConfig,
   initiator: AiChatAuthorInfo,
