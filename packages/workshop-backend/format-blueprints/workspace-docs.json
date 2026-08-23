@@ -10,5 +10,5 @@
     "icon": "fileText"
   },
   "author": { "type": "user", "name": "NINT", "id": "agent@cloudflare.com" },
-  "revision": 4
+  "revision": 8
 }

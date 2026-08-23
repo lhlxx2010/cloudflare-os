@@ -2,7 +2,7 @@
 //
 // Every call is either an observation or an approval-gated action, `readOnlyHint` decides which,
 // writes are queued rather than performed inline, and per-tool TypeScript is generated from the
-// server's schemas so Code Mode works.
+// server's schemas so Gadget code gets typed methods.
 //
 // The endpoint is whatever a user typed, so annotations never earn auto-approval here and a Gadget
 // bound to it is owner-only. See `sharing-policy.ts` and the README.
@@ -26,6 +26,7 @@ import {
 import type { ToolCatalog } from "@gadgets/mcp-shared/client";
 import {
   classifyTool,
+  MAX_TOOLS_PER_SERVER,
   type ServerTrust,
 } from "@gadgets/mcp-shared/tools";
 import { bindingNameFragment, hostOf } from "@gadgets/mcp-shared/util";
@@ -34,7 +35,7 @@ import { generateSessionTypes, sessionTypeName } from "@gadgets/mcp-shared/schem
 import { McpAccountBase, type ConnectedServer, type ConnectOutcome }
   from "@gadgets/mcp-shared/account";
 import { generateNonce } from "@gadgets/mcp-shared/connect-nonce";
-import { fetchTools, type ConnectionAccount } from "@gadgets/mcp-shared/connection";
+import { fetchTools, withClient, type ConnectionAccount } from "@gadgets/mcp-shared/connection";
 import { McpSessionBase } from "@gadgets/mcp-shared/session";
 import { McpFacetBase } from "@gadgets/mcp-shared/facet";
 import { looksLikePortal } from "@gadgets/mcp-shared/portal";
@@ -282,8 +283,21 @@ export class GatekeeperUserImpl
         `请改用 MCP Server Portals 连接器连接此端点。`);
     }
     if (scope.tools !== undefined) {
+      const selected = new Set(scope.tools);
       validateToolScopeAgainstCatalog(
-        scope, await fetchTools(this.env, this.#account(), server.endpoint));
+        scope,
+        selected.size === 0
+          ? { tools: [], truncated: false }
+          : await withClient(
+            this.env,
+            this.#account(),
+            server.endpoint,
+            client => client.listMatchingToolIndex(
+              selected.size,
+              tool => selected.has(tool.name),
+            ),
+          ),
+      );
     }
 
     const props: McpGatekeeperImplProps = {
@@ -354,7 +368,10 @@ class McpServerConfiguratorUI extends RpcTarget implements McpServerConfigurator
   async listToolOptions(): Promise<ConfiguratorUIOption[]> {
     const { tools, truncated } = await this.#tools();
     requireCompleteCatalogForToolSelection(truncated);
-    const isPortal = looksLikePortal(tools, truncated);
+    // `fetchTools` lists with the ordinary catalog cap, so that is the cap reaching it would be
+    // evidence of. Unlike the portal connector, this form refuses a truncated catalog outright
+    // rather than surveying past it, so `truncated` is already known to be false here.
+    const isPortal = looksLikePortal(tools, { truncated, cap: MAX_TOOLS_PER_SERVER });
 
     return tools
       .filter(tool => scopeAllows({}, tool.name, isPortal))
@@ -434,8 +451,8 @@ export class McpGatekeeperImpl
 
     const counts = `${reads} 个只读，${tools.length - reads} 个需要批准`;
     const snippet = scope.tools
-      ? `${serverName} 上指定的 ${scope.tools.length} 个 MCP 工具 \u2014 ${counts}。其他工具将被拒绝。`
-      : `${serverName} 上的全部 ${tools.length} 个 MCP 工具 \u2014 ${counts}。`;
+      ? `${serverName} 上指定的 ${scope.tools.length} 个 MCP 工具 — ${counts}。其他工具将被拒绝。`
+      : `${serverName} 上的全部工具；此处显示 ${tools.length} 个工具定义（${counts}）。`;
 
     return {
       url: this.resourceUrl,

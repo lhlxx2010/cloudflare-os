@@ -47,6 +47,18 @@ import GOOGLE_SHEETS_CONFIGURATOR_HTML from "./generated/google-sheets-configura
 import GOOGLE_LOGO_SVG from "./google-logo.svg";
 import { obsContext } from "./observability.js";
 import { AccessTokenCache, AccessTokenRequest, ACCESS_TOKEN_EXPIRY_SAFETY_MS } from "./auth-retry";
+import {
+  MAX_GMAIL_VISIBLE_THREAD_MESSAGES, validateGmailAddress, validateGmailBody,
+  validateGmailQueryForGrouping, validateGmailRecipientCount, validateOutboundInput,
+} from "./gmail-validate";
+import {
+  AUTH_SCOPES, BIGQUERY_HOST, BIGQUERY_RESOURCE, GMAIL_RESOURCE, GOOGLE_CALENDAR_RESOURCE,
+  GOOGLE_DOC_RESOURCE, GOOGLE_SHEETS_RESOURCE, LEGACY_GRANTED_RESOURCE_URL_PATTERNS,
+  RESOURCE_BY_KIND, SUPPORTED_RESOURCES, grantedResourcesFromScopes, parseResourceUrl,
+  resourceUrlPatternsToOAuthScopes,
+} from "./resources";
+import { ObserverCheck, ObserverTracker } from "./observers";
+import { CursorPager, Pager } from "./cursor";
 
 // Vendor id = GATEKEEPER_<NAME> binding suffix (lowercased).
 const VENDOR_ID = "google";
@@ -128,38 +140,6 @@ function toLabelObjects(labelIds: string[], labelMap: Map<string, string>): Gmai
   });
 }
 
-function validateGmailQueryForGrouping(query: string): void {
-  if (new TextEncoder().encode(query).byteLength > MAX_GMAIL_QUERY_BYTES) {
-    throw new Error(`Gmail 搜索查询最多为 ${MAX_GMAIL_QUERY_BYTES} 字节。`);
-  }
-  const stack: string[] = [];
-  let quote: string | undefined;
-  let escaped = false;
-  for (const char of query) {
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (char === '\\') {
-      escaped = true;
-      continue;
-    }
-    if (quote) {
-      if (char === quote) quote = undefined;
-      continue;
-    }
-    if (char === '"' || char === "'") {
-      quote = char;
-    } else if (char === '(' || char === '{') {
-      stack.push(char);
-    } else if (char === ')' || char === '}') {
-      const expected = char === ')' ? '(' : '{';
-      if (stack.pop() !== expected) throw new Error("Gmail 查询的分组定界符不匹配。");
-    }
-  }
-  if (quote || stack.length > 0) throw new Error("Gmail 查询中存在未闭合的分组或引号。");
-}
-
 function getBaseUrl(env: Env) {
   return stripTrailingSlashes(env.BASE_URL || "http://localhost:8787/gatekeeper/google");
 }
@@ -209,140 +189,6 @@ const NOT_CONFIGURED_HTML = `<!DOCTYPE html>
     </div>
   </body>
 </html>`;
-
-// OAuth scopes we always request, used to identify the account (name, email, avatar). Not tied to
-// any resource type.
-const IDENTITY_SCOPES = [
-  "openid",
-  "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/userinfo.email",
-];
-
-// Minimal scopes for sign-in only (verify the user's email). Used when connecting in "auth" mode;
-// the resulting grant is transient. (Same as IDENTITY_SCOPES — sign-in needs no resource scopes.)
-const AUTH_SCOPES = IDENTITY_SCOPES;
-
-const BIGQUERY_HOST = "bigquery.googleapis.com";
-
-const GMAIL_RESOURCE: SupportedResource = {
-  urlPattern: "https://mail.google.com/*",
-  title: "Gmail 邮箱",
-  description: "读取电子邮件并应用标签。",
-  grantable: true,
-};
-
-const GOOGLE_DOC_RESOURCE: SupportedResource = {
-  urlPattern: "https://docs.google.com/document/d/:docId/*",
-  title: "Google 文档",
-  description:
-      "读取和编辑你选择的文档。",
-  grantable: true,
-};
-
-const GOOGLE_SHEETS_RESOURCE: SupportedResource = {
-  urlPattern: "https://docs.google.com/spreadsheets/d/:spreadsheetId/*",
-  title: "Google 电子表格",
-  description: "读取你选择的电子表格中的值。",
-  grantable: true,
-};
-
-const GOOGLE_CALENDAR_RESOURCE: SupportedResource = {
-  urlPattern: "https://calendar.google.com/calendar/:calendarId/*",
-  title: "Google 日历",
-  description:
-      "读取和管理 Google 日历。",
-  grantable: true,
-};
-
-const BIGQUERY_RESOURCE: SupportedResource = {
-  urlPattern: `https://${BIGQUERY_HOST}/:projectId/*`,
-  title: "BigQuery",
-  description: "选择 Google Cloud 项目，然后可以选择将访问范围缩小到数据集或表。",
-  grantable: true,
-};
-
-// Accounts connected before per-resource scope tracking received scopes for exactly these
-// resources.
-const LEGACY_GRANTED_RESOURCE_URL_PATTERNS = [
-  GMAIL_RESOURCE.urlPattern,
-  GOOGLE_DOC_RESOURCE.urlPattern,
-  BIGQUERY_RESOURCE.urlPattern,
-];
-
-const RESOURCE_SCOPES: {resource: SupportedResource, scopes: string[]}[] = [
-  {
-    resource: GMAIL_RESOURCE,
-    scopes: [
-      "https://www.googleapis.com/auth/gmail.labels",
-      "https://www.googleapis.com/auth/gmail.modify",
-    ],
-  },
-  {
-    resource: GOOGLE_DOC_RESOURCE,
-    scopes: [
-      "https://www.googleapis.com/auth/documents",
-      // Read-only Drive file metadata, used to power the doc picker when connecting a Google Doc.
-      "https://www.googleapis.com/auth/drive.metadata.readonly",
-    ],
-  },
-  {
-    resource: GOOGLE_SHEETS_RESOURCE,
-    scopes: [
-      "https://www.googleapis.com/auth/spreadsheets.readonly",
-      // Read-only Drive file metadata, used to power the spreadsheet picker.
-      "https://www.googleapis.com/auth/drive.metadata.readonly",
-    ],
-  },
-  {
-    resource: GOOGLE_CALENDAR_RESOURCE,
-    scopes: [
-      // Read-only calendar list, used to power the calendar picker when connecting a calendar.
-      "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
-      "https://www.googleapis.com/auth/calendar.events",
-    ],
-  },
-  {
-    resource: BIGQUERY_RESOURCE,
-    scopes: [
-      // `bigquery` (not `bigquery.readonly`): dry-runs go through `jobs.insert` for scope
-      // enforcement, which `readonly` doesn't permit. Read-only is enforced at the API layer.
-      "https://www.googleapis.com/auth/bigquery",
-    ],
-  },
-];
-
-const SUPPORTED_RESOURCES: SupportedResource[] = RESOURCE_SCOPES.map(entry => entry.resource);
-
-function validateResourceUrlPatterns(resourceUrlPatterns?: string[]): void {
-  if (resourceUrlPatterns === undefined) return;
-
-  let knownPatterns = new Set(RESOURCE_SCOPES.map(entry => entry.resource.urlPattern));
-  let unknownPatterns = resourceUrlPatterns.filter(pattern => !knownPatterns.has(pattern));
-  if (unknownPatterns.length > 0) {
-    throw new Error(`未知的可授权资源 URL 模式：${unknownPatterns.join(", ")}`);
-  }
-}
-
-// The OAuth scopes to request for the given grantable resource `urlPattern`s.
-function resourceUrlPatternsToOAuthScopes(resourceUrlPatterns?: string[]): string[] {
-  validateResourceUrlPatterns(resourceUrlPatterns);
-
-  let scopes = new Set<string>(IDENTITY_SCOPES);
-  for (let entry of RESOURCE_SCOPES) {
-    if (resourceUrlPatterns === undefined ||
-        resourceUrlPatterns.includes(entry.resource.urlPattern)) {
-      for (let scope of entry.scopes) scopes.add(scope);
-    }
-  }
-  return [...scopes];
-}
-
-function grantedResourcesFromScopes(grantedOAuthScopes: string[]): string[] {
-  let granted = new Set(grantedOAuthScopes);
-  return RESOURCE_SCOPES
-      .filter(entry => entry.scopes.every(scope => granted.has(scope)))
-      .map(entry => entry.resource.urlPattern);
-}
 
 const GOOGLE_LOGO_URL = `data:image/svg+xml,${encodeURIComponent(GOOGLE_LOGO_SVG)}`;
 
@@ -838,133 +684,51 @@ export class GatekeeperUserImpl extends WorkerEntrypoint<Env, GatekeeperUserImpl
     class: DurableObjectClass<Gatekeeper<any>>;
     resource: SupportedResource;
   }> {
-    let parsed = new URL(url);
+    let target = parseResourceUrl(url);
+    let resource = RESOURCE_BY_KIND[target.kind];
+    let userObjectId = this.ctx.props.userObjectId;
 
-    if (parsed.hostname === "docs.google.com" &&
-        parsed.pathname.startsWith("/document/d/")) {
-      // Extract document ID from URL path: /document/d/{documentId}/...
-      let documentId = parsed.pathname.split("/")[3];
-      if (!documentId) {
-        throw new Error("Google Docs URL 无效：未找到文档 ID");
+    switch (target.kind) {
+      case "gmail": {
+        let props: GmailGatekeeperImplProps = {
+          userObjectId, searchQuery: target.searchQuery, labelName: target.labelName,
+        };
+        return {class: this.ctx.exports.GmailGatekeeperImpl({props}), resource};
       }
-      let props: GoogleDocGatekeeperImplProps = {
-        userObjectId: this.ctx.props.userObjectId,
-        documentId,
-      };
-      return {class: this.ctx.exports.GoogleDocGatekeeperImpl({props}), resource: GOOGLE_DOC_RESOURCE};
+      case "doc": {
+        let props: GoogleDocGatekeeperImplProps = {userObjectId, documentId: target.documentId};
+        return {class: this.ctx.exports.GoogleDocGatekeeperImpl({props}), resource};
+      }
+      case "sheets": {
+        let props: GoogleSheetsGatekeeperImplProps = {
+          userObjectId, spreadsheetId: target.spreadsheetId,
+        };
+        return {class: this.ctx.exports.GoogleSheetsGatekeeperImpl({props}), resource};
+      }
+      case "calendar": {
+        let props: GoogleCalendarGatekeeperImplProps = {
+          userObjectId, calendarId: target.calendarId, availabilityMode: target.availabilityMode,
+        };
+        return {class: this.ctx.exports.GoogleCalendarGatekeeperImpl({props}), resource};
+      }
+      case "bigquery": {
+        let props: BigQueryGatekeeperImplProps = {
+          userObjectId,
+          scopedProjectId: target.projectId,
+          scopedDatasetId: target.datasetId,
+          scopedTableId: target.tableId,
+        };
+        return {class: this.ctx.exports.BigQueryGatekeeperImpl({props}), resource};
+      }
     }
-
-    if (parsed.hostname === "docs.google.com" &&
-        parsed.pathname.startsWith("/spreadsheets/d/")) {
-      let spreadsheetId = parsed.pathname.split("/")[3];
-      if (!spreadsheetId) {
-        throw new Error("Google Sheets URL 无效：未找到电子表格 ID");
-      }
-      let props: GoogleSheetsGatekeeperImplProps = {
-        userObjectId: this.ctx.props.userObjectId,
-        spreadsheetId,
-      };
-      return {
-        class: this.ctx.exports.GoogleSheetsGatekeeperImpl({ props }),
-        resource: GOOGLE_SHEETS_RESOURCE,
-      };
-    }
-
-    if (parsed.hostname === "calendar.google.com" && parsed.pathname.startsWith("/calendar/")) {
-      let calendarId = decodeURIComponent(parsed.pathname.split("/")[2] ?? "");
-      if (!calendarId) {
-        throw new Error("Google Calendar URL 无效：未找到日历 ID");
-      }
-      if (calendarId === "primary") {
-        throw new Error(
-          "Google Calendar 绑定必须使用稳定的日历 ID，不能使用相对于账户的“primary”别名。");
-      }
-      // Default to the least-privilege scope unless the URL explicitly opts into all calendars.
-      let availabilityMode: CalendarAvailabilityMode =
-          parsed.searchParams.get("availability") === "allVisible" ? "allVisible" : "thisCalendar";
-      let props: GoogleCalendarGatekeeperImplProps = {
-        userObjectId: this.ctx.props.userObjectId,
-        calendarId,
-        availabilityMode,
-      };
-      return {
-        class: this.ctx.exports.GoogleCalendarGatekeeperImpl({props}),
-        resource: GOOGLE_CALENDAR_RESOURCE,
-      };
-    }
-
-    if (parsed.hostname === BIGQUERY_HOST) {
-      if (parsed.protocol !== "https:") {
-        throw new Error(`BigQuery 资源 URL 必须使用 https：${url}`);
-      }
-      if (parsed.search || parsed.hash) {
-        throw new Error("BigQuery 资源 URL 不得包含查询字符串或片段。");
-      }
-
-      // Synthetic path: /<projectId>/<datasetId>/<tableId> (each segment optional after the first).
-      let segments = parsed.pathname.replace(/^\/+|\/+$/g, "").split("/").filter(Boolean)
-          .map(segment => decodeURIComponent(segment));
-      if (segments.length > 3) {
-        throw new Error(
-            "BigQuery 资源 URL 必须为 /<projectId>、/<projectId>/<datasetId> " +
-            "或 /<projectId>/<datasetId>/<tableId>。");
-      }
-      let projectId = segments[0] || undefined;
-      let datasetId = segments[1] || undefined;
-      let tableId = segments[2] || undefined;
-      if (!projectId) {
-        throw new Error("BigQuery 资源 URL 必须包含项目 ID。");
-      }
-      if (tableId && !datasetId) {
-        throw new Error("未指定数据集时，无法将范围限制到表。");
-      }
-
-      let props: BigQueryGatekeeperImplProps = {
-        userObjectId: this.ctx.props.userObjectId,
-        scopedProjectId: projectId,
-        scopedDatasetId: datasetId,
-        scopedTableId: tableId,
-      };
-      return {
-        class: this.ctx.exports.BigQueryGatekeeperImpl({props}),
-        resource: BIGQUERY_RESOURCE,
-      };
-    }
-
-    // Default: Gmail
-    let props: GmailGatekeeperImplProps = {...this.ctx.props};
-
-    // Parse the URL hash to extract a search or label scope. Keep labels as
-    // opaque names; startSession resolves them to Gmail label IDs so label text
-    // can never be interpreted as search syntax.
-    let hash = parsed.hash;
-    if (hash.startsWith("#search/")) {
-      // Gmail's own UI encodes spaces in hash searches as `+`, while
-      // decodeURIComponent() only decodes `%20`. Normalize both forms.
-      const encodedQuery = hash.slice("#search/".length).replace(/\+/g, " ");
-      const query = decodeURIComponent(encodedQuery);
-      validateGmailQueryForGrouping(query);
-      props.searchQuery = query;
-    } else if (hash.startsWith("#label/")) {
-      const labelName = decodeURIComponent(hash.slice("#label/".length));
-      if (!labelName || new TextEncoder().encode(labelName).byteLength > 320) {
-        throw new Error("Gmail 标签名称必须为 1 至 320 字节。");
-      }
-      props.labelName = labelName;
-    } else if (hash && hash !== "#inbox") {
-      throw new Error(
-        "Unsupported Gmail view. Connect the inbox, an explicit search, or an explicit label.");
-    }
-
-    return {class: this.ctx.exports.GmailGatekeeperImpl({props}), resource: GMAIL_RESOURCE};
   }
 
   async startResourceConfigurator(
       resourceUrlPattern: string): Promise<ResourceConfiguratorFrame> {
-    let getToken = async () => {
+    let getToken = async (opts?: AccessTokenRequest) => {
       let id = this.ctx.exports.UserAccount.idFromString(this.ctx.props.userObjectId);
       let obj = this.ctx.exports.UserAccount.get(id);
-      return await obj.getAccessToken();
+      return await obj.getAccessToken(opts);
     };
 
     if (resourceUrlPattern === BIGQUERY_RESOURCE.urlPattern) {
@@ -1098,14 +862,6 @@ export interface GoogleVerifierApi extends GatekeeperUserVerifier {
   hasCalendarFreeBusyAccess(calendarId: string): Promise<boolean>;
   hasDatasetAccess(projectId: string, datasetId: string): Promise<boolean>;
 }
-
-type ObserverCheck<T> = {
-  excludeObservers?: string[];
-  pendingSets: T[];
-  commit(): void;
-};
-
-type ObservedSetState = true | "pending" | "observed";
 
 @validateRpc()
 export class GoogleVerifier extends WorkerEntrypoint<Env, GoogleVerifierProps>
@@ -1266,29 +1022,6 @@ type GmailSessionContext = {
 
 // ── GmailSessionImpl ────────────────────────────────────────────────
 
-const MAX_GMAIL_RECIPIENTS = 100;
-const MAX_GMAIL_SUBJECT_BYTES = 998;
-const MAX_GMAIL_BODY_BYTES = 64 * 1024;
-const MAX_GMAIL_QUERY_BYTES = 4096;
-const MAX_GMAIL_ADDRESS_BYTES = 320;
-const MAX_GMAIL_VISIBLE_THREAD_MESSAGES = 100;
-
-function validateOutboundInput(to: string[], subject: string, body: string): void {
-  if (to.length === 0 || to.length > MAX_GMAIL_RECIPIENTS) {
-    throw new Error(`电子邮件收件人数必须为 1 至 ${MAX_GMAIL_RECIPIENTS} 人。`);
-  }
-  if (to.some(address => address.length === 0 ||
-      new TextEncoder().encode(address).byteLength > MAX_GMAIL_ADDRESS_BYTES)) {
-    throw new Error("收件人地址长度无效。");
-  }
-  if (new TextEncoder().encode(subject).byteLength > MAX_GMAIL_SUBJECT_BYTES) {
-    throw new Error(`电子邮件主题最多为 ${MAX_GMAIL_SUBJECT_BYTES} 个 UTF-8 字节。`);
-  }
-  if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-    throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
-  }
-}
-
 @validateRpc()
 class GmailSessionImpl extends RpcTarget implements GmailSession {
   #ctx: GmailSessionContext;
@@ -1322,7 +1055,7 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
     const labelIds = this.#ctx.labelId
       ? [this.#ctx.labelId]
       : (!this.#ctx.searchQuery ? ["INBOX"] : undefined);
-    return new GmailThreadCursorImpl(this.#ctx, this.#ctx.searchQuery, labelIds);
+    return gmailThreadCursor(this.#ctx, this.#ctx.searchQuery, labelIds);
   }
 
   async search(query: string): Promise<Cursor<GmailThreadEntry>> {
@@ -1349,7 +1082,7 @@ class GmailSessionImpl extends RpcTarget implements GmailSession {
     // A full-mailbox binding may search all mail. Only an explicit label scope
     // attenuates search results; listThreads() separately defaults to INBOX.
     const labelIds = this.#ctx.labelId ? [this.#ctx.labelId] : undefined;
-    return new GmailThreadCursorImpl(this.#ctx, effectiveQuery, labelIds);
+    return gmailThreadCursor(this.#ctx, effectiveQuery, labelIds);
   }
 
   async send(to: string[], subject: string, body: string): Promise<void> {
@@ -1419,89 +1152,64 @@ async function submitGmailAction(
   }
 }
 
-// ── GmailThreadCursorImpl ───────────────────────────────────────────
-// Lazily fetches pages from the Gmail API as the gadget calls next().
-// Each next() returns a batch of GmailThreadEntry objects (thread info +
-// capability), or null when exhausted. Pages are fetched in batches of 20.
-//
-// The cursor itself is a capability. The initial listThreads()/search() call
-// authorizes creation; each next() separately authorizes the page it returns.
+// ── Cursors ─────────────────────────────────────────────────────────
+// A cursor is a capability. The listThreads()/search() call authorizes its creation; CursorPager
+// separately authorizes each page before disclosing it. See cursor.ts.
 
 @validateRpc()
-class GmailThreadCursorImpl extends RpcTarget implements Cursor<GmailThreadEntry> {
-  #ctx: GmailSessionContext;
-  #query: string | undefined;
-  #labelIds: string[] | undefined;
-  #pageToken: string | undefined;
-  #exhausted = false;
-  #tail: Promise<void> = Promise.resolve();
+class RpcCursor<Entry> extends RpcTarget implements Cursor<Entry> {
+  #pager: Pager<Entry>;
 
-  constructor(ctx: GmailSessionContext, query: string | undefined, labelIds?: string[]) {
+  constructor(pager: Pager<Entry>) {
     super();
-    this.#ctx = ctx;
-    this.#query = query;
-    this.#labelIds = labelIds;
+    this.#pager = pager;
   }
 
-  next(): Promise<GmailThreadEntry[] | null> {
-    const result = this.#tail.then(() => this.#nextPage());
-    this.#tail = result.then(() => undefined, () => undefined);
-    return result;
+  // `next()` takes no arguments, so there is no argument surface to validate.
+  @skipRpcValidation()
+  next(): Promise<Entry[] | null> {
+    return this.#pager.next();
   }
+}
 
-  async #nextPage(): Promise<GmailThreadEntry[] | null> {
-    if (this.#exhausted) return null;
+type GmailThreadRef = { id: string; snippet?: string };
 
-    let result: {threads: Array<{id: string; snippet?: string}>; nextPageToken?: string};
-    let pageToken = this.#pageToken;
-    let exhausted = false;
-    let skippedPages = 0;
-    do {
-      const previousToken = pageToken;
-      result = await this.#ctx.gmailApi.listThreads(
-        20, this.#query, pageToken, this.#labelIds);
-      pageToken = result.nextPageToken;
-      exhausted = !result.nextPageToken;
-      if (result.nextPageToken && result.nextPageToken === previousToken) {
-        throw new Error("Gmail 返回了重复的会话分页令牌。");
+/** Threads matching the scope, 20 at a time, each enriched with its metadata. */
+function gmailThreadCursor(
+    ctx: GmailSessionContext, query: string | undefined, labelIds?: string[],
+): Cursor<GmailThreadEntry> {
+  return new RpcCursor(new CursorPager<GmailThreadRef, GmailThreadEntry>({
+    provider: "Gmail",
+
+    async fetchPage(pageToken) {
+      let { threads, nextPageToken } =
+          await ctx.gmailApi.listThreads(20, query, pageToken, labelIds);
+      return { items: threads, nextPageToken };
+    },
+
+    async buildEntries(threads) {
+      // Stay below the Workers six-outgoing-connection limit while enriching the page.
+      let entries: GmailThreadEntry[] = [];
+      for (let i = 0; i < threads.length; i += 5) {
+        entries.push(...await Promise.all(threads.slice(i, i + 5).map(async thread => {
+          let metadata = await ctx.gmailApi.getThreadInfo(thread.id);
+          let info: GmailThreadInfo = {
+            ...metadata,
+            ...(thread.snippet !== undefined ? { snippet: thread.snippet } : {}),
+          };
+          return { info, thread: new GmailThreadStub(ctx, thread.id, info) };
+        })));
       }
-      skippedPages++;
-    } while (result.threads.length === 0 && !exhausted && skippedPages < 20);
+      return entries;
+    },
 
-    if (result.threads.length === 0) {
-      if (!exhausted) throw new Error("Gmail 返回了过多空白会话页面。");
-      this.#pageToken = pageToken;
-      this.#exhausted = true;
-      return null;
-    }
-
-    // Stay below the Workers six-outgoing-connection limit while enriching the
-    // page with metadata.
-    const entries: GmailThreadEntry[] = [];
-    for (let i = 0; i < result.threads.length; i += 5) {
-      const batch = await Promise.all(result.threads.slice(i, i + 5).map(async thread => {
-        const metadata = await this.#ctx.gmailApi.getThreadInfo(thread.id);
-        const info: GmailThreadInfo = {
-          ...metadata,
-          ...(thread.snippet !== undefined ? {snippet: thread.snippet} : {}),
-        };
-        const stub = new GmailThreadStub(this.#ctx, thread.id, info);
-        return { info, thread: stub };
-      }));
-      entries.push(...batch);
-    }
-
-    await this.#ctx.approvalQueue.authorizeObservation({
+    authorize: entries => ctx.approvalQueue.authorizeObservation({
       title: `读取 ${entries.length} 个 Gmail 会话`,
       description:
-        `获取下一页 Gmail 会话。\n\n` +
+        "获取下一页 Gmail 会话。\n\n" +
         formatApprovalField("主题", entries.map(entry => entry.info.subject).join("\n")),
-    });
-
-    this.#pageToken = pageToken;
-    this.#exhausted = exhausted;
-    return entries;
-  }
+    }),
+  }));
 }
 
 // ── GmailThreadStub ─────────────────────────────────────────────────
@@ -1551,9 +1259,7 @@ class GmailThreadStub extends RpcTarget implements GmailThread {
   }
 
   async messagesVisibleTo(address: string): Promise<GmailMessage[]> {
-    if (new TextEncoder().encode(address).byteLength > MAX_GMAIL_ADDRESS_BYTES) {
-      throw new Error(`电子邮件地址最多为 ${MAX_GMAIL_ADDRESS_BYTES} 字节。`);
-    }
+    validateGmailAddress(address);
     const [normalizedAddress] = normalizeEmailRecipients([address]);
     const thread = await this.#ctx.gmailApi.getThread(this.#threadId);
 
@@ -1701,9 +1407,7 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
   }
 
   async reply(body: string): Promise<void> {
-    if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
-    }
+    validateGmailBody(body);
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
       title: "读取邮件标头以准备回复",
@@ -1728,9 +1432,7 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
   }
 
   async replyAll(body: string): Promise<void> {
-    if (new TextEncoder().encode(body).byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
-    }
+    validateGmailBody(body);
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
       title: "读取邮件标头以准备回复全部",
@@ -1756,12 +1458,8 @@ class GmailMessageStub extends RpcTarget implements GmailMessage {
 
   async forward(to: string[], body?: string): Promise<void> {
     const normalizedTo = normalizeEmailRecipients(to);
-    if (normalizedTo.length === 0 || normalizedTo.length > MAX_GMAIL_RECIPIENTS) {
-      throw new Error(`电子邮件收件人数必须为 1 至 ${MAX_GMAIL_RECIPIENTS} 人。`);
-    }
-    if (new TextEncoder().encode(body ?? '').byteLength > MAX_GMAIL_BODY_BYTES) {
-      throw new Error(`电子邮件正文最多为 ${MAX_GMAIL_BODY_BYTES} 字节。`);
-    }
+    validateGmailRecipientCount(normalizedTo);
+    validateGmailBody(body ?? '');
     const original = await this.#getRaw();
     await this.#ctx.approvalQueue.authorizeObservation({
       title: "读取邮件以准备转发",
@@ -2890,7 +2588,7 @@ export class GoogleCalendarGatekeeperImpl
       this.ctx.props.availabilityMode,
       approvalQueue.dup(),
       pendingActions,
-      calendarIds => this.#prepareAvailabilityCalendarObservation(calendarIds),
+      calendarIds => this.#observers.prepareObservation(calendarIds),
     );
   }
 
@@ -2980,60 +2678,19 @@ export class GoogleCalendarGatekeeperImpl
   // TODO: Let the binding owner choose whether private events are included. A public-only mode
   // could admit readers instead of requiring writer access from every collaborator.
 
-  #observerKey(id: string): string { return `observer:${id}`; }
-  #availabilityCalendarKey(calendarId: string): string {
-    return `observedAvailabilityCalendar:${encodeURIComponent(calendarId)}`;
-  }
-
-  #isAvailabilityCalendarObserved(calendarId: string): boolean {
-    let state = this.ctx.storage.kv.get<ObservedSetState>(this.#availabilityCalendarKey(calendarId));
-    return state === true || state === "observed";
-  }
-
-  #listTrackedAvailabilityCalendars(): string[] {
-    let prefix = "observedAvailabilityCalendar:";
-    return [...this.ctx.storage.kv.list<ObservedSetState>({prefix})]
-        .map(([key]) => decodeURIComponent(key.slice(prefix.length)));
-  }
-
-  *#listObservers(): IterableIterator<[string, Fetcher<GoogleVerifierApi>]> {
-    let prefix = "observer:";
-    for (let [key, verifier] of this.ctx.storage.kv.list<Fetcher<GoogleVerifierApi>>({prefix})) {
-      yield [key.slice(prefix.length), verifier];
-    }
-  }
-
-  async #prepareAvailabilityCalendarObservation(
-    calendarIds: string[],
-  ): Promise<ObserverCheck<string>> {
-    let pendingCalendarIds = [...new Set(calendarIds)]
-        .filter(calendarId => !this.#isAvailabilityCalendarObserved(calendarId));
-    if (pendingCalendarIds.length === 0) return {pendingSets: pendingCalendarIds, commit() {}};
-
-    for (let calendarId of pendingCalendarIds) {
-      let key = this.#availabilityCalendarKey(calendarId);
-      if (this.ctx.storage.kv.get<ObservedSetState>(key) === undefined) {
-        this.ctx.storage.kv.put(key, "pending");
-      }
-    }
-
-    let observerAccess = await Promise.all([...this.#listObservers()].map(async ([id, verifier]) => {
-      let access = await Promise.all(pendingCalendarIds.map(
-        calendarId => verifier.hasCalendarFreeBusyAccess(calendarId),
-      ));
-      return [id, access.every(hasAccess => hasAccess)] as const;
-    }));
-    let excluded = observerAccess.filter(([, hasAccess]) => !hasAccess).map(([id]) => id);
-
-    return {
-      excludeObservers: excluded.length > 0 ? excluded : undefined,
-      pendingSets: pendingCalendarIds,
-      commit: () => {
-        for (let calendarId of pendingCalendarIds) {
-          this.ctx.storage.kv.put(this.#availabilityCalendarKey(calendarId), "observed");
-        }
-      },
-    };
+  get #observers(): ObserverTracker<string, Fetcher<GoogleVerifierApi>> {
+    return new ObserverTracker(this.ctx.storage.kv, {
+      setPrefix: "observedAvailabilityCalendar:",
+      encode: calendarId => encodeURIComponent(calendarId),
+      decode: encoded => decodeURIComponent(encoded),
+      hasAccess: (verifier, calendarId) => verifier.hasCalendarFreeBusyAccess(calendarId),
+      deniedMessage: calendarId =>
+        `This collaborator cannot see free/busy availability for ${calendarId}, whose ` +
+        "availability this workspace has read, so they cannot be allowed to observe it.",
+      // In thisCalendar mode no foreign calendar is ever read, so there is never anyone to
+      // forward-exclude and nothing to remember an observer for.
+      recordObservers: this.ctx.props.availabilityMode === "allVisible",
+    });
   }
 
   async addObserver(id: string, user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
@@ -3042,31 +2699,11 @@ export class GoogleCalendarGatekeeperImpl
       throw new Error(
         "此协作者没有已绑定 Google Calendar 的写入权限，因此不能查看其中的事件详情。");
     }
-    let checked = new Set<string>();
-    while (true) {
-      let calendarIds = this.#listTrackedAvailabilityCalendars()
-          .filter(calendarId => !checked.has(calendarId));
-      if (calendarIds.length === 0) {
-        if (this.ctx.props.availabilityMode === "allVisible") {
-          this.ctx.storage.kv.put(this.#observerKey(id), verifier);
-        }
-        return;
-      }
-      let availabilityAccess = await Promise.all(
-        calendarIds.map(calendarId => verifier.hasCalendarFreeBusyAccess(calendarId)));
-      for (let [index, calendarId] of calendarIds.entries()) {
-        if (!availabilityAccess[index]) {
-          throw new Error(
-            `此协作者无法查看 ${calendarId} 的空闲/忙碌状态，而此工作区已读取该日历的可用时间，` +
-            "因此不能允许其查看这些数据。");
-        }
-      }
-      for (let calendarId of calendarIds) checked.add(calendarId);
-    }
+    await this.#observers.addObserver(id, verifier);
   }
 
   async removeObserver(id: string): Promise<void> {
-    this.ctx.storage.kv.delete(this.#observerKey(id));
+    this.#observers.removeObserver(id);
   }
 }
 
@@ -3251,6 +2888,9 @@ class GoogleCalendarSessionImpl extends RpcTarget implements GoogleCalendarSessi
 // `maximumBytesBilled` before actually executing — defense in depth, since BigQuery will also
 // enforce maximumBytesBilled server-side.
 
+/** One BigQuery dataset, the unit at which observer access is tracked. */
+type BigQueryDatasetRef = { projectId: string; datasetId: string };
+
 type BigQueryGatekeeperImplProps = {
   userObjectId: string;
   // When set, narrows the session's authority. Project is required for any narrower scope.
@@ -3308,7 +2948,7 @@ export class BigQueryGatekeeperImpl
       this.ctx.props.scopedProjectId,
       this.ctx.props.scopedDatasetId,
       this.ctx.props.scopedTableId,
-      datasets => this.#prepareDatasetObservation(datasets),
+      datasets => this.#observers.prepareObservation(datasets),
     );
   }
 
@@ -3320,106 +2960,34 @@ export class BigQueryGatekeeperImpl
   }
 
   // -------------------------------------------------------------------------
-  // Observer tracking — strategy C (data-set tracking by dataset). Even a project- or table-scoped
-  // binding is tracked at dataset granularity: users may have IAM access to different datasets, so we
-  // record which datasets' data the Gadget has actually observed and verify each observer against
-  // them. addObserver requires access to every already-observed dataset; later, the first observation
-  // of a *new* dataset excludes any observer lacking it (see #prepareDatasetObservation). Verified
-  // observers are remembered (their verifier stored) so that forward-exclusion re-check can run. The
-  // overseer re-runs addObserver on every open, catching loss of access promptly.
+  // Observer tracking — strategy C, by dataset. Even a project- or table-scoped binding is tracked
+  // at dataset granularity: users may have IAM access to different datasets, so we record which
+  // datasets' data the gadget has actually read and verify each observer against them.
 
-  #observerKey(id: string): string { return `observer:${id}`; }
-  // A dataset is identified by project + dataset id; "/" cannot appear in either, so it is an
-  // unambiguous separator.
-  #datasetKey(projectId: string, datasetId: string): string {
-    return `observedDataset:${projectId}/${datasetId}`;
-  }
-
-  #isDatasetObserved(projectId: string, datasetId: string): boolean {
-    let state = this.ctx.storage.kv.get<ObservedSetState>(this.#datasetKey(projectId, datasetId));
-    return state === true || state === "observed";
-  }
-
-  #listTrackedDatasets(): { projectId: string; datasetId: string }[] {
-    let prefix = "observedDataset:";
-    return [...this.ctx.storage.kv.list<ObservedSetState>({ prefix })].map(([key]) => {
-      let rest = key.slice(prefix.length);
-      let slash = rest.indexOf("/");
-      return { projectId: rest.slice(0, slash), datasetId: rest.slice(slash + 1) };
-    });
-  }
-
-  *#listObservers(): IterableIterator<[string, Fetcher<GoogleVerifierApi>]> {
-    let prefix = "observer:";
-    for (let [key, verifier] of this.ctx.storage.kv.list<Fetcher<GoogleVerifierApi>>({ prefix })) {
-      yield [key.slice(prefix.length), verifier];
-    }
-  }
-
-  // Marks unknown datasets pending and returns current observers who cannot access any pending
-  // dataset in this attempt. Authorization promotes them; failed attempts remain pending and are
-  // rechecked on retry.
-  async #prepareDatasetObservation(
-    datasets: { projectId: string; datasetId: string }[],
-  ): Promise<ObserverCheck<{ projectId: string; datasetId: string }>> {
-    let seen = new Set<string>();
-    let pendingDatasets = datasets.filter(d => {
-      let key = `${d.projectId}/${d.datasetId}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return !this.#isDatasetObserved(d.projectId, d.datasetId);
-    });
-    if (pendingDatasets.length === 0) return {pendingSets: pendingDatasets, commit() {}};
-    for (let d of pendingDatasets) {
-      let key = this.#datasetKey(d.projectId, d.datasetId);
-      if (this.ctx.storage.kv.get<ObservedSetState>(key) === undefined) {
-        this.ctx.storage.kv.put(key, "pending");
-      }
-    }
-    let observerAccess = await Promise.all([...this.#listObservers()].map(async ([id, verifier]) => {
-      let access = await Promise.all(pendingDatasets.map(
-        d => verifier.hasDatasetAccess(d.projectId, d.datasetId),
-      ));
-      return [id, access.every(hasAccess => hasAccess)] as const;
-    }));
-    let excluded = observerAccess.filter(([, hasAccess]) => !hasAccess).map(([id]) => id);
-    return {
-      excludeObservers: excluded.length > 0 ? excluded : undefined,
-      pendingSets: pendingDatasets,
-      commit: () => {
-        for (let d of pendingDatasets) {
-          this.ctx.storage.kv.put(this.#datasetKey(d.projectId, d.datasetId), "observed");
-        }
+  get #observers(): ObserverTracker<BigQueryDatasetRef, Fetcher<GoogleVerifierApi>> {
+    return new ObserverTracker(this.ctx.storage.kv, {
+      setPrefix: "observedDataset:",
+      // "/" cannot appear in either id, so it is an unambiguous separator.
+      encode: ({ projectId, datasetId }) => `${projectId}/${datasetId}`,
+      decode: encoded => {
+        let slash = encoded.indexOf("/");
+        return { projectId: encoded.slice(0, slash), datasetId: encoded.slice(slash + 1) };
       },
-    };
+      hasAccess: (verifier, { projectId, datasetId }) =>
+        verifier.hasDatasetAccess(projectId, datasetId),
+      deniedMessage: ({ projectId, datasetId }) =>
+        "This collaborator does not have access to the BigQuery dataset " +
+        `\`${projectId}.${datasetId}\`, whose data this workspace has read, so they cannot be ` +
+        "allowed to observe it.",
+    });
   }
 
   async addObserver(id: string, user: Fetcher<GatekeeperUserVerifier>): Promise<void> {
-    let verifier = user as unknown as Fetcher<GoogleVerifierApi>;
-    let checked = new Set<string>();
-    while (true) {
-      let datasets = this.#listTrackedDatasets()
-          .filter(d => !checked.has(`${d.projectId}/${d.datasetId}`));
-      if (datasets.length === 0) {
-        this.ctx.storage.kv.put(this.#observerKey(id), verifier);
-        return;
-      }
-      let access = await Promise.all(datasets.map(
-        d => verifier.hasDatasetAccess(d.projectId, d.datasetId),
-      ));
-      for (let [index, d] of datasets.entries()) {
-        if (!access[index]) {
-          throw new Error(
-            `此协作者无权访问 BigQuery 数据集 \`${d.projectId}.${d.datasetId}\`，` +
-            `而此工作区已读取其中的数据，因此不能允许其查看这些数据。`);
-        }
-        checked.add(`${d.projectId}/${d.datasetId}`);
-      }
-    }
+    await this.#observers.addObserver(id, user as unknown as Fetcher<GoogleVerifierApi>);
   }
 
   async removeObserver(id: string): Promise<void> {
-    this.ctx.storage.kv.delete(this.#observerKey(id));
+    this.#observers.removeObserver(id);
   }
 }
 
@@ -3430,10 +2998,8 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
   #scopedProjectId?: string;
   #scopedDatasetId?: string;
   #scopedTableId?: string;
-  // Records the datasets an observation reveals and returns observers to exclude (see
-  // BigQueryGatekeeperImpl.#prepareDatasetObservation).
-  #observe: (datasets: { projectId: string; datasetId: string }[]) =>
-    Promise<ObserverCheck<{ projectId: string; datasetId: string }>>;
+  // Records the datasets an observation reveals and returns observers to exclude.
+  #observe: (datasets: BigQueryDatasetRef[]) => Promise<ObserverCheck<BigQueryDatasetRef>>;
 
   constructor(
     api: BigQueryApi,
@@ -3441,8 +3007,7 @@ class BigQuerySessionImpl extends RpcTarget implements BigQuerySession {
     scopedProjectId: string | undefined,
     scopedDatasetId: string | undefined,
     scopedTableId: string | undefined,
-    observe: (datasets: { projectId: string; datasetId: string }[]) =>
-      Promise<ObserverCheck<{ projectId: string; datasetId: string }>>,
+    observe: (datasets: BigQueryDatasetRef[]) => Promise<ObserverCheck<BigQueryDatasetRef>>,
   ) {
     super();
     this.#api = api;

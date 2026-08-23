@@ -47,7 +47,7 @@ export default {
   },
 
   isReady({ values }) {
-    if (values.endpointKind === "unavailable" || !values.server) return false;
+    if (values.endpointKind !== "portal" || !values.server) return false;
     return values.mode === "all"
       || (values.tools ?? "").split(",").some(name => name.trim().length > 0);
   },
@@ -69,7 +69,7 @@ export default {
     if (values.endpointKind === "unknown") {
       void serverOptions(ui).then(
         servers => setValues({
-          endpointKind: "portal",
+          endpointKind: servers.length > 0 ? "portal" : "empty",
           server: servers.length === 1 ? servers[0].value : values.server,
         }),
         () => setValues({ endpointKind: "unavailable" }),
@@ -81,8 +81,20 @@ export default {
         <Field
           label="服务器"
           description={
-            "无法连接门户以列出其背后的服务器，因此暂时没有可授权的内容。请关闭后重试；" +
-            "如果问题持续发生，请联系管理员检查门户配置。"
+            "无法连接 Portal 以列出其背后的服务器，因此暂时没有可授权的内容。请关闭后重试；" +
+            "如果问题持续发生，请联系管理员检查 Portal 配置和上下文优化设置。"
+          }
+        />
+      </Section>;
+    }
+
+    if (values.endpointKind === "empty") {
+      return <Section>
+        <Field
+          label="服务器"
+          description={
+            "Portal 没有返回任何直接的上游工具。如果本应存在服务器，请在关闭 Code Mode " +
+            "（`?codemode=off`）后连接，并移除 `optimize_context` 参数；否则请在 Portal 中启用服务器后重试。"
           }
         />
       </Section>;
@@ -125,7 +137,7 @@ export default {
               value: "choose",
               title: "选择工具",
               description:
-                "仅允许你勾选的工具，其他工具（包括日后新增的工具）都将被拒绝。",
+                "仅允许你从最多显示的 200 个工具中勾选的工具，其他工具（包括日后新增的工具）都将被拒绝。",
             },
           ]}
           onChange={next => setValues({ mode: next })}
@@ -143,7 +155,7 @@ export default {
         <CheckboxList
           name={`tools:${serverKey}`}
           value={values.tools}
-          loadOptions={async () => (await ui.listToolOptions(values.server ?? undefined))
+          loadOptions={async () => (await ui.listToolOptions(serverKey))
             .map(option => ({ ...option, value: encodeURIComponent(option.value) }))}
           allSelected={mode === "all"}
           disabled={mode === "all"}

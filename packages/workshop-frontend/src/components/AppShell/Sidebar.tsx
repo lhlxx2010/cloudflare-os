@@ -1,8 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import {
-  Blueprint,
   BookOpen,
-  Compass,
   Hexagon,
   House,
   MagnifyingGlass,
@@ -53,8 +51,8 @@ export default function Sidebar({
       className={[
         // Sidebar is the app chrome: a hair greyer than the (lighter) content canvas so the two
         // surfaces read as distinct without a heavy divider.
-        'flex h-screen flex-col border-r border-kumo-line bg-kumo-elevated',
-        collapsed ? 'w-[56px]' : 'w-[260px]',
+        'flex h-full flex-col border-r border-kumo-line bg-kumo-elevated',
+        collapsed ? 'w-[56px]' : 'w-[min(320px,100vw)] md:w-[260px]',
         'shrink-0 transition-[width] duration-200 ease-out',
       ].join(' ')}
     >
@@ -130,12 +128,6 @@ export default function Sidebar({
               collapsed={collapsed}
             />
             <SidebarItem
-              to="/blueprints"
-              label="蓝图"
-              icon={<Blueprint size={14} weight="regular" />}
-              collapsed={collapsed}
-            />
-            <SidebarItem
               to="/outputs"
               label="输出"
               icon={<Stack size={14} weight="regular" />}
@@ -180,12 +172,6 @@ export default function Sidebar({
               />
               )
             })}
-            <SidebarItem
-              to="/explore"
-              label="探索"
-              icon={<Compass size={14} weight="regular" />}
-              collapsed={collapsed}
-            />
           </nav>
 
           {/* Workspace tools: search. Pinned so it's always reachable. */}

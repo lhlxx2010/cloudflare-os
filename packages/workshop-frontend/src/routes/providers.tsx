@@ -215,15 +215,15 @@ function ProvidersPage() {
   })
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-6 sm:px-10">
-      <header className="flex items-end justify-between gap-4 px-3 pb-3 pt-10">
+    <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-3 sm:px-10">
+      <header className="flex flex-col items-stretch gap-4 px-3 pb-3 pt-6 sm:flex-row sm:items-end sm:justify-between sm:pt-10">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-kumo-default">AI 提供商</h1>
           <p className="mt-1 text-[13px] leading-[18px] tracking-[-0.25px] text-kumo-subtle">
             配置工作区可使用的 AI 模型。
           </p>
         </div>
-        <button type="button" onClick={() => setSheetOpen(true)} className={PRIMARY_BTN}>
+        <button type="button" onClick={() => setSheetOpen(true)} className={`${PRIMARY_BTN} h-11 justify-center text-[14px] sm:h-9 sm:text-[13px]`}>
           <Plus size={14} weight="bold" />
           添加提供商
         </button>

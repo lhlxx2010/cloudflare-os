@@ -29,7 +29,7 @@ import { resolveUiFeatureFlags } from "./feature-flags";
 import { serveSiteLogo, SITE_LOGO_PATH } from "./site-logo.js";
 import { createWorkshopLogger } from "./observability";
 import { getAdminUsernames } from "./admin-users.js";
-import { wrapDoStubForTelemetry } from "./do-telemetry";
+import { retryOnDoReset, wrapDoStubForTelemetry } from "./do-retry";
 
 const logger = createWorkshopLogger("workshop.server");
 
@@ -104,7 +104,8 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   whoami(): Promise<AiChatAuthorInfo> {
-    return this.#user.whoami();
+    // Pure-read delegations retry once across a user-DO reset (see retryOnDoReset); writes never do.
+    return retryOnDoReset(() => this.#user.whoami());
   }
   setOwnDisplayName(name: string): Promise<void> {
     return this.#user.setOwnDisplayName(name);
@@ -113,10 +114,10 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
     return this.#user.changePassword(oldHash, newHash);
   }
   hasPasswordLogin(): Promise<boolean> {
-    return this.#user.hasPasswordLogin();
+    return retryOnDoReset(() => this.#user.hasPasswordLogin());
   }
   listModels(): Promise<AiChatAuthorInfo[]> {
-    return this.#user.listModels();
+    return retryOnDoReset(() => this.#user.listModels());
   }
   listModelManagement(): Promise<AiModelManagementEntry[]> {
     return this.#user.listModelManagement();
@@ -137,17 +138,17 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
     return this.#user.setQuickModel(id);
   }
   getQuickModel(): Promise<null | string> {
-    return this.#user.getQuickModel();
+    return retryOnDoReset(() => this.#user.getQuickModel());
   }
 
   getPreferredModel(): Promise<string | null> {
-    return this.#user.getPreferredModel();
+    return retryOnDoReset(() => this.#user.getPreferredModel());
   }
   setPreferredModel(id: string | null): Promise<void> {
     return this.#user.setPreferredModel(id);
   }
   isOnboardingCompleted(): Promise<boolean> {
-    return this.#user.isOnboardingCompleted();
+    return retryOnDoReset(() => this.#user.isOnboardingCompleted());
   }
   completeOnboarding(): Promise<void> {
     return this.#user.completeOnboarding();
@@ -292,7 +293,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   async listGadgets(): Promise<GadgetMetadataWithTimestamps[]> {
-    return this.#user.listGadgets();
+    return retryOnDoReset(() => this.#user.listGadgets());
   }
 
   listOutputs(): Promise<ListOutputsResult> {
@@ -306,7 +307,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   listGatekeeperVendors(filter?: GatekeeperVendorFilter): Promise<GatekeeperVendorInfo[]> {
-    return this.#user.listGatekeeperVendors(filter);
+    return retryOnDoReset(() => this.#user.listGatekeeperVendors(filter));
   }
 
   connectAccount(vendorId: string, resourceUrlPatterns?: string[]): Promise<{url: string}> {
@@ -318,7 +319,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   listAddableGatekeepers(): Promise<GatekeeperVendorInfo[]> {
-    return this.#user.listAddableGatekeepers();
+    return retryOnDoReset(() => this.#user.listAddableGatekeepers());
   }
 
   provisionAmbientAccount(vendorId: string): Promise<void> {
@@ -350,15 +351,15 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   async listOwnBlueprints(): Promise<BlueprintUserSummary[]> {
-    return this.#user.listBlueprints();
+    return retryOnDoReset(() => this.#user.listBlueprints());
   }
 
   async getOwnBlueprint(blueprintId: string): Promise<BlueprintUserSummary | null> {
-    return this.#user.getBlueprint(blueprintId);
+    return retryOnDoReset(() => this.#user.getBlueprint(blueprintId));
   }
 
   async listLibraryBlueprints(): Promise<BlueprintLibrarySummary[]> {
-    return this.#user.listLibraryBlueprints();
+    return retryOnDoReset(() => this.#user.listLibraryBlueprints());
   }
 
   async setBlueprintPinned(blueprintId: string, pinned: boolean): Promise<void> {
@@ -366,7 +367,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   async isBlueprintPinned(blueprintId: string): Promise<boolean> {
-    return this.#user.isBlueprintPinned(blueprintId);
+    return retryOnDoReset(() => this.#user.isBlueprintPinned(blueprintId));
   }
 
   async listFeaturedBlueprints(): Promise<BlueprintPublicInfo[]> {
@@ -383,7 +384,7 @@ class AuthenticatedApiImpl extends RpcTarget implements AuthenticatedApi {
   }
 
   isBlueprintInLibrary(blueprintId: string): Promise<{ uploaded: boolean } | null> {
-    return this.#user.isBlueprintInLibrary(blueprintId);
+    return retryOnDoReset(() => this.#user.isBlueprintInLibrary(blueprintId));
   }
 
   async importBlueprint(archive: ReadableStream<Uint8Array>): Promise<string> {
@@ -638,6 +639,8 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
     this.users = this.ctx.exports.UserDurableObject;
   }
 
+  async ping(): Promise<void> {}
+
   async getServerConfig(): Promise<ServerConfig> {
     return getServerConfig(this.env);
   }
@@ -659,10 +662,12 @@ class PublicApiImpl extends RpcTarget implements PublicApi {
         { props: { pendingId: pendingId.toString(), vendorId } });
     // For most providers, sign-in needs only minimal scopes to verify the user's email (the grant is
     // transient); capability scopes are requested later via an explicit connectAccount. Cloudflare is
-    // the exception: signing in with Cloudflare also links AI Gateway billing, so it requests the
-    // full (persistent) scope set up front and LoginConnectCallbackImpl persists the connection.
-    const scopes = vendorId === CLOUDFLARE_VENDOR_ID ? "full" : "auth";
-    const { url } = await vendor.connectAccount(callback, { scopes });
+    // the exception: signing in with Cloudflare also links AI Gateway billing, so it requests and
+    // persists the billing-only scope set up front.
+    const options = vendorId === CLOUDFLARE_VENDOR_ID
+      ? { scopes: "full" as const, resourceUrlPatterns: [] }
+      : { scopes: "auth" as const };
+    const { url } = await vendor.connectAccount(callback, options);
     // @ts-expect-error Cap'n Web RPC stubs and native RPC targets are compatible but the type
     //     system doesn't know this.
     return { url, attempt: new LoginAttemptImpl(pending) };
